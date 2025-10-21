@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace FIXIT.DAL
 {
-    internal class Class1
+    public  class Class1
     {
         // hi osama
     }

@@ -11,8 +11,7 @@ namespace FIXIT.DAL.Models
         public int ServiceId { get; set; }
         public string ServiceName { get; set; }
         public decimal InitialPrice { get; set; }
-        public int CraftsManId { get; set; }
-        public ICollection<CraftsMan> CraftsMen { get; set; } = new HashSet<CraftsMan>();
-
+        public ICollection<CraftsManService> CraftsManServices { get; set; } = new HashSet<CraftsManService>();
+        public ICollection<ServicesRequest> ServicesRequests { get; set; } = new HashSet<ServicesRequest>();
     }
 }

@@ -13,7 +13,20 @@ namespace FIXIT.DAL.Configuration
     {
         public void Configure(EntityTypeBuilder<Client> builder)
         {
-             builder.ToTable("Clients");
+            builder.ToTable("Clients");
+
+            builder.HasMany(c => c.ServicesRequest)  
+                   .WithOne(sr => sr.Client) 
+                   .HasForeignKey(sr => sr.ClientId) 
+                   .IsRequired() 
+                   .OnDelete(DeleteBehavior.Restrict); 
+
+          
+            builder.HasMany(c => c.Reviews)
+                   .WithOne(r => r.Client)
+                   .HasForeignKey(r => r.ClientId)
+                   .IsRequired()
+                   .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

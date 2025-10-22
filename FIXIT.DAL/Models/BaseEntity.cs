@@ -6,8 +6,11 @@ using System.Threading.Tasks;
 
 namespace FIXIT.DAL.Models
 {
-
-    public class BaseEntity
+    public enum Gender
+    {
+        Male, Female
+    }
+    public abstract class BaseEntity
     {
         public int Id { get; set; }
         public string FName { get; set; }

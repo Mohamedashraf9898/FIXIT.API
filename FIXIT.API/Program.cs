@@ -1,4 +1,7 @@
 
+using FIXIT.DAL;
+using Microsoft.EntityFrameworkCore;
+
 namespace FIXIT.API
 {
     public class Program
@@ -13,6 +16,10 @@ namespace FIXIT.API
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddDbContext<FixItDbContext>(options =>
+            {
+                options.UseSqlServer(builder.Configuration.GetConnectionString("FixItConnectionString"));
+            });
 
             var app = builder.Build();
 

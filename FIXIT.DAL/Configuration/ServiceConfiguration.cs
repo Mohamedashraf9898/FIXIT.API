@@ -13,10 +13,24 @@ namespace FIXIT.DAL.Configuration
     {
         public void Configure(EntityTypeBuilder<Service> builder)
         {
-           builder.Property(s => s.ServiceName)
-               .IsRequired()
-               .HasColumnType("nvarchar")
-               .HasMaxLength(100);
+            builder.Property(s => s.ServiceName)
+                .IsRequired()
+                .HasColumnType("nvarchar")
+                .HasMaxLength(100);
+
+            builder.Property(s => s.InitialPrice)
+                .HasColumnType("money")
+                .IsRequired();
+
+            builder.HasMany(s => s.ServicesRequests) 
+                   .WithOne(sr => sr.Service)
+                   .HasForeignKey(sr => sr.ServiceId)
+                   .IsRequired()
+                   .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany(s => s.CraftsManServices)
+                   .WithOne(cs => cs.Service)
+                   .HasForeignKey(cs => cs.ServiceId);
         }
     }
 }

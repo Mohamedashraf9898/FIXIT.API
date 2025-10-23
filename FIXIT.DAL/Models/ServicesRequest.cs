@@ -16,12 +16,21 @@ namespace FIXIT.DAL.Models
     public class ServicesRequest
     {
         public int ServicesRequestId { get; set; }
+
+        public int CraftsManId { get; set; }
+        public int ClientId { get; set; }
+        public int ServiceId { get; set; }
+
         public CraftsMan CraftsMan { get; set; }
         public Client Client { get; set; }
         public Service Service { get; set; }
+
         public DateTime RequestAt { get; set; }
         public DateTime CompletedAt { get; set; }
+
         [DefaultValue(ServiceRequestStatus.Pending)]
         public ServiceRequestStatus Status { get; set; }
+
+        public Review Review { get; set; }
     }
 }

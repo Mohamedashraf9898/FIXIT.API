@@ -9,9 +9,8 @@ namespace FIXIT.DAL.Models
     public class Client :BaseEntity
     {
         public int TotalRequests { get; set; }
-        public int ServicesRequestId { get; set; }
+       
         public ICollection<ServicesRequest> ServicesRequest  { get; set; }
-        public int CraftsManId { get; set; }
-        ICollection<CraftsMan> CraftsMen { get; set; } = new HashSet<CraftsMan>();
+        public ICollection<Review> Reviews { get; set; } = new HashSet<Review>();
     }
 }

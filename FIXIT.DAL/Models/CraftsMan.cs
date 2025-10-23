@@ -14,9 +14,10 @@ namespace FIXIT.DAL.Models
         public decimal HourlyRate { get; set; }
         public double Rating { get; set; }
         public bool IsVerified { get; set; }
-        public Service Service { get; set; }
-        public int ServicesRequestId { get; set; }
+
+        public ICollection<CraftsManService> CraftsManServices { get; set; } = new HashSet<CraftsManService>();
         public ICollection<ServicesRequest> ServicesRequests { get; set; } = new HashSet<ServicesRequest>();
 
+        public ICollection<Review> Reviews { get; set; } = new HashSet<Review>();
     }
 }

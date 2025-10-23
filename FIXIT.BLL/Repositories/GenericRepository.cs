@@ -44,9 +44,9 @@ namespace FIXIT.BLL.Repositories
            return _dbContext.SaveChanges();
         }
 
-        public Task<T> UpdateAsync(T t)
+        public void Update(T t)
         {
-            throw new NotImplementedException();
-        }
+             _dbContext.Set<T>().Update(t);
+		}
     }
 }

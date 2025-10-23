@@ -7,5 +7,6 @@ namespace FIXIT.API.Controllers
     [ApiController]
     public class CraftsManController : ControllerBase
     {
+
     }
 }

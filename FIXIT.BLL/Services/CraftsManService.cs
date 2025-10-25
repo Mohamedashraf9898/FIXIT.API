@@ -55,10 +55,24 @@ namespace FIXIT.BLL.Services
 			
 			return craftsManDto;
 		}
-		public async void CreateCraftsManAsync(CraftsMan craftsMan)
+		public async void CreateCraftsManAsync(CreateCraftsManDto craftsMan)
 		{
-			 await genericRepository.AddAsync(craftsMan);
-			 genericRepository.Save();
+			CraftsMan newCraftsMan = new CraftsMan
+			{
+				FName = craftsMan.FName,
+				LName = craftsMan.LName,
+				NationalId = craftsMan.NationalId,
+				Location = craftsMan.Location,
+				PhoneNumber = craftsMan.PhoneNumber,
+				Gender = craftsMan.Gender,
+				DateOfBirth = craftsMan.DateOfBirth,
+				Describtion = craftsMan.Describtion,
+				ProfileImage = craftsMan.ProfileImage,
+				ExperienceOfYears = craftsMan.ExperienceOfYears,
+				HourlyRate = craftsMan.HourlyRate
+			};
+			await genericRepository.AddAsync(newCraftsMan);
+			genericRepository.Save();
 		}
 
 		public void DeleteCraftsManAsync(int id)

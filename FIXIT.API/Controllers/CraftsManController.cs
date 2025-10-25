@@ -49,14 +49,14 @@ namespace FIXIT.API.Controllers
 			return NoContent();
 		}
 		[HttpPost]
-		public async Task<IActionResult> CreateCraftsMan([FromBody] CraftsMan craftsMan)
+		public async Task<IActionResult> CreateCraftsMan([FromBody] CreateCraftsManDto craftsMan)
 		{
 			if (craftsMan is null)
 			{
 				return BadRequest();
 			}
 			craftsManService.CreateCraftsManAsync(craftsMan);
-			return CreatedAtAction(nameof(GetCraftsManById), new { id = craftsMan.Id }, craftsMan);
+			return Ok();
 		}
 		[HttpPut]
 		public async Task<IActionResult> UpdateCraftsMan(int id, UpdateCraftsManDto craftsManDto)

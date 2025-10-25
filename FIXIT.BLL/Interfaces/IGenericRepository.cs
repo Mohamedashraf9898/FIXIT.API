@@ -12,8 +12,8 @@ namespace FIXIT.BLL.Interfaces
         Task<T> GetAsync(int Id);
         Task AddAsync(T t);
         void Update(T t);
-        void Delete(T t);
-        
+        void Delete(int id);
+
         int Save();
     }
 }

@@ -18,9 +18,13 @@ namespace FIXIT.BLL.Repositories
             _dbContext = dbContext;
         }
 
-        public void Delete(T t)
+        public void Delete(int id)
         {
-            _dbContext.Set<T>().Remove(t);
+            var entity = _dbContext.Set<T>().Find(id);
+            if (entity != null)
+            {
+                _dbContext.Set<T>().Remove(entity);
+            }
         }
 
         public  async Task<List<T>> GetAllAsync()

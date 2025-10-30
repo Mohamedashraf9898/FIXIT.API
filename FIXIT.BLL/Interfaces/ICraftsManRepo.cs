@@ -1,0 +1,15 @@
+﻿using FIXIT.DAL.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace FIXIT.BLL.Interfaces
+{
+	public interface ICraftsManRepo : IGenericRepository<CraftsMan>
+	{
+		
+		CraftsMan GetCraftsManByName(string fName, string lName);
+	}
+}

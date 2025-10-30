@@ -1,6 +1,7 @@
-﻿namespace FIXIT.BLL.DTOs
+﻿namespace FIXIT.BLL.DTOs.CraftsmanDTOs
 {
-	public class CraftsManDto
+   
+    public class CraftsManDto
 	{
 		public string FName { get; set; }
 		public string LName { get; set; }

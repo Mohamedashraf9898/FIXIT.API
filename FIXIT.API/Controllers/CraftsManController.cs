@@ -1,7 +1,7 @@
-﻿using FIXIT.BLL.DTOs;
+﻿using FIXIT.BLL.DTOs.CraftsmanDTOs;
 using FIXIT.BLL.Interfaces;
 using FIXIT.BLL.Repositories;
-using FIXIT.BLL.Services;
+using FIXIT.BLL.Services.Intrfaces;
 using FIXIT.DAL.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -59,13 +59,17 @@ namespace FIXIT.API.Controllers
 		[HttpPut]
 		public async Task<IActionResult> UpdateCraftsMan(int id, UpdateCraftsManDto craftsManDto)
 		{
-			if (craftsManDto is null || id <= 0)
+          
+           
+            if (craftsManDto.Id==id )
 			{
-				return BadRequest();
-			}
-			craftsManService.UpdateCraftsMan(id, craftsManDto);
-			return NoContent();
-		}
+				if(craftsManService.UpdateCraftsMan(id, craftsManDto))
+                    return NoContent();
+            }
+			
+			
+            return NotFound();
+        }
 		[HttpGet("byname")]
 
 		public IActionResult GetByName(string fName, string lName)

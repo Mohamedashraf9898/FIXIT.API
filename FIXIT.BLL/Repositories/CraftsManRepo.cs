@@ -1,6 +1,7 @@
 ﻿using FIXIT.BLL.Interfaces;
 using FIXIT.DAL;
 using FIXIT.DAL.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,9 +19,9 @@ namespace FIXIT.BLL.Repositories
 			this.dbContext = dbContext;
 		}
 
-		public CraftsMan GetCraftsManByName(string fName, string lName)
+		public async Task<CraftsMan> GetCraftsManByName(string fName, string lName)
 		{
-			return dbContext.CraftsMan.FirstOrDefault(c => c.FName == fName && c.LName == lName);
+			return await dbContext.CraftsMan.FirstOrDefaultAsync(c => c.FName == fName && c.LName == lName);
 		}
 	}
 }

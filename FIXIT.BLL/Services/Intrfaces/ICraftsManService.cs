@@ -1,5 +1,4 @@
-﻿
-using FIXIT.BLL.DTOs;
+﻿using FIXIT.BLL.DTOs.CraftsmanDTOs;
 using FIXIT.DAL.Models;
 using System;
 using System.Collections.Generic;
@@ -7,14 +6,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FIXIT.BLL.Services
+namespace FIXIT.BLL.Services.Intrfaces
 {
 	public interface ICraftsManService
 	{
 		Task<IEnumerable<CraftsManDto>> GetAllCraftsMenAsync();
 		Task<CraftsManDto> GetCraftsManByIdAsync(int id);
 		void CreateCraftsManAsync(CreateCraftsManDto craftsMan);
-		void UpdateCraftsMan(int id, UpdateCraftsManDto craftsManDto);
+		bool UpdateCraftsMan(int id, UpdateCraftsManDto craftsManDto);
 		void DeleteCraftsMan(int id);
 
 	}

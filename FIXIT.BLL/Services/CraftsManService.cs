@@ -1,8 +1,8 @@
 ﻿
-
 using AutoMapper;
-using FIXIT.BLL.DTOs;
+using FIXIT.BLL.DTOs.CraftsmanDTOs;
 using FIXIT.BLL.Interfaces;
+using FIXIT.BLL.Services.Intrfaces;
 using FIXIT.DAL.Models;
 using System;
 using System.Collections.Generic;
@@ -48,11 +48,15 @@ namespace FIXIT.BLL.Services
 			genericRepository.Save();
 		}
 
-
-		public void UpdateCraftsMan(int id,UpdateCraftsManDto craftsManDto)
+		
+		public bool UpdateCraftsMan(int id,UpdateCraftsManDto craftsManDto)
 		{
-			genericRepository.Update(mapper.Map<CraftsMan>(craftsManDto));
-			genericRepository.Save();
+			if(	genericRepository.Update(mapper.Map<CraftsMan>(craftsManDto),id))
+			{
+                genericRepository.Save();
+				return true;
+            }
+			return false;
 		}
 
 		

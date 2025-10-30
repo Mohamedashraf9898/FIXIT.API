@@ -1,12 +1,13 @@
 
+using System.Threading.Tasks;
 using FIXIT.BLL.Interfaces;
 using FIXIT.BLL.Mapping;
 using FIXIT.BLL.Repositories;
 using FIXIT.BLL.Services;
+using FIXIT.BLL.Services.Intrfaces;
 using FIXIT.DAL;
 using FIXIT.DAL.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 using CraftsManService = FIXIT.BLL.Services.CraftsManService;
 
 namespace FIXIT.API
@@ -27,12 +28,21 @@ namespace FIXIT.API
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("FixItConnectionString"));
             });
-			builder.Services.AddAutoMapper(op => op.AddProfile<MappingProfile>()); // Mapping Registration
-			builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
+
+
+            #region injection
+
+            builder.Services.AddAutoMapper(op => op.AddProfile<MappingProfile>()); // Mapping Registration
+            builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            //craftsman
             builder.Services.AddScoped<ICraftsManRepo, CraftsManRepo>();
             builder.Services.AddScoped<ICraftsManService, CraftsManService>();
+            //client
+            builder.Services.AddScoped<IClientService, ClientService>();
+            #endregion
 
-			var app = builder.Build();
+            var app = builder.Build();
             var scope = app.Services.CreateScope();
             var services = scope.ServiceProvider;
             var context = services.GetRequiredService<FixItDbContext>();

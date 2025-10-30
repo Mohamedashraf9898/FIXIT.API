@@ -8,6 +8,7 @@ namespace FIXIT.BLL.DTOs
 {
 	public class UpdateCraftsManDto
 	{
+		public int Id { get; set; }
 		public string FName { get; set; }
 		public string LName { get; set; }
 		public string Describtion { get; set; }

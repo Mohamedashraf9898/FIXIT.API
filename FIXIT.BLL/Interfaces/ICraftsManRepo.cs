@@ -10,6 +10,6 @@ namespace FIXIT.BLL.Interfaces
 	public interface ICraftsManRepo : IGenericRepository<CraftsMan>
 	{
 		
-
+		CraftsMan GetCraftsManByName(string fName, string lName);
 	}
 }

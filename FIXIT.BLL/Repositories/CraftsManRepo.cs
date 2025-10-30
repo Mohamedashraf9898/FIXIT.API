@@ -17,5 +17,10 @@ namespace FIXIT.BLL.Repositories
 		{
 			this.dbContext = dbContext;
 		}
+
+		public CraftsMan GetCraftsManByName(string fName, string lName)
+		{
+			return dbContext.CraftsMan.FirstOrDefault(c => c.FName == fName && c.LName == lName);
+		}
 	}
 }

@@ -1,10 +1,12 @@
 
 using FIXIT.BLL.Interfaces;
+using FIXIT.BLL.Mapping;
 using FIXIT.BLL.Repositories;
 using FIXIT.BLL.Services;
 using FIXIT.DAL;
 using FIXIT.DAL.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using CraftsManService = FIXIT.BLL.Services.CraftsManService;
 
 namespace FIXIT.API
@@ -25,10 +27,11 @@ namespace FIXIT.API
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("FixItConnectionString"));
             });
-            builder.Services.AddScoped<IGenericRepository<CraftsMan>, CraftsManRepo>(); 
+			builder.Services.AddAutoMapper(op => op.AddProfile<MappingProfile>()); // Mapping Registration
+			builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            builder.Services.AddScoped<ICraftsManRepo, CraftsManRepo>();
             builder.Services.AddScoped<ICraftsManService, CraftsManService>();
-
-			var app = builder.Build();
+            var app = builder.Build();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())

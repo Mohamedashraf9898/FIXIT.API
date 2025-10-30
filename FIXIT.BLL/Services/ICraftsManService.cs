@@ -14,8 +14,8 @@ namespace FIXIT.BLL.Services
 		Task<IEnumerable<CraftsManDto>> GetAllCraftsMenAsync();
 		Task<CraftsManDto> GetCraftsManByIdAsync(int id);
 		void CreateCraftsManAsync(CreateCraftsManDto craftsMan);
-		void UpdateCraftsManAsync(int id, UpdateCraftsManDto craftsManDto);
-		void DeleteCraftsManAsync(int id);
+		void UpdateCraftsMan(int id, UpdateCraftsManDto craftsManDto);
+		void DeleteCraftsMan(int id);
 
 	}
 }

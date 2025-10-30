@@ -14,9 +14,11 @@ namespace FIXIT.API.Controllers
 	{
 		private readonly BLL.Interfaces.IGenericRepository<CraftsMan> genericRepository;
 		private readonly ICraftsManService craftsManService;
+		private readonly ICraftsManRepo craftsManRepo;
 
-		public CraftsManController(IGenericRepository<CraftsMan> genericRepository, ICraftsManService craftsManService)
+		public CraftsManController(IGenericRepository<CraftsMan> genericRepository, ICraftsManService craftsManService,ICraftsManRepo craftsManRepo )
 		{
+			this.craftsManRepo = craftsManRepo;
 			this.genericRepository = genericRepository;
 			this.craftsManService = craftsManService;
 		}
@@ -44,7 +46,8 @@ namespace FIXIT.API.Controllers
 		public IActionResult DeleteCraftsMan(int id)
 		{
 			// Implementation for deleting a CraftsMan by ID
-			craftsManService.DeleteCraftsManAsync(id);
+
+			craftsManService.DeleteCraftsMan(id);
 
 			return NoContent();
 		}
@@ -65,8 +68,17 @@ namespace FIXIT.API.Controllers
 			{
 				return BadRequest();
 			}
-			craftsManService.UpdateCraftsManAsync(id, craftsManDto);
+			craftsManService.UpdateCraftsMan(id, craftsManDto);
 			return NoContent();
+		}
+		[HttpGet("byname")]
+
+		public IActionResult GetByName(string fName, string lName)
+		{
+			// Implementation for getting a CraftsMan by name
+			var craftsMan = craftsManRepo.GetCraftsManByName(fName, lName);
+			if (craftsMan is null) return NoContent();
+			return Ok(craftsMan);
 		}
 	}
 }

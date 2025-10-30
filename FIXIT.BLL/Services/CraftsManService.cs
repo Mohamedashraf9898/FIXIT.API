@@ -1,5 +1,6 @@
 ﻿
 
+using AutoMapper;
 using FIXIT.BLL.DTOs;
 using FIXIT.BLL.Interfaces;
 using FIXIT.DAL.Models;
@@ -14,88 +15,46 @@ namespace FIXIT.BLL.Services
 	public class CraftsManService : ICraftsManService
 	{
 		private readonly IGenericRepository<CraftsMan> genericRepository;
+		private readonly IMapper mapper;
 
-		public CraftsManService(IGenericRepository<CraftsMan> genericRepository) 
+		public CraftsManService(IGenericRepository<CraftsMan> genericRepository,IMapper mapper) 
 		{
 			this.genericRepository = genericRepository;
+			this.mapper = mapper;
 		}
 		public async Task<IEnumerable<CraftsManDto>> GetAllCraftsMenAsync()
 		{
 			List<CraftsMan> craftsMen = await genericRepository.GetAllAsync();
-			List<CraftsManDto> craftsManDtos = new List<CraftsManDto>();
-
-			foreach (var craftsMan in craftsMen)
-			{
-				CraftsManDto craftsManDto = new CraftsManDto
-				{
-					FName = craftsMan.FName,
-					LName = craftsMan.LName,
-					Describtion = craftsMan.Describtion,
-					ProfileImage = craftsMan.ProfileImage,
-					Rating = craftsMan.Rating
-				};
-				craftsManDtos.Add(craftsManDto);
-			}
-		
-			return craftsManDtos;
+			var result = mapper.Map<List<CraftsManDto>>(craftsMen);
+			return result;
 		}
 		public async Task<CraftsManDto> GetCraftsManByIdAsync(int id)
 		{
 			CraftsMan craftsMan = await genericRepository.GetAsync(id);
 			if (craftsMan is null)
 				return null;	
-			CraftsManDto craftsManDto = new CraftsManDto
-			{
-				FName = craftsMan.FName,
-				LName = craftsMan.LName,
-				Describtion = craftsMan.Describtion,
-				ProfileImage = craftsMan.ProfileImage,
-				Rating = craftsMan.Rating
-			};
-			
-			return craftsManDto;
+			return mapper.Map<CraftsManDto>(craftsMan);
 		}
-		public async void CreateCraftsManAsync(CreateCraftsManDto craftsMan)
+		public async void CreateCraftsManAsync(CreateCraftsManDto craftsManDto)
 		{
-			CraftsMan newCraftsMan = new CraftsMan
-			{
-				FName = craftsMan.FName,
-				LName = craftsMan.LName,
-				NationalId = craftsMan.NationalId,
-				Location = craftsMan.Location,
-				PhoneNumber = craftsMan.PhoneNumber,
-				Gender = craftsMan.Gender,
-				DateOfBirth = craftsMan.DateOfBirth,
-				Describtion = craftsMan.Describtion,
-				ProfileImage = craftsMan.ProfileImage,
-				ExperienceOfYears = craftsMan.ExperienceOfYears,
-				HourlyRate = craftsMan.HourlyRate
-			};
-			await genericRepository.AddAsync(newCraftsMan);
+			
+			await genericRepository.AddAsync(mapper.Map<CraftsMan>(craftsManDto));
 			genericRepository.Save();
 		}
 
-		public void DeleteCraftsManAsync(int id)
+		public void DeleteCraftsMan(int id)
 		{
 			genericRepository.Delete(id);
 			genericRepository.Save();
 		}
 
 
-		public void UpdateCraftsManAsync(int id, UpdateCraftsManDto craftsManDto)
+		public void UpdateCraftsMan(int id,UpdateCraftsManDto craftsManDto)
 		{
-			CraftsMan craftsMan = new CraftsMan
-			{
-				Id = id,
-				FName = craftsManDto.FName,
-				LName = craftsManDto.LName,
-				Describtion = craftsManDto.Describtion,
-				ProfileImage = craftsManDto.ProfileImage,
-				ExperienceOfYears = craftsManDto.ExperienceOfYears,
-				HourlyRate = craftsManDto.HourlyRate
-			};
-			genericRepository.Update(craftsMan);
+			genericRepository.Update(mapper.Map<CraftsMan>(craftsManDto));
 			genericRepository.Save();
 		}
+
+		
 	}
 }

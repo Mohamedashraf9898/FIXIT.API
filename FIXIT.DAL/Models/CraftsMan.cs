@@ -15,9 +15,9 @@ namespace FIXIT.DAL.Models
         public double Rating { get; set; }
         public bool IsVerified { get; set; }
 
-        public ICollection<CraftsManService> CraftsManServices { get; set; } = new HashSet<CraftsManService>();
-        public ICollection<ServicesRequest> ServicesRequests { get; set; } = new HashSet<ServicesRequest>();
+        public virtual ICollection<CraftsManService> CraftsManServices { get; set; } = new HashSet<CraftsManService>();
+        public virtual ICollection<ServicesRequest> ServicesRequests { get; set; } = new HashSet<ServicesRequest>();
 
-        public ICollection<Review> Reviews { get; set; } = new HashSet<Review>();
+        public virtual ICollection<Review> Reviews { get; set; } = new HashSet<Review>();
     }
 }

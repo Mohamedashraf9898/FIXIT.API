@@ -26,7 +26,7 @@ namespace FIXIT.API
             builder.Services.AddSwaggerGen();
             builder.Services.AddDbContext<FixItDbContext>(options =>
             {
-                options.UseSqlServer(builder.Configuration.GetConnectionString("FixItConnectionString"));
+                options.UseLazyLoadingProxies().UseSqlServer(builder.Configuration.GetConnectionString("FixItConnectionString"));
             });
 
 

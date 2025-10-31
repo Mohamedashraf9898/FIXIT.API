@@ -57,9 +57,9 @@ namespace FIXIT.BLL.Services
 		
 		public bool UpdateCraftsMan(int id,UpdateCraftsManDto craftsManDto)
 		{
-			if(	genericRepository.Update(mapper.Map<CraftsMan>(craftsManDto),id))
+			if(	craftsManRepo.Update(mapper.Map<CraftsMan>(craftsManDto),id))
 			{
-                genericRepository.Save();
+                craftsManRepo.Save();
 				return true;
             }
 			return false;

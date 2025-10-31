@@ -9,11 +9,9 @@ namespace FIXIT.DAL.Models
     public class CraftsManService
     {
         public int CraftsManId { get; set; }
-        public CraftsMan CraftsMan { get; set; }
-
+        public virtual CraftsMan CraftsMan { get; set; }
         public int ServiceId { get; set; }
-        public Service Service { get; set; }
-
+        public virtual Service Service { get; set; }
         public decimal HourlyRate { get; set; }
     }
 }

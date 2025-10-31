@@ -10,7 +10,7 @@ namespace FIXIT.DAL.Models
     {
         public int TotalRequests { get; set; }
        
-        public ICollection<ServicesRequest> ServicesRequest  { get; set; }
-        public ICollection<Review> Reviews { get; set; } = new HashSet<Review>();
+        public virtual ICollection<ServicesRequest> ServicesRequest  { get; set; }
+        public virtual ICollection<Review> Reviews { get; set; } = new HashSet<Review>();
     }
 }

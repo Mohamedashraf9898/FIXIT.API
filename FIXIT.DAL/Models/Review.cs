@@ -14,13 +14,13 @@ namespace FIXIT.DAL.Models
         public DateTime ReviewDate { get; set; }
 
         public int ServicesRequestId { get; set; }
-        public ServicesRequest ServicesRequest { get; set; }
+        public virtual ServicesRequest ServicesRequest { get; set; }
 
         public int ClientId { get; set; }
-        public Client Client { get; set; }
+        public virtual Client Client { get; set; }
 
         public int CraftsManId { get; set; }
-        public CraftsMan CraftsMan { get; set; }
+        public virtual CraftsMan CraftsMan { get; set; }
 
     }
 }

@@ -21,9 +21,9 @@ namespace FIXIT.DAL.Models
         public int ClientId { get; set; }
         public int ServiceId { get; set; }
 
-        public CraftsMan CraftsMan { get; set; }
-        public Client Client { get; set; }
-        public Service Service { get; set; }
+        public virtual CraftsMan CraftsMan { get; set; }
+        public virtual Client Client { get; set; }
+        public virtual Service Service { get; set; }
 
         public DateTime RequestAt { get; set; }
         public DateTime CompletedAt { get; set; }
@@ -31,6 +31,6 @@ namespace FIXIT.DAL.Models
         [DefaultValue(ServiceRequestStatus.Pending)]
         public ServiceRequestStatus Status { get; set; }
 
-        public Review Review { get; set; }
+        public virtual Review Review { get; set; }
     }
 }

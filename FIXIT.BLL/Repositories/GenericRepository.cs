@@ -18,9 +18,13 @@ namespace FIXIT.BLL.Repositories
             _dbContext = dbContext;
         }
 
-        public void Delete(T t)
+        public void Delete(int id)
         {
-            _dbContext.Set<T>().Remove(t);
+            var entity = _dbContext.Set<T>().Find(id);
+            if (entity != null)
+            {
+                _dbContext.Set<T>().Remove(entity);
+            }
         }
 
         public  async Task<List<T>> GetAllAsync()
@@ -44,9 +48,16 @@ namespace FIXIT.BLL.Repositories
            return _dbContext.SaveChanges();
         }
 
-        public void Update(T t)
+        public bool Update(T t,int id )
         {
-             _dbContext.Set<T>().Update(t);
-		}
+            var res = _dbContext.Set<T>().Find(id);
+            if (res == null)
+                return false;
+            else
+            {
+                _dbContext.Entry(res).CurrentValues.SetValues(t);
+                return true;
+            }
+        }
     }
 }

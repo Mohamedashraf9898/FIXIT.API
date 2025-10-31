@@ -17,6 +17,7 @@ namespace FIXIT.BLL.Mapping
 			CreateMap<CraftsMan,CraftsManDto>().ReverseMap();
 			CreateMap<CraftsMan,CreateCraftsManDto>().ReverseMap();
 			CreateMap<CraftsMan, UpdateCraftsManDto>().ReverseMap();
+			CreateMap<CraftsManService,CreateCraftsManServiceDto>().ReverseMap();
 			//CLient Maping 
 			CreateMap<Client,GetAllClientsDTO>().ReverseMap();
 			CreateMap<Client, CreateClientDTO>().ReverseMap();

@@ -15,11 +15,13 @@ namespace FIXIT.BLL.Services
 	public class CraftsManService : ICraftsManService
 	{
 		private readonly ICraftsManRepo craftsManRepo;
+		private readonly IGenericRepository<CraftsManService> generic;
 		private readonly IMapper mapper;
 
-		public CraftsManService(ICraftsManRepo craftsManRepo,IMapper mapper) 
+		public CraftsManService(ICraftsManRepo craftsManRepo,IGenericRepository<CraftsManService> generic,IMapper mapper) 
 		{
 			this.craftsManRepo = craftsManRepo;
+			this.generic = generic;
 			this.mapper = mapper;
 		}
 		public async Task<IEnumerable<CraftsManDto>> GetAllCraftsMenAsync()
@@ -64,7 +66,15 @@ namespace FIXIT.BLL.Services
             }
 			return false;
 		}
-
-		
+		public async void CreateCraftService(CreateCraftsManServiceDto serviceDto)
+		{
+			await generic.AddAsync(mapper.Map<CraftsManService>(serviceDto));
+			generic.Save();
+		}
+		public void DeleteCraftsService(int id)
+		{
+			generic.Delete(id);
+			generic.Save();
+		}
 	}
 }

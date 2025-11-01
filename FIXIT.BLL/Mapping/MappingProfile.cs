@@ -15,10 +15,11 @@ namespace FIXIT.BLL.Mapping
 	{
 		public MappingProfile() 
 		{
+			//CraftsMan mapping
 			CreateMap<CraftsMan,CraftsManDto>().ReverseMap();
 			CreateMap<CraftsMan,CreateCraftsManDto>().ReverseMap();
 			CreateMap<CraftsMan, UpdateCraftsManDto>().ReverseMap();
-			//CLient Maping 
+			//Client Mapping 
 			CreateMap<Client,GetAllClientsDTO>().ReverseMap();
 			CreateMap<Client, CreateClientDTO>().ReverseMap();
 			CreateMap<Client, UpdateClientDTO>().ReverseMap();

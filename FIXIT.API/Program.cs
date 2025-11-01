@@ -45,6 +45,9 @@ namespace FIXIT.API
             builder.Services.AddScoped<IServiceRequestRepository, ServiceRequestRepository>();
             builder.Services.AddScoped<IServiceRequestService, ServiceRequestService>();
             #endregion
+            //review
+            builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+            builder.Services.AddScoped<IReviewService, ReviewService>();
 
             var app = builder.Build();
             var scope = app.Services.CreateScope();

@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 
-namespace FIXIT.BLL.Services.Intrfaces
+namespace FIXIT.BLL.Services.IService
 {
     public interface IReviewService 
     {

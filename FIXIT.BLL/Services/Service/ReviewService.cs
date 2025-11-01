@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using FIXIT.BLL.DTOs.ReviewDTOs;
-using FIXIT.BLL.Interfaces;
-using FIXIT.BLL.Services.Intrfaces;
+using FIXIT.BLL.Repositories.IRepo;
+using FIXIT.BLL.Services.IService;
 using FIXIT.DAL.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FIXIT.BLL.Services
+namespace FIXIT.BLL.Services.Service
 {
     public class ReviewService : IReviewService
     {

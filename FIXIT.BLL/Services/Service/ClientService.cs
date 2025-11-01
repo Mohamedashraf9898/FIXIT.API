@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 using AutoMapper;
 using FIXIT.BLL.DTOs.ClientDTOs;
 using FIXIT.BLL.DTOs.CraftsmanDTOs;
-using FIXIT.BLL.Interfaces;
 using FIXIT.BLL.Repositories;
+using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.BLL.Services.Intrfaces;
 using FIXIT.DAL.Models;
 
-namespace FIXIT.BLL.Services
+namespace FIXIT.BLL.Services.Service
 {
     public class ClientService: IClientService
     {

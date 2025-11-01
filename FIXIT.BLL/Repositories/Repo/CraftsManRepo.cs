@@ -1,4 +1,4 @@
-﻿using FIXIT.BLL.Interfaces;
+﻿using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.DAL;
 using FIXIT.DAL.Models;
 using System;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FIXIT.BLL.Repositories
+namespace FIXIT.BLL.Repositories.Repo
 {
 	public class CraftsManRepo : GenericRepository<CraftsMan>, ICraftsManRepo
 	{

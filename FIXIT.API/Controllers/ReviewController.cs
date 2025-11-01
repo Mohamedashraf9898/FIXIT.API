@@ -1,5 +1,5 @@
 ﻿using FIXIT.BLL.DTOs.ReviewDTOs;
-using FIXIT.BLL.Services.Intrfaces;
+using FIXIT.BLL.Services.IService;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 

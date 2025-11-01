@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FIXIT.BLL.Interfaces
+namespace FIXIT.BLL.Repositories.IRepo
 {
     public interface IReviewRepository : IGenericRepository<Review>
     {

@@ -85,6 +85,7 @@ namespace FIXIT.API.Controllers
             else
                 return BadRequest(ModelState); 
         }
+
         [HttpGet("Craftsman/{craftsManName}")]
         public async Task<IActionResult> GetAllServiceRequestForCraftsMan(string craftsManName)
         {
@@ -118,5 +119,18 @@ namespace FIXIT.API.Controllers
                 return BadRequest(ModelState);
         }
 
+
+
+        [HttpPost("complete/{requestId}")]
+        public async Task<IActionResult> CompleteServiceRequest(int requestId)
+        {
+   
+            var result = await _serviceRequestService.CompleteServiceRequestAsync(requestId);
+            if (!result)
+                return BadRequest("Failed to complete service request or process transaction.");
+
+            return Ok($"Service request #{requestId} completed successfully and craftsman's wallet updated.");
+        }
     }
 }
+

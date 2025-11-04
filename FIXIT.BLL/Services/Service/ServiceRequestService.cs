@@ -1,27 +1,28 @@
 ﻿using AutoMapper;
-using FIXIT.BLL.DTOs.CraftsmanDTOs;
 using FIXIT.BLL.DTOs.ServiceRequestDTOs;
+using FIXIT.BLL.DTOs.WalletTransactionDTOs;
 using FIXIT.BLL.Repositories.IRepo;
-using FIXIT.BLL.Repositories.Repo;
 using FIXIT.BLL.Services.IService;
-using FIXIT.DAL;
 using FIXIT.DAL.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FIXIT.BLL.Services.Service
 {
     public class ServiceRequestService : IServiceRequestService
     {
         private readonly IGenericRepository<ServicesRequest> _genericRepository;
+        private readonly IWalletRepository _walletRepo;
+        private readonly IWalletTransactionRepository _transactionRepo;
         private readonly IMapper _mapper;
 
-        public ServiceRequestService(IGenericRepository<ServicesRequest> genericRepository, IMapper mapper)
+        public ServiceRequestService(
+            IGenericRepository<ServicesRequest> serviceRequestRepo,
+            IWalletRepository walletRepo,
+            IWalletTransactionRepository transactionRepo,
+            IMapper mapper)
         {
-           _genericRepository = genericRepository;
+            _genericRepository = serviceRequestRepo;
+            _walletRepo = walletRepo;
+            _transactionRepo = transactionRepo;
             _mapper = mapper;
         }
         public async Task<bool> CreateServiceRequestAsync(CreateServiceRequestDto ServiceRequestDto)
@@ -122,5 +123,48 @@ namespace FIXIT.BLL.Services.Service
             return result;
         }
 
+        //osama added a payment method
+        public async Task<bool> CompleteServiceRequestAsync(int serviceRequestId)
+        {
+            var serviceRequest = await _genericRepository.GetAsync(serviceRequestId);
+            if (serviceRequest == null)
+                throw new KeyNotFoundException("Service request not found.");
+
+            if (serviceRequest.Status == ServiceRequestStatus.Completed)
+                throw new InvalidOperationException("This service request is already completed.");
+
+            if (serviceRequest.TotalAmount <= 0)
+                throw new InvalidOperationException("Invalid service amount.");
+
+            serviceRequest.Status = ServiceRequestStatus.Completed;
+
+            decimal commissionRate = 0.25m;
+            decimal netAmount = serviceRequest.TotalAmount * (1 - commissionRate);
+
+            var wallet = await _walletRepo.GetWalletByCraftsManIdAsync(serviceRequest.CraftsManId);
+            if (wallet == null)
+                throw new Exception("Wallet not found for this craftsman.");
+
+            wallet.Balance += netAmount;
+
+            var transactionDto = new CreateWalletTransactionDto
+            {
+                WalletId = wallet.Id,
+                ServiceRequestId = serviceRequest.ServicesRequestId,
+                Amount = netAmount,
+              
+                CreatedAt = DateTime.Now
+            };
+
+            var transaction = _mapper.Map<WalletTransaction>(transactionDto);
+            await _transactionRepo.AddAsync(transaction);
+
+            
+            _walletRepo.Save();
+            _transactionRepo.Save();
+            _genericRepository.Save();
+
+            return true;
+        }
     }
 }

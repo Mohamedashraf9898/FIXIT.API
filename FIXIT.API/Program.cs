@@ -44,12 +44,17 @@ namespace FIXIT.API
             //SertviceRequest
             builder.Services.AddScoped<IServiceRequestRepository, ServiceRequestRepository>();
             builder.Services.AddScoped<IServiceRequestService, ServiceRequestService>();
-            #endregion
             //review
             builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
             builder.Services.AddScoped<IReviewService, ReviewService>();
+            //wallet
+            builder.Services.AddScoped<IWalletService, WalletService>();
+            builder.Services.AddScoped<IWalletRepository, WalletRepository>();
+            builder.Services.AddScoped<IWalletTransactionRepository, WalletTransactionRepository>();
+            #endregion
 
             var app = builder.Build();
+
             var scope = app.Services.CreateScope();
             var services = scope.ServiceProvider;
             var context = services.GetRequiredService<FixItDbContext>();

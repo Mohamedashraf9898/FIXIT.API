@@ -15,5 +15,6 @@ namespace FIXIT.BLL.DTOs.ServiceRequestDTOs
         public int ReviewRatingValue { get; set; }
         public string ReviewComment { get; set; }
         public string Status { get; set; }
+        public decimal TotalAmount { get; set; }
     }
 }

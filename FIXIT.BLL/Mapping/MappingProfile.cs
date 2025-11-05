@@ -1,13 +1,16 @@
-﻿using AutoMapper;
-using FIXIT.BLL.DTOs.ClientDTOs;
-using FIXIT.BLL.DTOs.CraftsmanDTOs;
-using FIXIT.BLL.DTOs.ServiceRequestDTOs;
-using FIXIT.DAL.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AutoMapper;
+using FIXIT.BLL.DTOs.ClientDTOs;
+using FIXIT.BLL.DTOs.CraftsmanDTOs;
+using FIXIT.BLL.DTOs.ReviewDTOs;
+using FIXIT.BLL.DTOs.ServiceRequestDTOs;
+using FIXIT.BLL.DTOs.WalletDTos;
+using FIXIT.BLL.DTOs.WalletTransactionDTOs;
+using FIXIT.DAL.Models;
 
 namespace FIXIT.BLL.Mapping
 {
@@ -23,8 +26,14 @@ namespace FIXIT.BLL.Mapping
 			CreateMap<Client,GetAllClientsDTO>().ReverseMap();
 			CreateMap<Client, CreateClientDTO>().ReverseMap();
 			CreateMap<Client, UpdateClientDTO>().ReverseMap();
-			//ServiceRequestMapping
-			CreateMap<ServicesRequest, ReadServiceRequestDto>()
+            // Review Mapping
+			CreateMap<Review, CreateReviewDTO>().ReverseMap();
+			CreateMap<Review, UpdateReviewDTO>().ReverseMap();
+			CreateMap<Review, GetAllReviewsDTO>().ReverseMap();
+
+
+            //ServiceRequestMapping
+            CreateMap<ServicesRequest, ReadServiceRequestDto>()
 				.AfterMap((src , dest) =>
 				{
 					dest.ServiceRequestId = src.ServicesRequestId;
@@ -59,7 +68,12 @@ namespace FIXIT.BLL.Mapping
                     dest.Status = src.Status.ToString();
                 })
 				.ReverseMap();
+            //wallet
+            CreateMap<Wallet, WalletDto>().ReverseMap();
+            CreateMap<CreateWalletDto, Wallet>().ReverseMap();
 
+            CreateMap<WalletTransaction, WalletTransactionDto>().ReverseMap();
+            CreateMap<CreateWalletTransactionDto, WalletTransaction>().ReverseMap();
 
         }
 	}

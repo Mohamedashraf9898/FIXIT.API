@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -32,5 +33,10 @@ namespace FIXIT.DAL.Models
         public ServiceRequestStatus Status { get; set; }
 
         public virtual Review Review { get; set; }
+        //
+
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal TotalAmount { get; set; }
+        public virtual WalletTransaction WalletTransaction { get; set; }
     }
 }

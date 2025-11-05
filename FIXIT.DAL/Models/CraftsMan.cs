@@ -19,5 +19,8 @@ namespace FIXIT.DAL.Models
         public virtual ICollection<ServicesRequest> ServicesRequests { get; set; } = new HashSet<ServicesRequest>();
 
         public virtual ICollection<Review> Reviews { get; set; } = new HashSet<Review>();
-    }
+   
+        public virtual Wallet Wallet { get; set; }
+
+        }
 }

@@ -15,11 +15,9 @@ namespace FIXIT.BLL
 {
     public class ServiceServices : IServiceService
     {
-        //not for requesst or order service FOCUS
+        //not for requests or order service FOCUS
         private readonly IGenericRepository<Service> repo;
         private readonly IMapper mapper;
-        private readonly ICraftsManService _craftsmanService;
-        //private readonly IServiceService serviceService;
 
         public ServiceServices(IGenericRepository<Service> repo, IMapper mapper)
         {
@@ -64,15 +62,6 @@ namespace FIXIT.BLL
             repo.Save();
         }
 
-        //public async Task<IEnumerable<CraftsManDto>> GetCraftsmenByServiceSortedByPriceAsync(int serviceId)
-        //{
-        //    var service = await repo.GetAsync(serviceId);
-        //    if (service == null || service.CraftsManServices == null)
-        //        return Enumerable.Empty<CraftsManDto>();
-        //    var sorted = service.CraftsManServices.OrderBy(c => c.HourlyRate).ToList();
-        //    return mapper.Map<IEnumerable<CraftsManDto>>(sorted);
-        //}
-
         public bool UpdateService(int id, UpdateServiceDto UpdatedService)
         {
             if (repo.Update(mapper.Map<Service>(UpdatedService), id))
@@ -84,44 +73,7 @@ namespace FIXIT.BLL
             else
                 return false;
         }
-
-
-
-        //public bool UpdateService(int id, UpdateServiceDto UpdatedService)
-        //{
-        //    var serviceEntity = mapper.Map<DAL.Models.Service>(UpdatedService);
-        //    var updated = repo.Update(serviceEntity, id);
-
-        //    if (updated)
-        //    {
-        //        repo.Save();
-        //        return true;
-        //    }
-
-        //    return false;
-        //}
-
-
-
-        //public async Task<IEnumerable<CraftsmanDto>> GetCraftsmenByServiceNearbyAsync(int serviceId, string clientAddress)
-        //{
-        //    if (serviceId <= 0 || string.IsNullOrWhiteSpace(clientAddress))
-        //        return new List<CraftsmanDto>();
-
-        //    var allCraftsmen = await _craftsmanService.GetAllCraftsMenAsync();
-
-
-        //    var craftsmenForService = allCraftsmen
-        //        .Where(c => c.Describtion.Any(s => s.ServiceId == serviceId))
-        //        .ToList();
-
-        //    var nearbyCraftsmen = craftsmenForService
-        //        .Where(c => !string.IsNullOrEmpty(c.Address) &&
-        //                    c.Address.Contains(clientAddress, StringComparison.OrdinalIgnoreCase))
-        //        .ToList();
-
-        //    return nearbyCraftsmen;
-        //}
+       
 
 
     }

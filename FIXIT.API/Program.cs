@@ -1,14 +1,15 @@
 
 using System.Threading.Tasks;
-using FIXIT.BLL.Interfaces;
 using FIXIT.BLL.Mapping;
-using FIXIT.BLL.Repositories;
-using FIXIT.BLL.Services;
+using FIXIT.BLL.Repositories.IRepo;
+using FIXIT.BLL.Repositories.Repo;
 using FIXIT.BLL.Services.Intrfaces;
+using FIXIT.BLL.Services.IService;
+using FIXIT.BLL.Services.Service;
 using FIXIT.DAL;
 using FIXIT.DAL.Models;
 using Microsoft.EntityFrameworkCore;
-using CraftsManService = FIXIT.BLL.Services.CraftsManService;
+using CraftsManService = FIXIT.BLL.Services.Service.CraftsManService;
 
 namespace FIXIT.API
 {
@@ -40,9 +41,20 @@ namespace FIXIT.API
             builder.Services.AddScoped<ICraftsManService, CraftsManService>();
             //client
             builder.Services.AddScoped<IClientService, ClientService>();
+            //SertviceRequest
+            builder.Services.AddScoped<IServiceRequestRepository, ServiceRequestRepository>();
+            builder.Services.AddScoped<IServiceRequestService, ServiceRequestService>();
+            //review
+            builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+            builder.Services.AddScoped<IReviewService, ReviewService>();
+            //wallet
+            builder.Services.AddScoped<IWalletService, WalletService>();
+            builder.Services.AddScoped<IWalletRepository, WalletRepository>();
+            builder.Services.AddScoped<IWalletTransactionRepository, WalletTransactionRepository>();
             #endregion
 
             var app = builder.Build();
+
             var scope = app.Services.CreateScope();
             var services = scope.ServiceProvider;
             var context = services.GetRequiredService<FixItDbContext>();

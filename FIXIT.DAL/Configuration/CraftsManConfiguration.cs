@@ -46,6 +46,10 @@ namespace FIXIT.DAL.Configuration
                    .WithOne(cs => cs.CraftsMan)
                    .HasForeignKey(cs => cs.CraftsManId);
 
+            builder.HasOne(c => c.Wallet)
+                   .WithOne(w => w.CraftsMan)
+                   .HasForeignKey<Wallet>(w => w.CraftsManId)
+                   .OnDelete(DeleteBehavior.Cascade);
 
         }
     }

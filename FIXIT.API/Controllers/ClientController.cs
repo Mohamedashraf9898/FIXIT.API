@@ -53,6 +53,7 @@ namespace FIXIT.API.Controllers
             }
             return NotFound();
         }
+
         [HttpDelete]
         [Route("{id}")]
         public IActionResult DeleteCraftsMan(int id)

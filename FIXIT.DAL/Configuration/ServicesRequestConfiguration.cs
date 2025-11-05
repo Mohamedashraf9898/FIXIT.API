@@ -35,6 +35,11 @@ namespace FIXIT.DAL.Configuration
                    .IsRequired(false)
                    .OnDelete(DeleteBehavior.Cascade);
 
+            builder.HasOne(s => s.WalletTransaction)
+             .WithOne(t => t.ServicesRequest)
+             .HasForeignKey<WalletTransaction>(t => t.ServiceRequestId)
+             .OnDelete(DeleteBehavior.Cascade);
+
         }
     }
 }

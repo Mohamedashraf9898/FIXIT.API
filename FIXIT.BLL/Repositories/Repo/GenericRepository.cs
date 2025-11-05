@@ -1,4 +1,4 @@
-﻿using FIXIT.BLL.Interfaces;
+﻿using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.DAL;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FIXIT.BLL.Repositories
+namespace FIXIT.BLL.Repositories.Repo
 {
     public class GenericRepository<T> : IGenericRepository<T> where T :class
     {

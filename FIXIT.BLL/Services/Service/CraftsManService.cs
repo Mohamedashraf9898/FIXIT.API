@@ -2,6 +2,7 @@
 using AutoMapper;
 using FIXIT.BLL.DTOs.CraftsmanDTOs;
 using FIXIT.BLL.Repositories.IRepo;
+using FIXIT.BLL.Repositories.Repo;
 using FIXIT.BLL.Services.Intrfaces;
 using FIXIT.DAL.Models;
 using System;
@@ -24,7 +25,7 @@ namespace FIXIT.BLL.Services.Service
 			this.generic = generic;
 			this.mapper = mapper;
 		}
-		public async Task<IEnumerable<CraftsManDto>> GetAllCraftsMenAsync()
+		public async Task<List<CraftsManDto>> GetAllCraftsMenAsync()
 		{
 			List<CraftsMan> craftsMen = await craftsManRepo.GetAllAsync();
 			var result = mapper.Map<List<CraftsManDto>>(craftsMen);
@@ -37,15 +38,14 @@ namespace FIXIT.BLL.Services.Service
 				return null;	
 			return mapper.Map<CraftsManDto>(craftsMan);
 		}
-		public async Task<CraftsManDto> GetCraftsByNameAsync(string fname , string lname)
+		public async Task<List<CraftsManDto>> GetCraftsMenByNameAsync(string? fName, string? lName)
 		{
-			CraftsMan craftsMan = await craftsManRepo.GetCraftsManByName(fname, lname);
-			if (craftsMan is null)
-				return null;
-			return mapper.Map<CraftsManDto>(craftsMan);
+			var craftsMen = await craftsManRepo.GetCraftsManByNameAsync(fName, lName);
+			return mapper.Map<List<CraftsManDto>>(craftsMen);
 		}
 		public async void CreateCraftsManAsync(CreateCraftsManDto craftsManDto)
 		{
+			
 			await craftsManRepo.AddAsync(mapper.Map<CraftsMan>(craftsManDto));
 			craftsManRepo.Save();
 		}

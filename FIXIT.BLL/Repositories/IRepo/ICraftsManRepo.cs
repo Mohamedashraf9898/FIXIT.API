@@ -10,6 +10,6 @@ namespace FIXIT.BLL.Repositories.IRepo
 	public interface ICraftsManRepo : IGenericRepository<CraftsMan>
 	{
 		
-		Task<CraftsMan> GetCraftsManByName(string fName, string lName);
+		Task<List<CraftsMan>> GetCraftsManByNameAsync(string? fName, string? lName);
 	}
 }

@@ -12,16 +12,24 @@ namespace FIXIT.BLL.Repositories.Repo
 {
 	public class CraftsManRepo : GenericRepository<CraftsMan>, ICraftsManRepo
 	{
-		private readonly FixItDbContext dbContext;
+		private readonly FixItDbContext _dbContext;
 
 		public CraftsManRepo(FixItDbContext dbContext) : base(dbContext)
 		{
-			this.dbContext = dbContext;
+			_dbContext = dbContext;
 		}
 
-		public async Task<CraftsMan> GetCraftsManByName(string fName, string lName)
+		public async Task<List<CraftsMan>> GetCraftsManByNameAsync(string? fName, string? lName)
 		{
-			return await dbContext.CraftsMan.FirstOrDefaultAsync(c => c.FName == fName && c.LName == lName);
+			IQueryable<CraftsMan> query = _dbContext.CraftsMan;
+
+			if (!string.IsNullOrWhiteSpace(fName))
+				query = query.Where(c => EF.Functions.Like(c.FName, $"%{fName}%"));
+
+			if (!string.IsNullOrWhiteSpace(lName))
+				query = query.Where(c => EF.Functions.Like(c.LName, $"%{lName}%"));
+
+			return await query.ToListAsync();
 		}
 	}
 }

@@ -5,80 +5,73 @@ using FIXIT.BLL.Services.Intrfaces;
 using FIXIT.DAL.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace FIXIT.API.Controllers
 {
 	[Route("api/[controller]")]
 	[ApiController]
 	public class CraftsManController : ControllerBase
-	{	
-		private readonly ICraftsManService craftsManService;
-		public CraftsManController(ICraftsManService craftsManService,ICraftsManRepo craftsManRepo )
-		{
-			this.craftsManService = craftsManService;
-		}
-		[HttpGet]
+	{
+		private readonly ICraftsManService _craftsManService;
 
+		public CraftsManController(ICraftsManService craftsManService)
+		{
+			_craftsManService = craftsManService;
+		}
+
+		[HttpGet]
 		public async Task<IActionResult> GetAllCraftsMen()
 		{
-			List<CraftsManDto> craftsManDtos = (List<CraftsManDto>)await craftsManService.GetAllCraftsMenAsync();
-			return Ok(craftsManDtos);
+			var craftsmen = await _craftsManService.GetAllCraftsMenAsync();
+			return Ok(craftsmen);
 		}
-		[HttpGet]
-		[Route("{id}")]
+
+		[HttpGet("{id:int}")]
 		public async Task<IActionResult> GetCraftsManById(int id)
 		{
-			// Implementation for getting a CraftsMan by ID
-			CraftsManDto craftsManDto = await craftsManService.GetCraftsManByIdAsync(id);
-			if (craftsManDto is null)
-			{
+			var craftsMan = await _craftsManService.GetCraftsManByIdAsync(id);
+			if (craftsMan == null)
 				return NotFound();
-			}
-			return Ok(craftsManDto);
-		}
-		[HttpDelete]
-		[Route("{id}")]
-		public IActionResult DeleteCraftsMan(int id)
-		{
-			// Implementation for deleting a CraftsMan by ID
 
-			craftsManService.DeleteCraftsMan(id);
+			return Ok(craftsMan);
+		}
+
+		[HttpGet("search")]
+		public async Task<IActionResult> GetByName([FromQuery] string? fName, [FromQuery] string? lName)
+		{
+			var craftsmen = await _craftsManService.GetCraftsMenByNameAsync(fName, lName);
+			return Ok(craftsmen);
+		}
+
+		[HttpPost]
+		public IActionResult CreateCraftsMan([FromBody] CreateCraftsManDto dto)
+		{
+			if (dto == null)
+				return BadRequest();
+
+			 _craftsManService.CreateCraftsManAsync(dto);
+			return CreatedAtAction(nameof(GetAllCraftsMen), null);
+		}
+
+		[HttpPut("{id:int}")]
+		public  IActionResult UpdateCraftsMan(int id, [FromBody] UpdateCraftsManDto dto)
+		{
+			if (dto == null || dto.Id != id)
+				return BadRequest();
+
+			bool updated =  _craftsManService.UpdateCraftsMan(id, dto);
+			if (!updated)
+				return NotFound();
 
 			return NoContent();
 		}
-		[HttpPost]
-		public async Task<IActionResult> CreateCraftsMan([FromBody] CreateCraftsManDto craftsMan)
-		{
-			if (craftsMan is null)
-			{
-				return BadRequest();
-			}
-			craftsManService.CreateCraftsManAsync(craftsMan);
-			return Ok();
-		}
-		[HttpPut]
-		public async Task<IActionResult> UpdateCraftsMan(int id, UpdateCraftsManDto craftsManDto)
-		{
-          
-           
-            if (craftsManDto.Id==id )
-			{
-				if(craftsManService.UpdateCraftsMan(id, craftsManDto))
-                    return NoContent();
-            }
-			
-			
-            return NotFound();
-        }
 
-		[HttpGet("byname")]
-
-		public IActionResult GetByName(string fName, string lName)
+		[HttpDelete("{id:int}")]
+		public IActionResult DeleteCraftsMan(int id)
 		{
-			// Implementation for getting a CraftsMan by name
-			var craftsMan = craftsManService.GetCraftsByNameAsync(fName,lName);
-			if (craftsMan is null) return NoContent();
-			return Ok(craftsMan);
+			 _craftsManService.DeleteCraftsMan(id);
+			return NoContent();
 		}
 	}
 }

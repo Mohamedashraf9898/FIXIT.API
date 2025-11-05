@@ -10,11 +10,12 @@ namespace FIXIT.BLL.Services.Intrfaces
 {
 	public interface ICraftsManService
 	{
-		Task<IEnumerable<CraftsManDto>> GetAllCraftsMenAsync();
+		Task<List<CraftsManDto>> GetAllCraftsMenAsync();
 		Task<CraftsManDto> GetCraftsManByIdAsync(int id);
-		Task<CraftsManDto> GetCraftsByNameAsync(string name,string lname);
+		Task<List<CraftsManDto>> GetCraftsMenByNameAsync(string? fname,string? lname);
 		void CreateCraftsManAsync(CreateCraftsManDto craftsMan);
 		bool UpdateCraftsMan(int id, UpdateCraftsManDto craftsManDto);
+
 		void DeleteCraftsMan(int id);
 
 	}

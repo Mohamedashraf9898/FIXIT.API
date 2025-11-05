@@ -61,7 +61,7 @@ namespace FIXIT.API.Controllers
 
         [HttpDelete]
         [Route("{id}")]
-        public IActionResult DeleteCraftsMan(int id)
+        public IActionResult Delete(int id)
         {
             
 

@@ -45,12 +45,12 @@ namespace FIXIT.API.Controllers
 		}
 
 		[HttpPost]
-		public IActionResult CreateCraftsMan([FromBody] CreateCraftsManDto dto)
+		public async Task<IActionResult> CreateCraftsMan([FromBody] CreateCraftsManDto dto)
 		{
 			if (dto == null)
 				return BadRequest();
 
-			 _craftsManService.CreateCraftsManAsync(dto);
+			await _craftsManService.CreateCraftsManAsync(dto);
 			return CreatedAtAction(nameof(GetAllCraftsMen), null);
 		}
 

@@ -22,29 +22,24 @@ namespace FIXIT.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-
             var clients=await ics.GetAllClientsAsync();
             return Ok(clients);
-
         }
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-
             var client =await ics.GetClientsByIdAsync(id);
             if(client == null) {return NotFound();}
             return Ok(client);
         }
         [HttpPost]
-        public IActionResult Add(CreateClientDTO createClientDTO)
+        public async Task<IActionResult> Add(CreateClientDTO createClientDTO)
         {
-
-           
             if (createClientDTO is null)
             {
                 return BadRequest();
             }
-            ics.CreateClientAsync(createClientDTO);
+            await ics.CreateClientAsync(createClientDTO);
             return Created();
         }
         [HttpPut]
@@ -63,10 +58,7 @@ namespace FIXIT.API.Controllers
         [Route("{id}")]
         public IActionResult Delete(int id)
         {
-            
-
             ics.DeleteClient(id);
-
             return NoContent();
         }
     }

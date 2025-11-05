@@ -16,7 +16,9 @@ namespace FIXIT.API.Controllers
 		private readonly ICraftsManService craftsManService;
 		private readonly ICraftsManRepo craftsManRepo;
 
-		public CraftsManController(IGenericRepository<CraftsMan> genericRepository, ICraftsManService craftsManService,ICraftsManRepo craftsManRepo )
+		public CraftsManController(IGenericRepository<CraftsMan> genericRepository,
+			ICraftsManService craftsManService,
+			ICraftsManRepo craftsManRepo )
 		{
 			this.craftsManRepo = craftsManRepo;
 			this.genericRepository = genericRepository;

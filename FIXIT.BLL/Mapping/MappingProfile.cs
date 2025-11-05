@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using FIXIT.BLL.DTOs.ClientDTOs;
 using FIXIT.BLL.DTOs.CraftsmanDTOs;
+using FIXIT.BLL.DTOs.ReviewDTOs;
 using FIXIT.BLL.DTOs.ServiceRequestDTOs;
+using FIXIT.BLL.DTOs.ServicsDTOs;
 using FIXIT.DAL.Models;
 using System;
 using System.Collections.Generic;
@@ -23,8 +25,37 @@ namespace FIXIT.BLL.Mapping
 			CreateMap<Client,GetAllClientsDTO>().ReverseMap();
 			CreateMap<Client, CreateClientDTO>().ReverseMap();
 			CreateMap<Client, UpdateClientDTO>().ReverseMap();
-			//ServiceRequestMapping
-			CreateMap<ServicesRequest, ReadServiceRequestDto>()
+
+            //Service Mapping 
+            CreateMap<Service, GetAllServicesDTO>().ReverseMap();
+            CreateMap<Service, CreateServiceDto>().ReverseMap();
+            CreateMap<Service, UpdateServiceDto>().ReverseMap();
+            CreateMap<Service, ServiceDto>().ReverseMap();
+            //Review mapping
+            CreateMap<Review, CreateReviewDTO>().ReverseMap();
+            CreateMap<Review, GetAllReviewsDTO>().ReverseMap();
+            CreateMap<Review, UpdateReviewDTO>().ReverseMap();
+            CreateMap<CreateReviewDTO, Review>()
+
+
+                .ForMember(
+                    dest => dest.ReviewDate,
+                    opt => opt.MapFrom(src => DateTime.UtcNow)
+                )
+
+
+                .AfterMap((src, dest, context) => {
+
+                    var serviceRequest = (ServicesRequest)context.Items["ServiceRequest"];
+
+
+                    dest.ClientId = serviceRequest.ClientId;
+                    dest.CraftsManId = serviceRequest.CraftsManId;
+                });
+
+            
+            //ServiceRequestMapping
+            CreateMap<ServicesRequest, ReadServiceRequestDto>()
 				.AfterMap((src , dest) =>
 				{
 					dest.ServiceRequestId = src.ServicesRequestId;

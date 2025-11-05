@@ -1,8 +1,10 @@
 
 using System.Threading.Tasks;
+using FIXIT.BLL;
 using FIXIT.BLL.Mapping;
 using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.BLL.Repositories.Repo;
+using FIXIT.BLL.Services;
 using FIXIT.BLL.Services.Intrfaces;
 using FIXIT.BLL.Services.IService;
 using FIXIT.BLL.Services.Service;
@@ -48,6 +50,10 @@ namespace FIXIT.API
             //review
             builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
             builder.Services.AddScoped<IReviewService, ReviewService>();
+            //service
+            builder.Services.AddScoped<IServiceService, ServiceServices>();
+
+
 
             var app = builder.Build();
             var scope = app.Services.CreateScope();

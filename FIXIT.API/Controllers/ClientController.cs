@@ -33,13 +33,13 @@ namespace FIXIT.API.Controllers
             return Ok(client);
         }
         [HttpPost]
-        public IActionResult Add(CreateClientDTO createClientDTO)
+        public async Task<IActionResult> Add(CreateClientDTO createClientDTO)
         {
             if (createClientDTO is null)
             {
                 return BadRequest();
             }
-            ics.CreateClientAsync(createClientDTO);
+            await ics.CreateClientAsync(createClientDTO);
             return Created();
         }
         [HttpPut]

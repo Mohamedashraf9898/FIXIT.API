@@ -43,7 +43,7 @@ namespace FIXIT.BLL.Services.Service
 			var craftsMen = await craftsManRepo.GetCraftsManByNameAsync(fName, lName);
 			return mapper.Map<List<CraftsManDto>>(craftsMen);
 		}
-		public async void CreateCraftsManAsync(CreateCraftsManDto craftsManDto)
+		public async Task CreateCraftsManAsync(CreateCraftsManDto craftsManDto)
 		{
 			
 			await craftsManRepo.AddAsync(mapper.Map<CraftsMan>(craftsManDto));

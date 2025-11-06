@@ -29,7 +29,7 @@ namespace FIXIT.API.Controllers
         public async Task<IActionResult> GetById(int id)
         {
             var client =await ics.GetClientsByIdAsync(id);
-            if(client == null) {return NotFound();}
+            //if(client == null) {return NotFound();}
             return Ok(client);
         }
         [HttpPost]

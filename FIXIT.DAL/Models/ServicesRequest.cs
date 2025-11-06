@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FIXIT.DAL.Models
 {
@@ -17,7 +12,8 @@ namespace FIXIT.DAL.Models
     public class ServicesRequest
     {
         public int ServicesRequestId { get; set; }
-
+        public string Description { get; set; }
+        public string ServiceRequestImage { get; set; }
         public int CraftsManId { get; set; }
         public int ClientId { get; set; }
         public int ServiceId { get; set; }
@@ -31,10 +27,8 @@ namespace FIXIT.DAL.Models
 
         [DefaultValue(ServiceRequestStatus.Pending)]
         public ServiceRequestStatus Status { get; set; }
-
         public virtual Review Review { get; set; }
-        //
-
+      
         [Column(TypeName = "decimal(10,2)")]
         public decimal TotalAmount { get; set; }
         public virtual WalletTransaction WalletTransaction { get; set; }

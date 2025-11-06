@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
+using FIXIT.API.Erorrs.Exceptions;
 using FIXIT.BLL.DTOs.ClientDTOs;
-using FIXIT.BLL.DTOs.CraftsmanDTOs;
-using FIXIT.BLL.Repositories;
 using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.BLL.Services.Intrfaces;
 using FIXIT.DAL.Models;
@@ -28,7 +22,7 @@ namespace FIXIT.BLL.Services.Service
         {
         await  repo.AddAsync(mapper.Map<Client>(client));
             repo.Save();
-
+          
             //throw new NotImplementedException();
         }
 
@@ -51,7 +45,8 @@ namespace FIXIT.BLL.Services.Service
         {
             var client= await repo.GetAsync(id);
             if (client == null)
-                return null;
+                throw new NotFoundException(nameof(Client), id);
+            
             return mapper.Map<GetAllClientsDTO>(client);
 
             // throw new NotImplementedException();

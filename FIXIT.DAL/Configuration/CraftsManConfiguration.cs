@@ -26,8 +26,9 @@ namespace FIXIT.DAL.Configuration
             builder.Property(c => c.IsVerified)
                    .HasDefaultValue(false);
 
-            builder.Property(c => c.ProfileImage)
+            builder.Property(c => c.ProfileImage).IsRequired()
                    .HasMaxLength(255);
+
             builder.Property(c => c.ExperienceOfYears)
                    .IsRequired(); 
 

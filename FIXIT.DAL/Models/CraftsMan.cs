@@ -22,5 +22,7 @@ namespace FIXIT.DAL.Models
    
         public virtual Wallet Wallet { get; set; }
 
-        }
+    }
+
 }
+

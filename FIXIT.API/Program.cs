@@ -1,5 +1,7 @@
 
 using System.Threading.Tasks;
+using FIXIT.API.Erorrs;
+using FIXIT.API.Midelwaers;
 using FIXIT.BLL.Mapping;
 using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.BLL.Repositories.Repo;
@@ -8,6 +10,8 @@ using FIXIT.BLL.Services.IService;
 using FIXIT.BLL.Services.Service;
 using FIXIT.DAL;
 using FIXIT.DAL.Models;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CraftsManService = FIXIT.BLL.Services.Service.CraftsManService;
 
@@ -21,7 +25,28 @@ namespace FIXIT.API
 
             // Add services to the container.
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
+            {
+                options.SuppressModelStateInvalidFilter = false;
+                options.InvalidModelStateResponseFactory = (context) =>
+                {
+                    var errors = context.ModelState
+                    .Where(e => e.Value!.Errors.Count > 0)
+                    .Select(P => new ApiValidationErorrResponse.ValditonErorr()
+                    {
+                        Field = P.Key,
+                        Erorrs = P.Value!.Errors.Select(E => E.ErrorMessage)
+
+                    });
+
+                    return new BadRequestObjectResult(new ApiValidationErorrResponse()
+                    {
+                        Errors = errors
+
+                    });
+                };
+
+            }); 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -68,6 +93,8 @@ namespace FIXIT.API
                 logger.LogError(ex, "An error occurred while migrating the database.");
             }
 
+            app.UseMiddleware<ExceptionHandlerMiddlewares>();
+
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
@@ -76,7 +103,7 @@ namespace FIXIT.API
             }
 
             app.UseHttpsRedirection();
-
+            app.UseAuthentication();
             app.UseAuthorization();
 
 

@@ -1,16 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using FIXIT.BLL.DTOs.ClientDTOs;
 using FIXIT.BLL.DTOs.CraftsmanDTOs;
 using FIXIT.BLL.DTOs.ReviewDTOs;
 using FIXIT.BLL.DTOs.ServiceRequestDTOs;
 using FIXIT.BLL.DTOs.WalletDTos;
 using FIXIT.BLL.DTOs.WalletTransactionDTOs;
+using FIXIT.BLL.Helper.PictureUrlResolver;
 using FIXIT.DAL.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace FIXIT.BLL.Mapping
 {
@@ -19,7 +20,10 @@ namespace FIXIT.BLL.Mapping
 		public MappingProfile() 
 		{
 			//CraftsMan mapping
-			CreateMap<CraftsMan,CraftsManDto>().ReverseMap();
+			CreateMap<CraftsMan, CraftsManDto>()
+                .ForMember(dest => dest.ProfileImage,
+                    opt => opt.MapFrom<PictureUrlResolver<CraftsMan, CraftsManDto>>())
+                .ReverseMap();
 			CreateMap<CraftsMan,CreateCraftsManDto>().ReverseMap();
 			CreateMap<CraftsMan, UpdateCraftsManDto>().ReverseMap();
 			CreateMap<CraftsManService,CreateCraftsManServiceDto>().ReverseMap();

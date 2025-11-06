@@ -51,6 +51,8 @@ namespace FIXIT.API
             builder.Services.AddScoped<IWalletService, WalletService>();
             builder.Services.AddScoped<IWalletRepository, WalletRepository>();
             builder.Services.AddScoped<IWalletTransactionRepository, WalletTransactionRepository>();
+            //
+
             #endregion
 
             var app = builder.Build();

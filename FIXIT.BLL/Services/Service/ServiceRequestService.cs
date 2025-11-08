@@ -109,6 +109,7 @@ namespace FIXIT.BLL.Services.Service
                 return true;
             }
             return false;
+
         }
         public async Task<IEnumerable<ReadServiceRequestDto>> GetAllServiceRequestsForCraftsManById(int craftsManId)
         {

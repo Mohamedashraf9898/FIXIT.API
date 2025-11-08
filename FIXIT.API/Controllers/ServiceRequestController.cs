@@ -73,15 +73,15 @@ namespace FIXIT.API.Controllers
 
                 return Ok("Service request deleted successfully.");
             }
-            catch (InvalidOperationException ex) // لو الوقت قريب جدًا من موعد الخدمة
+            catch (InvalidOperationException ex) 
             {
-                return BadRequest(new { message = ex.Message }); // 400 بدل 500
+                return BadRequest(new { message = ex.Message }); 
             }
-            catch (KeyNotFoundException ex) // لو الـ ID مش موجود
+            catch (KeyNotFoundException ex) 
             {
                 return NotFound(new { message = ex.Message });
             }
-            catch (ArgumentException ex) // لو ID غير صالح
+            catch (ArgumentException ex) 
             {
                 return BadRequest(new { message = ex.Message });
             }
@@ -106,9 +106,9 @@ namespace FIXIT.API.Controllers
 
                 return Ok("Service request updated successfully.");
             }
-            catch (InvalidOperationException ex) // هنا بنمسك Exception الخاص بالوقت
+            catch (InvalidOperationException ex) 
             {
-                return BadRequest(new { message = ex.Message }); // 400 بدل 500
+                return BadRequest(new { message = ex.Message }); 
             }
             catch (Exception ex)
             {

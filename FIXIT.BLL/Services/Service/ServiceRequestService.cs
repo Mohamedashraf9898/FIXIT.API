@@ -19,6 +19,7 @@ namespace FIXIT.BLL.Services.Service
     public class ServiceRequestService : IServiceRequestService
     {
         private readonly IServiceRequestRepository _serviceRequestRepository;
+        private readonly ICraftsManRepo _craftsmanRepository;
         private readonly IGenericRepository<Client> _clientRepository;
         private readonly IWalletRepository _walletRepo;
         private readonly IWalletTransactionRepository _transactionRepo;
@@ -26,12 +27,14 @@ namespace FIXIT.BLL.Services.Service
 
         public ServiceRequestService(
             IServiceRequestRepository serviceRequestRepository,
+            ICraftsManRepo craftsmanRepository,
             IWalletRepository walletRepo,
             IWalletTransactionRepository transactionRepo,
             IMapper mapper,
             IGenericRepository<Client> clientRepository)
         {
             _serviceRequestRepository = serviceRequestRepository;
+            _craftsmanRepository = craftsmanRepository;
             _walletRepo = walletRepo;
             _transactionRepo = transactionRepo;
             _mapper = mapper;
@@ -159,6 +162,58 @@ namespace FIXIT.BLL.Services.Service
                 }
             }
         }
+
+        public async Task<List<CraftsManDto>> GetCraftsmenByLocationAsync(int serviceRequestId)
+        {
+            // 1. نجيب الـ ServiceRequest
+            var serviceRequest = await _serviceRequestRepository.GetAsync(serviceRequestId);
+            if (serviceRequest == null || string.IsNullOrEmpty(serviceRequest.Location))
+                return new List<CraftsManDto>();
+
+            // 2. نفصل المحافظة، المدينة، القرية
+            var locationParts = serviceRequest.Location.Split(',').Select(p => p.Trim()).ToArray();
+            var governorate = locationParts.ElementAtOrDefault(0) ?? "";
+            var city = locationParts.ElementAtOrDefault(1) ?? "";
+            var village = locationParts.ElementAtOrDefault(2) ?? "";
+
+            // 3. نجيب كل الـ Craftsmen
+            var allCraftsmen = await _craftsmanRepository.GetAllAsync();
+
+            // 4. فلترة على المحافظة
+            var craftsmenInGovernorate = allCraftsmen
+                .Where(c => !string.IsNullOrEmpty(c.Location))
+                .Where(c => c.Location.Split(',').ElementAtOrDefault(0).Trim()
+                              .Equals(governorate, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (!craftsmenInGovernorate.Any())
+                return new List<CraftsManDto>(); // مفيش حد في المحافظة → نرجع فاضي
+
+            // 5. فلترة على المدينة داخل المحافظة
+            var craftsmenInCity = craftsmenInGovernorate
+                .Where(c => c.Location.Split(',').ElementAtOrDefault(1).Trim()
+                              .Equals(city, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (!craftsmenInCity.Any())
+                return _mapper.Map<List<CraftsManDto>>(craftsmenInGovernorate); // مفيش حد في المدينة → نرجع المحافظة
+
+            // 6. فلترة على القرية داخل المدينة والمحافظة
+            var craftsmenInVillage = craftsmenInCity
+                .Where(c => c.Location.Split(',').ElementAtOrDefault(2).Trim()
+                              .Equals(village, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (!craftsmenInVillage.Any())
+                return _mapper.Map<List<CraftsManDto>>(craftsmenInCity); // مفيش حد في القرية → نرجع المدينة
+
+            // 7. لو فيه حد في القرية → نرجعهم
+            return _mapper.Map<List<CraftsManDto>>(craftsmenInVillage);
+        }
+
+
+
+
         #endregion
         #region ForPaymentService
         //osama added a payment method

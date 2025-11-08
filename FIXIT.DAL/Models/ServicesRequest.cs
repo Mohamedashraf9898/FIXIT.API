@@ -25,6 +25,8 @@ namespace FIXIT.DAL.Models
         public DateTime RequestAt { get; set; }
         public DateTime ServiceAt { get; set; }
         public DateTime CompletedAt { get; set; }
+        
+        [LocationFormat]
         public string Location { get; set; }
 
         [DefaultValue(ServiceRequestStatus.Pending)]

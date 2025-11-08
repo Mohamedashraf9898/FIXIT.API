@@ -45,20 +45,17 @@ namespace FIXIT.BLL.Services.Service
             if (ServiceRequestDto == null)
                 throw new ArgumentNullException(nameof(ServiceRequestDto), "Service Request Data Can not be null");
             var serviceRequest = _mapper.Map<ServicesRequest>(ServiceRequestDto);
-<<<<<<< Updated upstream
+
             await EnsureServiceRequestLocationAsync(serviceRequest);
             await _serviceRequestRepository.AddAsync(serviceRequest);
             _serviceRequestRepository.Save();
-=======
-            await _genericRepository.AddAsync(serviceRequest);
-            _genericRepository.Save();
->>>>>>> Stashed changes
+
             return true;
         }
 
         public async Task<bool> DeleteServiceRequest(int id)
         {
-<<<<<<< Updated upstream
+
             if (id <= 0)
                 throw new ArgumentException("Invalid Service Request ID");
 
@@ -70,16 +67,7 @@ namespace FIXIT.BLL.Services.Service
 
             _serviceRequestRepository.Delete(id);
             _serviceRequestRepository.Save();
-=======
 
-            var serviceRequest = await _genericRepository.GetAsync(id);
-            if (serviceRequest == null)
-            {
-                return false;
-            }
-            _genericRepository.Delete(id);
-            _genericRepository.Save();
->>>>>>> Stashed changes
             return true;
         }
 
@@ -102,7 +90,7 @@ namespace FIXIT.BLL.Services.Service
 
         public async Task<bool> UpdateServiceRequest(int id, UpdateServiceRequestDto ServiceRequestDto)
         {
-<<<<<<< Updated upstream
+
             if (ServiceRequestDto == null)
                 throw new ArgumentNullException(nameof(ServiceRequestDto), "Service Request Data cannot be null");
 
@@ -117,18 +105,7 @@ namespace FIXIT.BLL.Services.Service
             if (result)
             {
                 _serviceRequestRepository.Save();
-=======
-            var existing = await _genericRepository.GetAsync(id);
-            if (existing == null)
-            {
-                return false;
-            }
-            var updatedServiceRequest = _mapper.Map<ServicesRequest>(ServiceRequestDto);
-            var result = _genericRepository.Update(updatedServiceRequest, id);
-            if (result)
-            {
-                _genericRepository.Save();
->>>>>>> Stashed changes
+
                 return true;
             }
             return false;

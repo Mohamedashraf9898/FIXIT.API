@@ -8,11 +8,14 @@ namespace FIXIT.BLL.DTOs.ServiceRequestDTOs
 {
     public class CreateServiceRequestDto
     {
-        public string ClientName { get; set; }
-        public string ServiceName { get; set; }
-        public string CraftsManName { get; set; }
-        public string ReviewComment { get; set; }
-        public int ReviewRatingValue { get; set; }
-        public string Status { get; set; }
+        public int ClientId { get; set; }
+        public int ServiceId { get; set; }
+        public int CraftsManId { get; set; }
+        public string Description { get; set; }
+        public string? ServiceRequestImage { get; set; }
+        public string? Location { get; set; }
+        public DateTime RequestAt { get; set; } = DateTime.Now;
+        public DateTime ServiceAt { get; set; }
+        public string Status { get; set;}
     }
 }

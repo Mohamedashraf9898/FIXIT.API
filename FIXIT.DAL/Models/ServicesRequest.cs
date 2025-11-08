@@ -23,7 +23,11 @@ namespace FIXIT.DAL.Models
         public virtual Service Service { get; set; }
 
         public DateTime RequestAt { get; set; }
+        public DateTime ServiceAt { get; set; }
         public DateTime CompletedAt { get; set; }
+        
+        [LocationFormat]
+        public string Location { get; set; }
 
         [DefaultValue(ServiceRequestStatus.Pending)]
         public ServiceRequestStatus Status { get; set; }

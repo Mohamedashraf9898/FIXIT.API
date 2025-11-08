@@ -81,48 +81,117 @@ namespace FIXIT.BLL.Services.Service
             }
             return false;
         }
-        public async Task<IEnumerable<ReadServiceRequestDto>> GetAllServiceRequestForCraftsMan(string craftsManName)
+        public async Task<IEnumerable<ReadServiceRequestDto>> GetAllServiceRequestsForCraftsManById(int craftsManId)
         {
-            if (string.IsNullOrWhiteSpace(craftsManName))
-                throw new ArgumentException("Craftsman name cannot be empty.", nameof(craftsManName));
+            if (craftsManId <= 0)
+                throw new ArgumentException("Craftsman ID must be greater than zero.", nameof(craftsManId));
 
             var serviceRequests = await _genericRepository.GetAllAsync();
 
             var existed = serviceRequests
-                .Where(cm =>(cm.CraftsMan.FName+ " " +cm.CraftsMan.LName)
+                .Where(cm => (cm.CraftsMan.FName + " " + cm.CraftsMan.LName)
                 .Contains(craftsManName, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             if (!existed.Any())
-                throw new KeyNotFoundException($"No service requests found for craftsman name: {craftsManName}");
-            var result = _mapper.Map<IEnumerable<ReadServiceRequestDto>>(existed);
+                return Enumerable.Empty<ReadServiceRequestDto>();
 
-            return result;
+            return _mapper.Map<IEnumerable<ReadServiceRequestDto>>(existed);
         }
 
-        public async Task<IEnumerable<ReadServiceRequestDto>> GetAllServiceRequestForClient(string clientName)
+        public async Task<IEnumerable<ReadServiceRequestDto>> GetAllServiceRequestsForClientById(int clientId)
         {
-            if (string.IsNullOrWhiteSpace(clientName))
-                throw new ArgumentException("Client name cannot be empty.", nameof(clientName));
+            if (clientId <= 0)
+                throw new ArgumentException("Client ID must be greater than zero.", nameof(clientId));
 
-            // Get all service requests from repository (including relations)
-            var serviceRequests = await _genericRepository.GetAllAsync();
 
-            
+            var serviceRequests = await _serviceRequestRepository.GetAllAsync();
+
             var existed = serviceRequests
-                .Where(cl => (cl.Client.FName + " " + cl.Client.LName)
-                .Contains(clientName, StringComparison.OrdinalIgnoreCase))
+                .Where(sr => sr.ClientId == clientId)
                 .ToList();
 
             // If no matches found, return empty list
             if (!existed.Any())
                 return Enumerable.Empty<ReadServiceRequestDto>();
 
-            // Map to DTO
             var result = _mapper.Map<IEnumerable<ReadServiceRequestDto>>(existed);
             return result;
         }
 
+        #region Helper Method
+        private void ValidateServiceRequestTime(ServicesRequest serviceRequest)
+        {
+            var remainingTime = serviceRequest.ServiceAt - DateTime.Now;
+            if (remainingTime.TotalHours <= 1 || serviceRequest.ServiceAt <= DateTime.Now)
+                throw new InvalidOperationException("Cannot modify the service request less than one hour before or after the scheduled time.");
+        }
+
+        private async Task EnsureServiceRequestLocationAsync(ServicesRequest serviceRequest)
+        {
+            if (string.IsNullOrEmpty(serviceRequest.Location))
+            {
+                var client = await _clientRepository.GetAsync(serviceRequest.ClientId);
+                if (client != null)
+                {
+                    serviceRequest.Location = client.Location;
+                }
+            }
+        }
+
+        public async Task<List<CraftsManDto>> GetCraftsmenByLocationAsync(int serviceRequestId)
+        {
+            // 1. نجيب الـ ServiceRequest
+            var serviceRequest = await _serviceRequestRepository.GetAsync(serviceRequestId);
+            if (serviceRequest == null || string.IsNullOrEmpty(serviceRequest.Location))
+                return new List<CraftsManDto>();
+
+            // 2. نفصل المحافظة، المدينة، القرية
+            var locationParts = serviceRequest.Location.Split(',').Select(p => p.Trim()).ToArray();
+            var governorate = locationParts.ElementAtOrDefault(0) ?? "";
+            var city = locationParts.ElementAtOrDefault(1) ?? "";
+            var village = locationParts.ElementAtOrDefault(2) ?? "";
+
+            // 3. نجيب كل الـ Craftsmen
+            var allCraftsmen = await _craftsmanRepository.GetAllAsync();
+
+            // 4. فلترة على المحافظة
+            var craftsmenInGovernorate = allCraftsmen
+                .Where(c => !string.IsNullOrEmpty(c.Location))
+                .Where(c => c.Location.Split(',').ElementAtOrDefault(0).Trim()
+                              .Equals(governorate, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (!craftsmenInGovernorate.Any())
+                return new List<CraftsManDto>(); // مفيش حد في المحافظة → نرجع فاضي
+
+            // 5. فلترة على المدينة داخل المحافظة
+            var craftsmenInCity = craftsmenInGovernorate
+                .Where(c => c.Location.Split(',').ElementAtOrDefault(1).Trim()
+                              .Equals(city, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (!craftsmenInCity.Any())
+                return _mapper.Map<List<CraftsManDto>>(craftsmenInGovernorate); // مفيش حد في المدينة → نرجع المحافظة
+
+            // 6. فلترة على القرية داخل المدينة والمحافظة
+            var craftsmenInVillage = craftsmenInCity
+                .Where(c => c.Location.Split(',').ElementAtOrDefault(2).Trim()
+                              .Equals(village, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (!craftsmenInVillage.Any())
+                return _mapper.Map<List<CraftsManDto>>(craftsmenInCity); // مفيش حد في القرية → نرجع المدينة
+
+            // 7. لو فيه حد في القرية → نرجعهم
+            return _mapper.Map<List<CraftsManDto>>(craftsmenInVillage);
+        }
+
+
+
+
+        #endregion
+        #region ForPaymentService
         //osama added a payment method
         public async Task<bool> CompleteServiceRequestAsync(int serviceRequestId)
         {
@@ -167,4 +236,5 @@ namespace FIXIT.BLL.Services.Service
             return true;
         }
     }
+  
 }

@@ -15,11 +15,17 @@ namespace FIXIT.BLL.Services.IService
         Task<bool> CreateServiceRequestAsync(CreateServiceRequestDto ServiceRequestDto);
         Task<bool> UpdateServiceRequest(int id, UpdateServiceRequestDto ServiceRequestDto);
         Task<bool> DeleteServiceRequest(int id);
+        Task<List<CraftsManDto>> GetCraftsmenByLocationAsync(int serviceRequestId);
+
+
+        Task<IEnumerable<ReadServiceRequestDto>> GetAllServiceRequestsForCraftsManById(int craftsManId);
+        Task<IEnumerable<ReadServiceRequestDto>> GetAllServiceRequestsForClientById(int clientId);
+
+        #region ForPaymentService
         //osama
         Task<bool> CompleteServiceRequestAsync(int requestId);
-        //end osama
-        Task<IEnumerable<ReadServiceRequestDto>> GetAllServiceRequestForCraftsMan(string CraftsManName);
-        Task<IEnumerable<ReadServiceRequestDto>> GetAllServiceRequestForClient(string ClientName);
+        //end osama 
+        #endregion
 
     }
 }

@@ -58,7 +58,6 @@ namespace FIXIT.BLL.Services.Service
 
         public async Task<bool> DeleteServiceRequest(int id)
         {
-<<<<<<< Updated upstream
             if (id <= 0)
                 throw new ArgumentException("Invalid Service Request ID");
 
@@ -70,16 +69,7 @@ namespace FIXIT.BLL.Services.Service
 
             _serviceRequestRepository.Delete(id);
             _serviceRequestRepository.Save();
-=======
 
-            var serviceRequest = await _genericRepository.GetAsync(id);
-            if (serviceRequest == null)
-            {
-                return false;
-            }
-            _genericRepository.Delete(id);
-            _genericRepository.Save();
->>>>>>> Stashed changes
             return true;
         }
 

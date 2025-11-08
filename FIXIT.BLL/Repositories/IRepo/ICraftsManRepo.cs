@@ -11,5 +11,6 @@ namespace FIXIT.BLL.Repositories.IRepo
 	{
 		
 		Task<List<CraftsMan>> GetCraftsManByNameAsync(string? fName, string? lName);
+		Task<List<CraftsMan>> GetCraftsMenByLocationandServiceAsync(string location, string servicename);
 	}
 }

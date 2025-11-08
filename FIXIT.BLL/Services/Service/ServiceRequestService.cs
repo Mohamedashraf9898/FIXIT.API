@@ -55,6 +55,7 @@ namespace FIXIT.BLL.Services.Service
 
         public async Task<bool> DeleteServiceRequest(int id)
         {
+
             if (id <= 0)
                 throw new ArgumentException("Invalid Service Request ID");
 
@@ -104,6 +105,7 @@ namespace FIXIT.BLL.Services.Service
             if (result)
             {
                 _serviceRequestRepository.Save();
+
                 return true;
             }
             return false;

@@ -1,16 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using FIXIT.BLL.DTOs.ClientDTOs;
 using FIXIT.BLL.DTOs.CraftsmanDTOs;
+using FIXIT.BLL.DTOs.OfferDto;
 using FIXIT.BLL.DTOs.ReviewDTOs;
 using FIXIT.BLL.DTOs.ServiceRequestDTOs;
 using FIXIT.BLL.DTOs.WalletDTos;
 using FIXIT.BLL.DTOs.WalletTransactionDTOs;
 using FIXIT.DAL.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace FIXIT.BLL.Mapping
 {
@@ -53,11 +54,22 @@ namespace FIXIT.BLL.Mapping
                 })
 				.ReverseMap();
 			CreateMap<ServicesRequest, CreateServiceRequestDto>()
-				.AfterMap((src , dest) =>
-				{
-                    dest.Status = src.Status.ToString();
-                })
 				.ReverseMap();
+            CreateMap<ClientSelectCraftsmanDto, ServicesRequest>()
+           .ForMember(dest => dest.CraftsManId, opt => opt.MapFrom(src => src.CraftsmanId))
+           .ForMember(dest => dest.ServicesRequestId, opt => opt.MapFrom(src => src.ServiceRequestId));
+            //Offer
+            CreateMap<Offer, ClientRespondDto>()
+           .ForMember(dest => dest.OfferId, opt => opt.MapFrom(src => src.Id));
+            CreateMap<CraftsmanAcceptDto, Offer>()
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => OfferStatus.AcceptedByCraftsman));
+            CreateMap<CraftsmanRejectDto, Offer>()
+           .ForMember(dest => dest.Status, opt => opt.MapFrom(src => OfferStatus.RejectedByCraftsman));
+
+            // CraftsManNewOfferDto ↔ Offer
+            CreateMap<CraftsManNewOfferDto, Offer>()
+                .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.NewAmount))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => OfferStatus.Pending));
             //wallet
             CreateMap<Wallet, WalletDto>().ReverseMap();
             CreateMap<CreateWalletDto, Wallet>().ReverseMap();

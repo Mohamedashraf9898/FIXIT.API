@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FIXIT.BLL.DTOs.CraftsmanDTOs;
+using FIXIT.BLL.DTOs.OfferDto;
 using FIXIT.BLL.DTOs.ServiceRequestDTOs;
 using FIXIT.BLL.DTOs.WalletTransactionDTOs;
 using FIXIT.BLL.Repositories.IRepo;
@@ -21,9 +22,11 @@ namespace FIXIT.BLL.Services.Service
         private readonly IServiceRequestRepository _serviceRequestRepository;
         private readonly ICraftsManRepo _craftsmanRepository;
         private readonly IGenericRepository<Client> _clientRepository;
+        private readonly IOfferRepository _offerRepository;
         private readonly IWalletRepository _walletRepo;
         private readonly IWalletTransactionRepository _transactionRepo;
         private readonly IMapper _mapper;
+
 
         public ServiceRequestService(
             IServiceRequestRepository serviceRequestRepository,
@@ -31,7 +34,8 @@ namespace FIXIT.BLL.Services.Service
             IWalletRepository walletRepo,
             IWalletTransactionRepository transactionRepo,
             IMapper mapper,
-            IGenericRepository<Client> clientRepository)
+            IGenericRepository<Client> clientRepository,
+            IOfferRepository offerRepository)
         {
             _serviceRequestRepository = serviceRequestRepository;
             _craftsmanRepository = craftsmanRepository;
@@ -39,6 +43,7 @@ namespace FIXIT.BLL.Services.Service
             _transactionRepo = transactionRepo;
             _mapper = mapper;
             _clientRepository = clientRepository;
+            _offerRepository = offerRepository;
         }
         public async Task<bool> CreateServiceRequestAsync(CreateServiceRequestDto ServiceRequestDto)
         {
@@ -144,7 +149,119 @@ namespace FIXIT.BLL.Services.Service
 
             return _mapper.Map<IEnumerable<ReadServiceRequestDto>>(existed);
         }
+        #region Offer
+        public async Task<bool> SelectCraftsmanAsync(ClientSelectCraftsmanDto dto)
+        {
+            var request = await _serviceRequestRepository.GetAsync(dto.ServiceRequestId);
+            if (request == null)
+                throw new KeyNotFoundException("Service request not found.");
 
+            request.CraftsManId = dto.CraftsmanId;
+            request.Status = ServiceRequestStatus.InProgress;
+
+            _serviceRequestRepository.Update(request, request.ServicesRequestId);
+            _serviceRequestRepository.Save();
+            return true;
+        }
+
+        public async Task<bool> ClientRespondToOfferAsync(ClientRespondDto dto)
+        {
+            var offer = await _offerRepository.GetAsync(dto.OfferId);
+            if (offer == null)
+                throw new KeyNotFoundException("Offer not found");
+
+            var request = await _serviceRequestRepository.GetAsync(offer.ServiceRequestId);
+            if (request == null)
+                throw new KeyNotFoundException("Service request not found");
+
+            switch (dto.Decision)
+            {
+                case ClientDecision.Accept:
+                    offer.Status = OfferStatus.AcceptedByClient;
+                    request.TotalAmount = offer.Amount;
+                    request.Status = ServiceRequestStatus.InProgress;
+                    break;
+
+                case ClientDecision.Reject:
+                    offer.Status = OfferStatus.RejectedByClient;
+                    request.Status = ServiceRequestStatus.Pending;
+                    break;
+            }
+
+            _offerRepository.Update(offer, offer.Id);
+            _offerRepository.Save();
+            _serviceRequestRepository.Update(request, request.ServicesRequestId);
+            _serviceRequestRepository.Save();
+
+            return true;
+        }
+
+        public async Task<bool> CraftsmanAcceptRequestAsync(CraftsmanAcceptDto dto)
+        {
+            var offer = await _offerRepository.GetAllAsync();
+            var targetOffer = offer.FirstOrDefault(o => o.ServiceRequestId == dto.ServiceRequestId);
+            if (targetOffer == null)
+                throw new KeyNotFoundException("Offer not found");
+
+            targetOffer.Status = OfferStatus.AcceptedByCraftsman;
+            _offerRepository.Update(targetOffer, targetOffer.Id);
+            _offerRepository.Save();
+
+            return true;
+        }
+
+        public async Task<bool> CraftsmanRejectRequestAsync(CraftsmanRejectDto dto)
+        {
+
+            var offer = await _offerRepository.GetAllAsync();
+            var targetOffer = offer.FirstOrDefault(o => o.ServiceRequestId == dto.ServiceRequestId);
+            if (targetOffer == null)
+                throw new KeyNotFoundException("Offer not found");
+
+            targetOffer.Status = OfferStatus.RejectedByCraftsman;
+            _offerRepository.Update(targetOffer, targetOffer.Id);
+            _offerRepository.Save();
+
+            return true; ;
+        }
+
+        public async Task<bool> CraftsmanNewOfferAsync(CraftsManNewOfferDto dto)
+        {
+            var request = await _serviceRequestRepository.GetAsync(dto.ServiceRequestId);
+            if (request == null)
+                throw new KeyNotFoundException("Service request not found.");
+
+            var offer = _mapper.Map<Offer>(dto);
+            offer.ServiceRequestId = dto.ServiceRequestId;
+            offer.Status = OfferStatus.Pending;
+
+            await _offerRepository.AddAsync(offer);
+            _offerRepository.Save();
+
+            request.Status = ServiceRequestStatus.Pending; // للرد من العميل
+            _serviceRequestRepository.Update(request, request.ServicesRequestId);
+            _serviceRequestRepository.Save();
+
+            return true;
+        }
+
+        public async Task<bool> UpdateTotalAmountAsync(int serviceRequestId, decimal finalAmount)
+        {
+            var request = await _serviceRequestRepository.GetAsync(serviceRequestId);
+            if (request == null)
+                throw new KeyNotFoundException("Service request not found.");
+
+            request.TotalAmount = finalAmount;
+            var updated = _serviceRequestRepository.Update(request, request.ServicesRequestId);
+            if (updated)
+            {
+                _serviceRequestRepository.Save();
+                return true;
+            }
+
+            return false;
+        }
+        #endregion
 
         #region Helper Method
         private void ValidateServiceRequestTime(ServicesRequest serviceRequest)
@@ -261,7 +378,9 @@ namespace FIXIT.BLL.Services.Service
             _serviceRequestRepository.Save();
 
             return true;
-        } 
+        }
+
+        
         #endregion
 
     }

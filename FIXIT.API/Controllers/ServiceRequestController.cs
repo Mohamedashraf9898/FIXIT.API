@@ -1,4 +1,5 @@
-﻿using FIXIT.BLL.DTOs.ServiceRequestDTOs;
+﻿using FIXIT.BLL.DTOs.OfferDto;
+using FIXIT.BLL.DTOs.ServiceRequestDTOs;
 using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.BLL.Services.IService;
 using Microsoft.AspNetCore.Http;
@@ -163,6 +164,28 @@ namespace FIXIT.API.Controllers
 
             return Ok(craftsmen);
         }
+
+        #region Offer
+        [HttpPost("SelectCraftsman")]
+        public async Task<IActionResult> SelectCraftsman(ClientSelectCraftsmanDto dto) =>
+            Ok(await _serviceRequestService.SelectCraftsmanAsync(dto));
+
+        [HttpPost("ClientRespond")]
+        public async Task<IActionResult> ClientRespondToOffer(ClientRespondDto dto) =>
+            Ok(await _serviceRequestService.ClientRespondToOfferAsync(dto));
+
+        [HttpPost("CraftsmanAccept")]
+        public async Task<IActionResult> CraftsmanAccept(CraftsmanAcceptDto dto) =>
+            Ok(await _serviceRequestService.CraftsmanAcceptRequestAsync(dto));
+
+        [HttpPost("CraftsmanReject")]
+        public async Task<IActionResult> CraftsmanReject(CraftsmanRejectDto dto) =>
+            Ok(await _serviceRequestService.CraftsmanRejectRequestAsync(dto));
+
+        [HttpPost("CraftsmanNewOffer")]
+        public async Task<IActionResult> CraftsmanNewOffer(CraftsManNewOfferDto dto) =>
+            Ok(await _serviceRequestService.CraftsmanNewOfferAsync(dto));
+        #endregion
 
         #region ForPaymentService
         [HttpPost("complete/{requestId}")]

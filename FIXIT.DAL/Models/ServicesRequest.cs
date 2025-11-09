@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FIXIT.DAL.Models
@@ -14,12 +15,12 @@ namespace FIXIT.DAL.Models
         public int ServicesRequestId { get; set; }
         public string Description { get; set; }
         public string ServiceRequestImage { get; set; }
+        
         public int CraftsManId { get; set; }
-        public int ClientId { get; set; }
-        public int ServiceId { get; set; }
-
         public virtual CraftsMan CraftsMan { get; set; }
+        public int ClientId { get; set; }
         public virtual Client Client { get; set; }
+        public int ServiceId { get; set; }
         public virtual Service Service { get; set; }
 
         public DateTime RequestAt { get; set; }
@@ -28,6 +29,8 @@ namespace FIXIT.DAL.Models
         
         [LocationFormat]
         public string Location { get; set; }
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal SuggestedPrice { get; set; }
 
         [DefaultValue(ServiceRequestStatus.Pending)]
         public ServiceRequestStatus Status { get; set; }
@@ -35,6 +38,7 @@ namespace FIXIT.DAL.Models
       
         [Column(TypeName = "decimal(10,2)")]
         public decimal TotalAmount { get; set; }
+        public ICollection<Offer> Offers { get; set; } = new HashSet<Offer>();
         public virtual WalletTransaction WalletTransaction { get; set; }
     }
 }

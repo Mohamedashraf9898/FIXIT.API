@@ -17,12 +17,12 @@ namespace FIXIT.DAL.Migrations
                 type: "nvarchar(max)",
                 nullable: true);
 
-            migrationBuilder.AddColumn<DateTime>(
-                name: "ServiceAt",
-                table: "ServicesRequests",
-                type: "datetime2",
-                nullable: false,
-                defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
+            //migrationBuilder.AddColumn<DateTime>(
+            //    name: "ServiceAt",
+            //    table: "ServicesRequests",
+            //    type: "datetime2",
+            //    nullable: false,
+            //    defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
         }
 
         /// <inheritdoc />

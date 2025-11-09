@@ -1,5 +1,7 @@
 ﻿using FIXIT.BLL.DTOs.CraftsmanDTOs;
+using FIXIT.BLL.DTOs.OfferDto;
 using FIXIT.BLL.DTOs.ServiceRequestDTOs;
+using FIXIT.DAL.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,14 +14,15 @@ namespace FIXIT.BLL.Services.IService
     {
         Task<IEnumerable<ReadServiceRequestDto>> GetAllServiceRequestAsync();
         Task<ReadServiceRequestDto> GetServiceRequestByIdAsync(int id);
-        Task<bool> CreateServiceRequestAsync(CreateServiceRequestDto ServiceRequestDto);
-        Task<bool> UpdateServiceRequest(int id, UpdateServiceRequestDto ServiceRequestDto);
+        Task<bool> CreateServiceRequestAsync(CreateServiceRequestDto dto);
+        Task<bool> UpdateServiceRequest(int id, UpdateServiceRequestDto dto);
         Task<bool> DeleteServiceRequest(int id);
-        Task<List<CraftsManDto>> GetCraftsmenByLocationAsync(int serviceRequestId);
-
-
         Task<IEnumerable<ReadServiceRequestDto>> GetAllServiceRequestsForCraftsManById(int craftsManId);
         Task<IEnumerable<ReadServiceRequestDto>> GetAllServiceRequestsForClientById(int clientId);
+
+
+
+
 
         #region ForPaymentService
         //osama

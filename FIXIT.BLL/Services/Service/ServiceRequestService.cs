@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FIXIT.BLL.DTOs.CraftsmanDTOs;
+using FIXIT.BLL.DTOs.OfferDto;
 using FIXIT.BLL.DTOs.ServiceRequestDTOs;
 using FIXIT.BLL.DTOs.WalletTransactionDTOs;
 using FIXIT.BLL.Repositories.IRepo;
@@ -21,9 +22,11 @@ namespace FIXIT.BLL.Services.Service
         private readonly IServiceRequestRepository _serviceRequestRepository;
         private readonly ICraftsManRepo _craftsmanRepository;
         private readonly IGenericRepository<Client> _clientRepository;
+        private readonly IOfferRepository _offerRepository;
         private readonly IWalletRepository _walletRepo;
         private readonly IWalletTransactionRepository _transactionRepo;
         private readonly IMapper _mapper;
+
 
         public ServiceRequestService(
             IServiceRequestRepository serviceRequestRepository,
@@ -31,7 +34,8 @@ namespace FIXIT.BLL.Services.Service
             IWalletRepository walletRepo,
             IWalletTransactionRepository transactionRepo,
             IMapper mapper,
-            IGenericRepository<Client> clientRepository)
+            IGenericRepository<Client> clientRepository,
+            IOfferRepository offerRepository)
         {
             _serviceRequestRepository = serviceRequestRepository;
             _craftsmanRepository = craftsmanRepository;
@@ -39,14 +43,17 @@ namespace FIXIT.BLL.Services.Service
             _transactionRepo = transactionRepo;
             _mapper = mapper;
             _clientRepository = clientRepository;
+            _offerRepository = offerRepository;
         }
-        public async Task<bool> CreateServiceRequestAsync(CreateServiceRequestDto ServiceRequestDto)
+        public async Task<bool> CreateServiceRequestAsync(CreateServiceRequestDto dto)
         {
-            if (ServiceRequestDto == null)
-                throw new ArgumentNullException(nameof(ServiceRequestDto), "Service Request Data Can not be null");
-            var serviceRequest = _mapper.Map<ServicesRequest>(ServiceRequestDto);
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            var serviceRequest = _mapper.Map<ServicesRequest>(dto);
 
             await EnsureServiceRequestLocationAsync(serviceRequest);
+
             await _serviceRequestRepository.AddAsync(serviceRequest);
             _serviceRequestRepository.Save();
 
@@ -55,9 +62,7 @@ namespace FIXIT.BLL.Services.Service
 
         public async Task<bool> DeleteServiceRequest(int id)
         {
-
-            if (id <= 0)
-                throw new ArgumentException("Invalid Service Request ID");
+            if (id <= 0) throw new ArgumentException("Invalid Service Request ID");
 
             var serviceRequest = await _serviceRequestRepository.GetAsync(id);
             if (serviceRequest == null)
@@ -74,42 +79,38 @@ namespace FIXIT.BLL.Services.Service
         public async Task<IEnumerable<ReadServiceRequestDto>> GetAllServiceRequestAsync()
         {
             var serviceRequests = await _serviceRequestRepository.GetAllAsync();
-            var result = _mapper.Map<IEnumerable<ReadServiceRequestDto>>(serviceRequests);
-            return result;
+            return _mapper.Map<IEnumerable<ReadServiceRequestDto>>(serviceRequests);
         }
-        // Validate for .client and .service
+
         public async Task<ReadServiceRequestDto> GetServiceRequestByIdAsync(int id)
         {
-            if (id <= 0)
-                throw new ArgumentException("Invalid ID");
+            if (id <= 0) throw new ArgumentException("Invalid ID");
+
             var serviceRequest = await _serviceRequestRepository.GetAsync(id);
-            if (serviceRequest is null)
+            if (serviceRequest == null)
                 throw new KeyNotFoundException($"Service Request With ID::{id} not found");
+
             return _mapper.Map<ReadServiceRequestDto>(serviceRequest);
         }
 
-        public async Task<bool> UpdateServiceRequest(int id, UpdateServiceRequestDto ServiceRequestDto)
+        public async Task<bool> UpdateServiceRequest(int id, UpdateServiceRequestDto dto)
         {
-
-            if (ServiceRequestDto == null)
-                throw new ArgumentNullException(nameof(ServiceRequestDto), "Service Request Data cannot be null");
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
 
             var existing = await _serviceRequestRepository.GetAsync(id);
             if (existing == null)
                 throw new KeyNotFoundException($"Service Request with ID {id} not found");
+
             ValidateServiceRequestTime(existing);
 
-            _mapper.Map(ServiceRequestDto, existing);
+            _mapper.Map(dto, existing);
             await EnsureServiceRequestLocationAsync(existing);
-            var result = _serviceRequestRepository.Update(existing, id);
-            if (result)
-            {
-                _serviceRequestRepository.Save();
 
-                return true;
-            }
-            return false;
+            var updated = _serviceRequestRepository.Update(existing, id);
+            if (updated) _serviceRequestRepository.Save();
 
+            return updated;
         }
         public async Task<IEnumerable<ReadServiceRequestDto>> GetAllServiceRequestsForCraftsManById(int craftsManId)
         {
@@ -145,13 +146,13 @@ namespace FIXIT.BLL.Services.Service
             return _mapper.Map<IEnumerable<ReadServiceRequestDto>>(existed);
         }
 
+        #region Helper Methods
 
-        #region Helper Method
         private void ValidateServiceRequestTime(ServicesRequest serviceRequest)
         {
-            var remainingTime = serviceRequest.ServiceAt - DateTime.Now;
-            if (remainingTime.TotalHours <= 1 || serviceRequest.ServiceAt <= DateTime.Now)
-                throw new InvalidOperationException("Cannot modify the service request less than one hour before or after the scheduled time.");
+           var remainingTime = serviceRequest.ServiceAt - DateTime.Now;
+               if (remainingTime.TotalHours <= 1 || serviceRequest.ServiceAt <= DateTime.Now)
+                   throw new InvalidOperationException("Cannot modify the service request less than one hour before or after the scheduled time.");
         }
 
         private async Task EnsureServiceRequestLocationAsync(ServicesRequest serviceRequest)
@@ -160,108 +161,61 @@ namespace FIXIT.BLL.Services.Service
             {
                 var client = await _clientRepository.GetAsync(serviceRequest.ClientId);
                 if (client != null)
-                {
                     serviceRequest.Location = client.Location;
-                }
             }
         }
 
-        public async Task<List<CraftsManDto>> GetCraftsmenByLocationAsync(int serviceRequestId)
+        public Task<bool> CompleteServiceRequestAsync(int requestId)
         {
-            // 1. نجيب الـ ServiceRequest
-            var serviceRequest = await _serviceRequestRepository.GetAsync(serviceRequestId);
-            if (serviceRequest == null || string.IsNullOrEmpty(serviceRequest.Location))
-                return new List<CraftsManDto>();
-
-            // 2. نفصل المحافظة، المدينة، القرية
-            var locationParts = serviceRequest.Location.Split(',').Select(p => p.Trim()).ToArray();
-            var governorate = locationParts.ElementAtOrDefault(0) ?? "";
-            var city = locationParts.ElementAtOrDefault(1) ?? "";
-            var village = locationParts.ElementAtOrDefault(2) ?? "";
-
-            // 3. نجيب كل الـ Craftsmen
-            var allCraftsmen = await _craftsmanRepository.GetAllAsync();
-
-            // 4. فلترة على المحافظة
-            var craftsmenInGovernorate = allCraftsmen
-                .Where(c => !string.IsNullOrEmpty(c.Location))
-                .Where(c => c.Location.Split(',').ElementAtOrDefault(0).Trim()
-                              .Equals(governorate, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            if (!craftsmenInGovernorate.Any())
-                return new List<CraftsManDto>(); // مفيش حد في المحافظة → نرجع فاضي
-
-            // 5. فلترة على المدينة داخل المحافظة
-            var craftsmenInCity = craftsmenInGovernorate
-                .Where(c => c.Location.Split(',').ElementAtOrDefault(1).Trim()
-                              .Equals(city, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            if (!craftsmenInCity.Any())
-                return _mapper.Map<List<CraftsManDto>>(craftsmenInGovernorate); // مفيش حد في المدينة → نرجع المحافظة
-
-            // 6. فلترة على القرية داخل المدينة والمحافظة
-            var craftsmenInVillage = craftsmenInCity
-                .Where(c => c.Location.Split(',').ElementAtOrDefault(2).Trim()
-                              .Equals(village, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            if (!craftsmenInVillage.Any())
-                return _mapper.Map<List<CraftsManDto>>(craftsmenInCity); // مفيش حد في القرية → نرجع المدينة
-
-            // 7. لو فيه حد في القرية → نرجعهم
-            return _mapper.Map<List<CraftsManDto>>(craftsmenInVillage);
+            throw new NotImplementedException();
         }
-
-
-
-
         #endregion
         #region ForPaymentService
         //osama added a payment method
-        public async Task<bool> CompleteServiceRequestAsync(int serviceRequestId)
-        {
-            var serviceRequest = await _serviceRequestRepository.GetAsync(serviceRequestId);
-            if (serviceRequest == null)
-                throw new KeyNotFoundException("Service request not found.");
+        //public async Task<bool> CompleteServiceRequestAsync(int serviceRequestId)
+        //{
+        //    var serviceRequest = await _serviceRequestRepository.GetAsync(serviceRequestId);
+        //    if (serviceRequest == null)
+        //        throw new KeyNotFoundException("Service request not found.");
 
-            if (serviceRequest.Status == ServiceRequestStatus.Completed)
-                throw new InvalidOperationException("This service request is already completed.");
+        //    if (serviceRequest.Status == ServiceRequestStatus.Completed)
+        //        throw new InvalidOperationException("This service request is already completed.");
 
-            if (serviceRequest.TotalAmount <= 0)
-                throw new InvalidOperationException("Invalid service amount.");
+        //    if (serviceRequest.TotalAmount <= 0)
+        //        throw new InvalidOperationException("Invalid service amount.");
 
-            serviceRequest.Status = ServiceRequestStatus.Completed;
+        //    serviceRequest.Status = ServiceRequestStatus.Completed;
 
-            decimal commissionRate = 0.25m;
-            decimal netAmount = serviceRequest.TotalAmount * (1 - commissionRate);
+        //    decimal commissionRate = 0.25m;
+        //    decimal netAmount = serviceRequest.TotalAmount * (1 - commissionRate);
 
-            var wallet = await _walletRepo.GetWalletByCraftsManIdAsync(serviceRequest.CraftsManId);
-            if (wallet == null)
-                throw new Exception("Wallet not found for this craftsman.");
+        //    var wallet = await _walletRepo.GetWalletByCraftsManIdAsync(serviceRequest.CraftsManId);
+        //    if (wallet == null)
+        //        throw new Exception("Wallet not found for this craftsman.");
 
-            wallet.Balance += netAmount;
+        //    wallet.Balance += netAmount;
 
-            var transactionDto = new CreateWalletTransactionDto
-            {
-                WalletId = wallet.Id,
-                ServiceRequestId = serviceRequest.ServicesRequestId,
-                Amount = netAmount,
+        //    var transactionDto = new CreateWalletTransactionDto
+        //    {
+        //        WalletId = wallet.Id,
+        //        ServiceRequestId = serviceRequest.ServicesRequestId,
+        //        Amount = netAmount,
 
-                CreatedAt = DateTime.Now
-            };
+        //        CreatedAt = DateTime.Now
+        //    };
 
-            var transaction = _mapper.Map<WalletTransaction>(transactionDto);
-            await _transactionRepo.AddAsync(transaction);
+        //    var transaction = _mapper.Map<WalletTransaction>(transactionDto);
+        //    await _transactionRepo.AddAsync(transaction);
 
 
-            _walletRepo.Save();
-            _transactionRepo.Save();
-            _serviceRequestRepository.Save();
+        //    _walletRepo.Save();
+        //    _transactionRepo.Save();
+        //    _serviceRequestRepository.Save();
 
-            return true;
-        } 
+        //    return true;
+        //}
+
+
         #endregion
 
     }

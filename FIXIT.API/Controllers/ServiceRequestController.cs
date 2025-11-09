@@ -1,4 +1,5 @@
-﻿using FIXIT.BLL.DTOs.ServiceRequestDTOs;
+﻿using FIXIT.BLL.DTOs.OfferDto;
+using FIXIT.BLL.DTOs.ServiceRequestDTOs;
 using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.BLL.Services.IService;
 using Microsoft.AspNetCore.Http;
@@ -153,16 +154,6 @@ namespace FIXIT.API.Controllers
             }
         }
 
-        [HttpGet("{serviceRequestId}/Craftsmen")]
-        public async Task<IActionResult> GetCraftsmenForServiceRequest(int serviceRequestId)
-        {
-            var craftsmen = await _serviceRequestService.GetCraftsmenByLocationAsync(serviceRequestId);
-
-            if (craftsmen == null || !craftsmen.Any())
-                return NotFound("No craftsmen found for this service request.");
-
-            return Ok(craftsmen);
-        }
 
         #region ForPaymentService
         [HttpPost("complete/{requestId}")]

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FIXIT.DAL.Models.Identity;
 
 namespace FIXIT.DAL.Models
 {
@@ -14,7 +15,7 @@ namespace FIXIT.DAL.Models
         public decimal HourlyRate { get; set; }
         public double Rating { get; set; }
         public bool IsVerified { get; set; }
-
+        
         public virtual ICollection<CraftsManService> CraftsManServices { get; set; } = new HashSet<CraftsManService>();
         public virtual ICollection<ServicesRequest> ServicesRequests { get; set; } = new HashSet<ServicesRequest>();
 

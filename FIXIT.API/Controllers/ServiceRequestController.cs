@@ -154,38 +154,6 @@ namespace FIXIT.API.Controllers
             }
         }
 
-        [HttpGet("{serviceRequestId}/Craftsmen")]
-        public async Task<IActionResult> GetCraftsmenForServiceRequest(int serviceRequestId)
-        {
-            var craftsmen = await _serviceRequestService.GetCraftsmenByLocationAsync(serviceRequestId);
-
-            if (craftsmen == null || !craftsmen.Any())
-                return NotFound("No craftsmen found for this service request.");
-
-            return Ok(craftsmen);
-        }
-
-        #region Offer
-        [HttpPost("SelectCraftsman")]
-        public async Task<IActionResult> SelectCraftsman(ClientSelectCraftsmanDto dto) =>
-            Ok(await _serviceRequestService.SelectCraftsmanAsync(dto));
-
-        [HttpPost("ClientRespond")]
-        public async Task<IActionResult> ClientRespondToOffer(ClientRespondDto dto) =>
-            Ok(await _serviceRequestService.ClientRespondToOfferAsync(dto));
-
-        [HttpPost("CraftsmanAccept")]
-        public async Task<IActionResult> CraftsmanAccept(CraftsmanAcceptDto dto) =>
-            Ok(await _serviceRequestService.CraftsmanAcceptRequestAsync(dto));
-
-        [HttpPost("CraftsmanReject")]
-        public async Task<IActionResult> CraftsmanReject(CraftsmanRejectDto dto) =>
-            Ok(await _serviceRequestService.CraftsmanRejectRequestAsync(dto));
-
-        [HttpPost("CraftsmanNewOffer")]
-        public async Task<IActionResult> CraftsmanNewOffer(CraftsManNewOfferDto dto) =>
-            Ok(await _serviceRequestService.CraftsmanNewOfferAsync(dto));
-        #endregion
 
         #region ForPaymentService
         [HttpPost("complete/{requestId}")]

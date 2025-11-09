@@ -1,34 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using FIXIT.DAL.Models;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace FIXIT.DAL.Models
+public enum OfferStatus
 {
-    public enum OfferStatus
-    {
-        Pending,              
-        AcceptedByClient,     
-        RejectedByClient,     
-        AcceptedByCraftsman,  
-        RejectedByCraftsman   
-    }
+    Pending,
+    NewOfferFromCraftsman,
+    AcceptedByClient,
+    RejectedByClient,
+    AcceptedByCraftsman,
+    RejectedByCraftsman
+}
 
-    public class Offer
-    {
-        public int Id { get; set; }
+public class Offer
+{
+    public int Id { get; set; }
 
-        public int ServiceRequestId { get; set; }
-        public ServicesRequest ServiceRequest { get; set; }
+    public int ServiceRequestId { get; set; }
+    public virtual ServicesRequest ServiceRequest { get; set; }
 
-        public int CraftsmanId { get; set; }
-        public CraftsMan Craftsman { get; set; }
+    public int CraftsmanId { get; set; }
+    public virtual CraftsMan Craftsman { get; set; }
 
-        public decimal Amount { get; set; }
+    [Column(TypeName = "decimal(10,2)")]
+    public decimal Amount { get; set; }
 
-        public OfferStatus Status { get; set; } = OfferStatus.Pending;
+    public OfferStatus Status { get; set; } = OfferStatus.Pending;
 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }

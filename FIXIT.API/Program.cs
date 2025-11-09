@@ -71,6 +71,7 @@ namespace FIXIT.API
             builder.Services.AddScoped<IServiceRequestService, ServiceRequestService>();
             //offer
             builder.Services.AddScoped<IOfferRepository, OfferRepository>();
+            builder.Services.AddScoped<IOfferService, OfferService>();
 
             //review
             builder.Services.AddScoped<IReviewRepository, ReviewRepository>();

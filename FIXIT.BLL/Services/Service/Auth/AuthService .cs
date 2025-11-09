@@ -96,7 +96,7 @@ namespace FIXIT.BLL.Services.Service.Auth
                 ProfileImage = dto.ProfileImage,
                 Gender = dto.Gender,
                 DateOfBirth=dto.DateOfBirth
-                //DateOfBirth = dto.DateOfBirth
+
             });
 
             return new UserDto
@@ -119,6 +119,8 @@ namespace FIXIT.BLL.Services.Service.Auth
                 FName = dto.FName,
                 LName = dto.LName,
                 PhoneNumber = dto.PhoneNumber
+             
+                
             };
 
             var result = await _userManager.CreateAsync(user, dto.Password);
@@ -142,7 +144,8 @@ namespace FIXIT.BLL.Services.Service.Auth
                 ExperienceOfYears = dto.ExperienceOfYears,
                 Gender = dto.Gender,
                 NationalId = dto.NationalId,
-                DateOfBirth = dto.DateOfBirth
+                DateOfBirth = dto.DateOfBirth,
+                NormalizedEmail=dto.Email.ToUpper()
             });
 
             return new UserDto

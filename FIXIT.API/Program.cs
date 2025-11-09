@@ -134,7 +134,7 @@ namespace FIXIT.API
             using (var s = app.Services.CreateScope())
             {
                 var service = s.ServiceProvider;
-              await IdentitySeeding.SeedAsync(service);
+                await IdentitySeeding.SeedAsync(service);
             }
             var scope = app.Services.CreateScope();
             var services = scope.ServiceProvider;

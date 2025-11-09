@@ -16,5 +16,7 @@ namespace FIXIT.BLL.DTOs.ClientDTOs
         public string? ProfileImage { get; set; }
         public Gender Gender { get; set; }
         public DateTime DateOfBirth { get; set; }
-    }
+		public string NormalizedEmail { get; set; }
+
+	}
 }

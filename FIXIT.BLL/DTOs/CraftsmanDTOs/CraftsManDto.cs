@@ -3,7 +3,7 @@
    
     public class CraftsManDto
 	{
-        public int UserId { get; set; }
+        
         public string FName { get; set; }
 		public string LName { get; set; }
 		public string Describtion { get; set; }
@@ -11,6 +11,8 @@
 		public double Rating { get; set; }
 		public string Location { get; set; }
 		public bool IsVerified { get; set; }
+		public string NormalizedEmail { get; set; }
+
 
 
 	}

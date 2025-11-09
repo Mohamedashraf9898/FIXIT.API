@@ -49,6 +49,13 @@ namespace FIXIT.API.Controllers
 			var craftsmen = await _craftsManService.GetCraftsMenByLocationandServiceAsync(location, servicename);
 			return Ok(craftsmen);
 		}
+		[HttpGet("GetByEmail")]
+		public async Task<IActionResult> GetByEmail(string email)
+		{
+			var craftsman = await _craftsManService.GetCraftsManByEmailAsync(email);
+			return Ok(craftsman);
+		}
+
 		[HttpPost]
 		public async Task<IActionResult> CreateCraftsMan([FromBody] CreateCraftsManDto dto)
 		{

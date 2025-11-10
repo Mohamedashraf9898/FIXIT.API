@@ -8,12 +8,12 @@ namespace FIXIT.BLL.DTOs.ServiceRequestDTOs
 {
     public class UpdateServiceRequestDto
     {
-        public int ServiceRequestId  { get; set; }
-        public string ServiceName { get; set; }
-        public string ClientName { get; set; }
-        public string CraftsManName { get; set; }
-        public int ReviewRatingValue { get; set; }
-        public string ReviewComment { get; set; }
-        public string Status { get; set; }
+        public string? Description { get; set; }
+        public string? Location { get; set; }
+        public string? ServiceRequestImage { get; set; }
+
+        public string Status { get; set; }        // Use Enum string or actual Enum
+        public decimal? TotalAmount { get; set; } // Nullable, only updated if client/offer accepts
+
     }
 }

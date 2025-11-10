@@ -1,5 +1,6 @@
 ﻿using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.DAL;
+using FIXIT.DAL.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -29,13 +30,22 @@ namespace FIXIT.BLL.Repositories.Repo
 
         public  async Task<List<T>> GetAllAsync()
         {
-            return await _dbContext.Set<T>().AsNoTracking().ToListAsync();
+			if (typeof(T) == typeof(CraftsMan))
+			{
+				var craftsmen = await _dbContext.CraftsMan
+					.Where(e => e.IsVerified == true)
+					.AsNoTracking()
+					.ToListAsync();
+
+				return craftsmen.Cast<T>().ToList();
+			}
+			return await _dbContext.Set<T>().AsNoTracking().ToListAsync();
 
         }
 
         public async Task<T> GetAsync(int id)
         {
-            return await _dbContext.Set<T>().FindAsync(id);
+			return await _dbContext.Set<T>().FindAsync(id);
         }
 
         public async Task AddAsync(T t)

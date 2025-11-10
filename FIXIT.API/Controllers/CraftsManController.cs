@@ -43,14 +43,19 @@ namespace FIXIT.API.Controllers
 			var craftsmen = await _craftsManService.GetCraftsMenByNameAsync(fName, lName);
 			return Ok(craftsmen);
 		}
-
+		[HttpGet("GetByLocation")]
+		public async Task<IActionResult> GetByLocation(string location, string servicename)
+		{
+			var craftsmen = await _craftsManService.GetCraftsMenByLocationandServiceAsync(location, servicename);
+			return Ok(craftsmen);
+		}
 		[HttpPost]
-		public IActionResult CreateCraftsMan([FromBody] CreateCraftsManDto dto)
+		public async Task<IActionResult> CreateCraftsMan([FromBody] CreateCraftsManDto dto)
 		{
 			if (dto == null)
 				return BadRequest();
 
-			 _craftsManService.CreateCraftsManAsync(dto);
+			await _craftsManService.CreateCraftsManAsync(dto);
 			return CreatedAtAction(nameof(GetAllCraftsMen), null);
 		}
 
@@ -73,5 +78,6 @@ namespace FIXIT.API.Controllers
 			 _craftsManService.DeleteCraftsMan(id);
 			return NoContent();
 		}
+
 	}
 }

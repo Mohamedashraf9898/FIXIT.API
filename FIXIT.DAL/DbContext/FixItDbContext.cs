@@ -28,6 +28,9 @@ namespace FIXIT.DAL
         public DbSet<CraftsMan> CraftsMan { get; set; }
         public DbSet<Service> Services { get; set; }
         public DbSet<ServicesRequest> ServicesRequests { get; set; }
+        public DbSet<Offer> Offers { get; set; }
+        public DbSet<Wallet> Wallets { get; set; }
+        public DbSet<WalletTransaction> WalletTransactions { get; set; }
 
     }
 }

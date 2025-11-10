@@ -1,6 +1,8 @@
 
 using System.Threading.Tasks;
 using FIXIT.BLL;
+using FIXIT.API.Erorrs;
+using FIXIT.API.Midelwaers;
 using FIXIT.BLL.Mapping;
 using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.BLL.Repositories.Repo;
@@ -10,6 +12,8 @@ using FIXIT.BLL.Services.IService;
 using FIXIT.BLL.Services.Service;
 using FIXIT.DAL;
 using FIXIT.DAL.Models;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CraftsManService = FIXIT.BLL.Services.Service.CraftsManService;
 
@@ -23,7 +27,28 @@ namespace FIXIT.API
 
             // Add services to the container.
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
+            {
+                options.SuppressModelStateInvalidFilter = false;
+                options.InvalidModelStateResponseFactory = (context) =>
+                {
+                    var errors = context.ModelState
+                    .Where(e => e.Value!.Errors.Count > 0)
+                    .Select(P => new ApiValidationErorrResponse.ValditonErorr()
+                    {
+                        Field = P.Key,
+                        Erorrs = P.Value!.Errors.Select(E => E.ErrorMessage)
+
+                    });
+
+                    return new BadRequestObjectResult(new ApiValidationErorrResponse()
+                    {
+                        Errors = errors
+
+                    });
+                };
+
+            }); 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -46,7 +71,10 @@ namespace FIXIT.API
             //SertviceRequest
             builder.Services.AddScoped<IServiceRequestRepository, ServiceRequestRepository>();
             builder.Services.AddScoped<IServiceRequestService, ServiceRequestService>();
-            #endregion
+            //offer
+            builder.Services.AddScoped<IOfferRepository, OfferRepository>();
+            builder.Services.AddScoped<IOfferService, OfferService>();
+
             //review
             builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
             builder.Services.AddScoped<IReviewService, ReviewService>();
@@ -54,8 +82,14 @@ namespace FIXIT.API
             builder.Services.AddScoped<IServiceService, ServiceServices>();
 
 
+            //wallet
+            builder.Services.AddScoped<IWalletService, WalletService>();
+            builder.Services.AddScoped<IWalletRepository, WalletRepository>();
+            builder.Services.AddScoped<IWalletTransactionRepository, WalletTransactionRepository>();
+            #endregion
 
             var app = builder.Build();
+
             var scope = app.Services.CreateScope();
             var services = scope.ServiceProvider;
             var context = services.GetRequiredService<FixItDbContext>();
@@ -69,6 +103,8 @@ namespace FIXIT.API
                 logger.LogError(ex, "An error occurred while migrating the database.");
             }
 
+            app.UseMiddleware<ExceptionHandlerMiddlewares>();
+
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
@@ -77,7 +113,7 @@ namespace FIXIT.API
             }
 
             app.UseHttpsRedirection();
-
+            app.UseAuthentication();
             app.UseAuthorization();
 
 

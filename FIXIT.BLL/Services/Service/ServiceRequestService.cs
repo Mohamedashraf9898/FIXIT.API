@@ -1,13 +1,17 @@
 ﻿using AutoMapper;
 using FIXIT.BLL.DTOs.CraftsmanDTOs;
+using FIXIT.BLL.DTOs.OfferDto;
 using FIXIT.BLL.DTOs.ServiceRequestDTOs;
+using FIXIT.BLL.DTOs.WalletTransactionDTOs;
 using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.BLL.Repositories.Repo;
 using FIXIT.BLL.Services.IService;
 using FIXIT.DAL;
 using FIXIT.DAL.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,111 +20,218 @@ namespace FIXIT.BLL.Services.Service
 {
     public class ServiceRequestService : IServiceRequestService
     {
-        private readonly IGenericRepository<ServicesRequest> _genericRepository;
+        private readonly IServiceRequestRepository _serviceRequestRepository;
+        private readonly ICraftsManRepo _craftsmanRepository;
+        private readonly IGenericRepository<Client> _clientRepository;
+        private readonly IOfferRepository _offerRepository;
+        private readonly IWalletRepository _walletRepo;
+        private readonly IWalletTransactionRepository _transactionRepo;
         private readonly IMapper _mapper;
 
-        public ServiceRequestService(IGenericRepository<ServicesRequest> genericRepository, IMapper mapper)
+
+        public ServiceRequestService(
+            IServiceRequestRepository serviceRequestRepository,
+            ICraftsManRepo craftsmanRepository,
+            IWalletRepository walletRepo,
+            IWalletTransactionRepository transactionRepo,
+            IMapper mapper,
+            IGenericRepository<Client> clientRepository,
+            IOfferRepository offerRepository)
         {
-           _genericRepository = genericRepository;
+            _serviceRequestRepository = serviceRequestRepository;
+            _craftsmanRepository = craftsmanRepository;
+            _walletRepo = walletRepo;
+            _transactionRepo = transactionRepo;
             _mapper = mapper;
+            _clientRepository = clientRepository;
+            _offerRepository = offerRepository;
         }
-        public async Task<bool> CreateServiceRequestAsync(CreateServiceRequestDto ServiceRequestDto)
+        public async Task<bool> CreateServiceRequestAsync(CreateServiceRequestDto dto)
         {
-            if(ServiceRequestDto == null)
-                throw new ArgumentNullException(nameof(ServiceRequestDto),"Service Request Data Can not be null");
-           var serviceRequest = _mapper.Map<ServicesRequest>(ServiceRequestDto);
-            await _genericRepository.AddAsync(serviceRequest);
-            _genericRepository.Save();
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            var serviceRequest = _mapper.Map<ServicesRequest>(dto);
+
+            await EnsureServiceRequestLocationAsync(serviceRequest);
+
+            await _serviceRequestRepository.AddAsync(serviceRequest);
+            if (serviceRequest.ClientId <= 0 || serviceRequest.ServiceId <= 0)
+                throw new ValidationException("ClientId or ServiceId is invalid.");
+
+            if (string.IsNullOrEmpty(serviceRequest.Description))
+                throw new ValidationException("Description cannot be empty.");
+
+            if (serviceRequest.ServiceAt <= DateTime.UtcNow)
+                throw new ValidationException("ServiceAt must be in the future.");
+            _serviceRequestRepository.Save();
+
             return true;
         }
 
         public async Task<bool> DeleteServiceRequest(int id)
         {
-            
-                var serviceRequest = await _genericRepository.GetAsync(id);
-                if (serviceRequest == null)
-                {
-                    return false;
-                }
-                _genericRepository.Delete(id);
-                _genericRepository.Save();
-                return true;
+            if (id <= 0) throw new ArgumentException("Invalid Service Request ID");
+
+            var serviceRequest = await _serviceRequestRepository.GetAsync(id);
+            if (serviceRequest == null)
+                throw new KeyNotFoundException($"Service Request with ID {id} not found");
+
+            ValidateServiceRequestTime(serviceRequest);
+
+            _serviceRequestRepository.Delete(id);
+            _serviceRequestRepository.Save();
+
+            return true;
         }
 
         public async Task<IEnumerable<ReadServiceRequestDto>> GetAllServiceRequestAsync()
         {
-            var serviceRequests = await _genericRepository.GetAllAsync();
-            var result = _mapper.Map<IEnumerable<ReadServiceRequestDto>>(serviceRequests);
-            return result;
+            var serviceRequests = await _serviceRequestRepository.GetAllAsync();
+            return _mapper.Map<IEnumerable<ReadServiceRequestDto>>(serviceRequests);
         }
-        // Validate for .client and .service
+
         public async Task<ReadServiceRequestDto> GetServiceRequestByIdAsync(int id)
         {
-            if(id <= 0)
-                throw new ArgumentException("Invalid ID");
-            var serviceRequest = await _genericRepository.GetAsync(id);
-            if (serviceRequest is null)
+            if (id <= 0) throw new ArgumentException("Invalid ID");
+
+            var serviceRequest = await _serviceRequestRepository.GetAsync(id);
+            if (serviceRequest == null)
                 throw new KeyNotFoundException($"Service Request With ID::{id} not found");
+
             return _mapper.Map<ReadServiceRequestDto>(serviceRequest);
         }
 
-        public async Task<bool> UpdateServiceRequest(int id, UpdateServiceRequestDto ServiceRequestDto)
+        public async Task<bool> UpdateServiceRequest(int id, UpdateServiceRequestDto dto)
         {
-            var existing = await _genericRepository.GetAsync(id);
-            if(existing == null)
-            {
-                return false;
-            }
-            var updatedServiceRequest = _mapper.Map< ServicesRequest>(ServiceRequestDto);
-            var result = _genericRepository.Update(updatedServiceRequest, id);
-            if(result)
-            {
-                _genericRepository.Save();
-                return true;
-            }
-            return false;
-        }
-        public async Task<IEnumerable<ReadServiceRequestDto>> GetAllServiceRequestForCraftsMan(string craftsManName)
-        {
-            if (string.IsNullOrWhiteSpace(craftsManName))
-                throw new ArgumentException("Craftsman name cannot be empty.", nameof(craftsManName));
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
 
-            var serviceRequests = await _genericRepository.GetAllAsync();
+            var existing = await _serviceRequestRepository.GetAsync(id);
+            if (existing == null)
+                throw new KeyNotFoundException($"Service Request with ID {id} not found");
+
+            ValidateServiceRequestTime(existing);
+
+            _mapper.Map(dto, existing);
+            await EnsureServiceRequestLocationAsync(existing);
+
+            var updated = _serviceRequestRepository.Update(existing, id);
+            if (updated) _serviceRequestRepository.Save();
+
+            return updated;
+        }
+        public async Task<IEnumerable<ReadServiceRequestDto>> GetAllServiceRequestsForCraftsManById(int craftsManId)
+        {
+            if (craftsManId <= 0)
+                throw new ArgumentException("Craftsman ID must be greater than zero.", nameof(craftsManId));
+
+            var serviceRequests = await _serviceRequestRepository.GetAllAsync();
 
             var existed = serviceRequests
-                .Where(cm =>(cm.CraftsMan.FName+ " " +cm.CraftsMan.LName)
-                .Contains(craftsManName, StringComparison.OrdinalIgnoreCase))
+                .Where(sr => sr.CraftsManId == craftsManId)
                 .ToList();
 
-            if (!existed.Any())
-                throw new KeyNotFoundException($"No service requests found for craftsman name: {craftsManName}");
-            var result = _mapper.Map<IEnumerable<ReadServiceRequestDto>>(existed);
-
-            return result;
-        }
-
-        public async Task<IEnumerable<ReadServiceRequestDto>> GetAllServiceRequestForClient(string clientName)
-        {
-            if (string.IsNullOrWhiteSpace(clientName))
-                throw new ArgumentException("Client name cannot be empty.", nameof(clientName));
-
-            // Get all service requests from repository (including relations)
-            var serviceRequests = await _genericRepository.GetAllAsync();
-
-            
-            var existed = serviceRequests
-                .Where(cl => (cl.Client.FName + " " + cl.Client.LName)
-                .Contains(clientName, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            // If no matches found, return empty list
             if (!existed.Any())
                 return Enumerable.Empty<ReadServiceRequestDto>();
 
-            // Map to DTO
-            var result = _mapper.Map<IEnumerable<ReadServiceRequestDto>>(existed);
-            return result;
+            return _mapper.Map<IEnumerable<ReadServiceRequestDto>>(existed);
         }
+
+        public async Task<IEnumerable<ReadServiceRequestDto>> GetAllServiceRequestsForClientById(int clientId)
+        {
+            if (clientId <= 0)
+                throw new ArgumentException("Client ID must be greater than zero.", nameof(clientId));
+
+            var serviceRequests = await _serviceRequestRepository.GetAllAsync();
+
+            var existed = serviceRequests
+                .Where(sr => sr.ClientId == clientId)
+                .ToList();
+
+            if (!existed.Any())
+                return Enumerable.Empty<ReadServiceRequestDto>();
+
+            return _mapper.Map<IEnumerable<ReadServiceRequestDto>>(existed);
+        }
+
+        #region Helper Methods
+
+        private void ValidateServiceRequestTime(ServicesRequest serviceRequest)
+        {
+            var nowUtc = DateTime.UtcNow;
+            var requestedUtc = serviceRequest.ServiceAt.ToUniversalTime();
+
+            var remainingTime = requestedUtc - nowUtc;
+
+            if (remainingTime.TotalHours <= 1)
+                throw new InvalidOperationException("Cannot modify the service request less than one hour before or after the scheduled time.");
+        }
+
+        private async Task EnsureServiceRequestLocationAsync(ServicesRequest serviceRequest)
+        {
+            if (string.IsNullOrEmpty(serviceRequest.Location))
+            {
+                var client = await _clientRepository.GetAsync(serviceRequest.ClientId);
+                if (client != null)
+                    serviceRequest.Location = client.Location;
+            }
+        }
+
+        public Task<bool> CompleteServiceRequestAsync(int requestId)
+        {
+            throw new NotImplementedException();
+        }
+        #endregion
+        #region ForPaymentService
+        //osama added a payment method
+        //public async Task<bool> CompleteServiceRequestAsync(int serviceRequestId)
+        //{
+        //    var serviceRequest = await _serviceRequestRepository.GetAsync(serviceRequestId);
+        //    if (serviceRequest == null)
+        //        throw new KeyNotFoundException("Service request not found.");
+
+        //    if (serviceRequest.Status == ServiceRequestStatus.Completed)
+        //        throw new InvalidOperationException("This service request is already completed.");
+
+        //    if (serviceRequest.TotalAmount <= 0)
+        //        throw new InvalidOperationException("Invalid service amount.");
+
+        //    serviceRequest.Status = ServiceRequestStatus.Completed;
+
+        //    decimal commissionRate = 0.25m;
+        //    decimal netAmount = serviceRequest.TotalAmount * (1 - commissionRate);
+
+        //    var wallet = await _walletRepo.GetWalletByCraftsManIdAsync(serviceRequest.CraftsManId);
+        //    if (wallet == null)
+        //        throw new Exception("Wallet not found for this craftsman.");
+
+        //    wallet.Balance += netAmount;
+
+        //    var transactionDto = new CreateWalletTransactionDto
+        //    {
+        //        WalletId = wallet.Id,
+        //        ServiceRequestId = serviceRequest.ServicesRequestId,
+        //        Amount = netAmount,
+
+        //        CreatedAt = DateTime.Now
+        //    };
+
+        //    var transaction = _mapper.Map<WalletTransaction>(transactionDto);
+        //    await _transactionRepo.AddAsync(transaction);
+
+
+        //    _walletRepo.Save();
+        //    _transactionRepo.Save();
+        //    _serviceRequestRepository.Save();
+
+        //    return true;
+        //}
+
+
+        #endregion
 
     }
 }
+  
+

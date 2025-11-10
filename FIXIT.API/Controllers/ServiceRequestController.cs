@@ -1,4 +1,5 @@
-﻿using FIXIT.BLL.DTOs.ServiceRequestDTOs;
+﻿using FIXIT.BLL.DTOs.OfferDto;
+using FIXIT.BLL.DTOs.ServiceRequestDTOs;
 using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.BLL.Services.IService;
 using Microsoft.AspNetCore.Http;
@@ -61,62 +62,111 @@ namespace FIXIT.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteServiceRequest(int id)
         {
-           
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
             {
                 var result = await _serviceRequestService.DeleteServiceRequest(id);
+
                 if (!result)
                     return NotFound($"Service request with ID {id} not found.");
+
                 return Ok("Service request deleted successfully.");
             }
-            else
-                return BadRequest(ModelState);
+            catch (InvalidOperationException ex) 
+            {
+                return BadRequest(new { message = ex.Message }); 
+            }
+            catch (KeyNotFoundException ex) 
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (ArgumentException ex) 
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal server error", details = ex.Message });
+            }
         }
+
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateServiceRequest(int id, UpdateServiceRequestDto serviceRequestDto)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
             {
                 var result = await _serviceRequestService.UpdateServiceRequest(id, serviceRequestDto);
+
                 if (!result)
                     return NotFound($"Service request with ID {id} not found.");
+
                 return Ok("Service request updated successfully.");
             }
-            else
-                return BadRequest(ModelState); 
-        }
-        [HttpGet("Craftsman/{craftsManName}")]
-        public async Task<IActionResult> GetAllServiceRequestForCraftsMan(string craftsManName)
-        {
-            if (ModelState.IsValid)
+            catch (InvalidOperationException ex) 
             {
-                var result = await _serviceRequestService.GetAllServiceRequestForCraftsMan(craftsManName);
+                return BadRequest(new { message = ex.Message }); 
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal server error", details = ex.Message });
+            }
+        }
 
-                if (result == null || !result.Any())
-                    return NotFound($"No service requests found for craftsman '{craftsManName}'.");
+
+        [HttpGet("Craftsman/ById/{craftsManId}")]
+        public async Task<IActionResult> GetAllServiceRequestsForCraftsManById(int craftsManId)
+        {
+            try
+            {
+                var result = await _serviceRequestService.GetAllServiceRequestsForCraftsManById(craftsManId);
+
+                if (!result.Any())
+                    return NotFound($"No service requests found for craftsman ID {craftsManId}.");
 
                 return Ok(result);
             }
-            else
-                return BadRequest(ModelState);
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
-
-        [HttpGet("Client/{clientName}")]
-        public async Task<IActionResult> GetAllServiceRequestForClient(string clientName)
+        [HttpGet("Client/ById/{clientId}")]
+        public async Task<IActionResult> GetAllServiceRequestsForClientById(int clientId)
         {
-            if (ModelState.IsValid)
+            try
             {
-                var result = await _serviceRequestService.GetAllServiceRequestForClient(clientName);
+                var result = await _serviceRequestService.GetAllServiceRequestsForClientById(clientId);
 
-                if (result == null || !result.Any())
-                    return NotFound($"No service requests found for client '{clientName}'.");
+                if (!result.Any())
+                    return NotFound($"No service requests found for client ID {clientId}.");
 
                 return Ok(result);
             }
-            else
-                return BadRequest(ModelState);
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
+
+        #region ForPaymentService
+        [HttpPost("complete/{requestId}")]
+        public async Task<IActionResult> CompleteServiceRequest(int requestId)
+        {
+
+            var result = await _serviceRequestService.CompleteServiceRequestAsync(requestId);
+            if (!result)
+                return BadRequest("Failed to complete service request or process transaction.");
+
+            return Ok($"Service request #{requestId} completed successfully and craftsman's wallet updated.");
+        } 
+        #endregion
     }
 }
+

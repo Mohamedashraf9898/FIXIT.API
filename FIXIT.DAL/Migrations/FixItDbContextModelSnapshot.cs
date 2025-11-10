@@ -18,6 +18,9 @@ namespace FIXIT.DAL.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "8.0.21")
+                .HasAnnotation("Proxies:ChangeTracking", false)
+                .HasAnnotation("Proxies:CheckEquality", false)
+                .HasAnnotation("Proxies:LazyLoading", true)
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -49,6 +52,9 @@ namespace FIXIT.DAL.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProfileImage")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("TotalRequests")
@@ -105,6 +111,7 @@ namespace FIXIT.DAL.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ProfileImage")
+                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
@@ -194,7 +201,108 @@ namespace FIXIT.DAL.Migrations
                     b.ToTable("Services");
                 });
 
-            modelBuilder.Entity("FIXIT.DAL.Models.ServicesRequest", b =>
+            modelBuilder.Entity("FIXIT.DAL.Models.Wallet", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Balance")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(10,2)")
+                        .HasDefaultValue(0m);
+
+                    b.Property<int>("CraftsManId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("LastUpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CraftsManId")
+                        .IsUnique();
+
+                    b.ToTable("Wallets");
+                });
+
+            modelBuilder.Entity("FIXIT.DAL.Models.WalletTransaction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<int?>("ServiceRequestId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("WalletId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ServiceRequestId")
+                        .IsUnique()
+                        .HasFilter("[ServiceRequestId] IS NOT NULL");
+
+                    b.HasIndex("WalletId");
+
+                    b.ToTable("WalletTransactions");
+                });
+
+            modelBuilder.Entity("Offer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<int>("CraftsmanId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ServiceRequestId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal?>("SuggestedPrice")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CraftsmanId");
+
+                    b.HasIndex("ServiceRequestId");
+
+                    b.ToTable("Offers");
+                });
+
+            modelBuilder.Entity("ServicesRequest", b =>
                 {
                     b.Property<int>("ServicesRequestId")
                         .ValueGeneratedOnAdd()
@@ -205,24 +313,43 @@ namespace FIXIT.DAL.Migrations
                     b.Property<int>("ClientId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("CompletedAt")
+                    b.Property<DateTime?>("CompletedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("CraftsManId")
+                    b.Property<int?>("CraftsManId")
                         .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Location")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("RequestAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETDATE()");
 
+                    b.Property<DateTime>("ServiceAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("ServiceId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Status")
+                    b.Property<string>("ServiceRequestImage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
+                        .HasColumnType("nvarchar(max)")
+                        .HasDefaultValue("Pending");
+
+                    b.Property<decimal?>("SuggestedPrice")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<decimal?>("TotalAmount")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("ServicesRequestId");
 
@@ -268,7 +395,7 @@ namespace FIXIT.DAL.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("FIXIT.DAL.Models.ServicesRequest", "ServicesRequest")
+                    b.HasOne("ServicesRequest", "ServicesRequest")
                         .WithOne("Review")
                         .HasForeignKey("FIXIT.DAL.Models.Review", "ServicesRequestId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -280,7 +407,55 @@ namespace FIXIT.DAL.Migrations
                     b.Navigation("ServicesRequest");
                 });
 
-            modelBuilder.Entity("FIXIT.DAL.Models.ServicesRequest", b =>
+            modelBuilder.Entity("FIXIT.DAL.Models.Wallet", b =>
+                {
+                    b.HasOne("FIXIT.DAL.Models.CraftsMan", "CraftsMan")
+                        .WithOne("Wallet")
+                        .HasForeignKey("FIXIT.DAL.Models.Wallet", "CraftsManId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CraftsMan");
+                });
+
+            modelBuilder.Entity("FIXIT.DAL.Models.WalletTransaction", b =>
+                {
+                    b.HasOne("ServicesRequest", "ServicesRequest")
+                        .WithOne("WalletTransaction")
+                        .HasForeignKey("FIXIT.DAL.Models.WalletTransaction", "ServiceRequestId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("FIXIT.DAL.Models.Wallet", "Wallet")
+                        .WithMany("WalletTransactions")
+                        .HasForeignKey("WalletId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ServicesRequest");
+
+                    b.Navigation("Wallet");
+                });
+
+            modelBuilder.Entity("Offer", b =>
+                {
+                    b.HasOne("FIXIT.DAL.Models.CraftsMan", "Craftsman")
+                        .WithMany()
+                        .HasForeignKey("CraftsmanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ServicesRequest", "ServiceRequest")
+                        .WithMany("Offers")
+                        .HasForeignKey("ServiceRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Craftsman");
+
+                    b.Navigation("ServiceRequest");
+                });
+
+            modelBuilder.Entity("ServicesRequest", b =>
                 {
                     b.HasOne("FIXIT.DAL.Models.Client", "Client")
                         .WithMany("ServicesRequest")
@@ -321,6 +496,8 @@ namespace FIXIT.DAL.Migrations
                     b.Navigation("Reviews");
 
                     b.Navigation("ServicesRequests");
+
+                    b.Navigation("Wallet");
                 });
 
             modelBuilder.Entity("FIXIT.DAL.Models.Service", b =>
@@ -330,9 +507,18 @@ namespace FIXIT.DAL.Migrations
                     b.Navigation("ServicesRequests");
                 });
 
-            modelBuilder.Entity("FIXIT.DAL.Models.ServicesRequest", b =>
+            modelBuilder.Entity("FIXIT.DAL.Models.Wallet", b =>
                 {
+                    b.Navigation("WalletTransactions");
+                });
+
+            modelBuilder.Entity("ServicesRequest", b =>
+                {
+                    b.Navigation("Offers");
+
                     b.Navigation("Review");
+
+                    b.Navigation("WalletTransaction");
                 });
 #pragma warning restore 612, 618
         }

@@ -27,6 +27,7 @@ namespace FIXIT.DAL.Configuration
                    .HasForeignKey(r => r.ClientId)
                    .IsRequired()
                    .OnDelete(DeleteBehavior.Restrict);
+
         }
     }
 }

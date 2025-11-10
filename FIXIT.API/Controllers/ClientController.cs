@@ -1,11 +1,12 @@
-﻿using System.Threading.Tasks;
-using FIXIT.BLL.DTOs.ClientDTOs;
+﻿using FIXIT.BLL.DTOs.ClientDTOs;
 using FIXIT.BLL.DTOs.CraftsmanDTOs;
 using FIXIT.BLL.Services;
 using FIXIT.BLL.Services.Intrfaces;
+using FIXIT.BLL.Services.Service;
 using FIXIT.DAL.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace FIXIT.API.Controllers
 {
@@ -22,59 +23,32 @@ namespace FIXIT.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-
             var clients=await ics.GetAllClientsAsync();
             return Ok(clients);
-
         }
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-
-            var client =await ics.GetClientsByIdAsync(id);
-            if(client == null) {return NotFound();}
-            return Ok(client);
-        }
+			var client = await ics.GetClientsByIdAsync(id);
+			return Ok(client);
+		}
         [HttpPost]
-        public IActionResult Add(CreateClientDTO createClientDTO)
+        public async Task<IActionResult> Add(CreateClientDTO createClientDTO)
         {
-
-           
-            if (createClientDTO is null)
-            {
-                return BadRequest();
-            }
-            ics.CreateClientAsync(createClientDTO);
+            await ics.CreateClientAsync(createClientDTO);
             return Created();
         }
-        [HttpPut]
-       
-        public ActionResult Update(int id, UpdateClientDTO clientdto)
+		[HttpPut("{id:int}")]
+		public ActionResult Update(int id, UpdateClientDTO clientdto)
         {
-            if (clientdto.Id==id)
-            {
-              if(ics.UpdateClient(id, clientdto))
-               return NoContent();
-            }
-            return NotFound();
+            ics.UpdateClient(id, clientdto);
+            return NoContent();
         }
 
-
-
-
-
-
-
-
-
-        [HttpDelete]
-        [Route("{id}")]
-        public IActionResult DeleteCraftsMan(int id)
+		[HttpDelete("{id:int}")]
+		public IActionResult Delete(int id)
         {
-            
-
             ics.DeleteClient(id);
-
             return NoContent();
         }
     }

@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
+using FIXIT.API.Erorrs.Exceptions;
 using FIXIT.BLL.DTOs.ClientDTOs;
-using FIXIT.BLL.DTOs.CraftsmanDTOs;
-using FIXIT.BLL.Repositories;
+using FIXIT.BLL.Exceptions;
 using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.BLL.Services.Intrfaces;
 using FIXIT.DAL.Models;
@@ -26,47 +21,55 @@ namespace FIXIT.BLL.Services.Service
 
         public async Task CreateClientAsync(CreateClientDTO client)
         {
-        await  repo.AddAsync(mapper.Map<Client>(client));
-            repo.Save();
+			if(client == null)
+			throw new ValidationException("Client data cannot be null");
 
-            //throw new NotImplementedException();
-        }
+			await repo.AddAsync(mapper.Map<Client>(client));
+			repo.Save();
+		}
 
         public void DeleteClient(int id)
         {
-            repo.Delete(id);
-            repo.Save();
-            //throw new NotImplementedException();
-        }
+			var client = repo.GetAsync(id).Result;
+			if (client == null)
+				throw new NotFoundException(nameof(Client), id);
+
+			repo.Delete(id);
+			repo.Save();
+		}
 
         public async Task<IEnumerable<GetAllClientsDTO>> GetAllClientsAsync()
         {
-            var clients = await repo.GetAllAsync();
-            var result = mapper.Map<List<GetAllClientsDTO>>(clients);
-            return result;
-            //  throw new NotImplementedException();
-        }
+			var clients = await repo.GetAllAsync();
+			if (clients == null || !clients.Any())
+				throw new NotFoundException(nameof(Client), "No Clients Found");
+
+			return mapper.Map<List<GetAllClientsDTO>>(clients);
+
+		}
 
         public async Task<GetAllClientsDTO> GetClientsByIdAsync(int id)
         {
             var client= await repo.GetAsync(id);
             if (client == null)
-                return null;
+                throw new NotFoundException(nameof(Client), id);
+            
             return mapper.Map<GetAllClientsDTO>(client);
 
-            // throw new NotImplementedException();
+         
         }
 
         public bool UpdateClient(int id, UpdateClientDTO ClientDto)
         {
-           if( repo.Update(mapper.Map<Client>(ClientDto),id))
-            {
-                repo.Save();
-                return true;
-            
-            }
-           else
-               return false;
-        }
+			if (id != ClientDto.Id)
+				throw new ValidationException("Id mismatch between route and body.");
+
+			var updated = repo.Update(mapper.Map<Client>(ClientDto), id);
+			if (!updated)
+				throw new NotFoundException(nameof(Client), id);
+
+			repo.Save();
+			return true;
+		}
     }
 }

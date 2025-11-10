@@ -14,9 +14,16 @@ namespace FIXIT.DAL.Configuration
         public void Configure(EntityTypeBuilder<ServicesRequest> builder)
         {
             builder.ToTable("ServicesRequests");
+            builder.HasKey(sr => sr.ServicesRequestId);
+            builder.Property(sr => sr.ServicesRequestId)
+                   .ValueGeneratedOnAdd();
 
-           
+            builder.Property(sr => sr.ServiceRequestImage).IsRequired(false);
+            builder.Property(sr => sr.Location).IsRequired(false);
+            builder.Property(sr => sr.CraftsManId)
+                   .IsRequired(false);
             builder.Property(sr => sr.Status)
+                   .HasConversion<string>()
                    .HasDefaultValue(ServiceRequestStatus.Pending);
 
             builder.Property(sr => sr.RequestAt)

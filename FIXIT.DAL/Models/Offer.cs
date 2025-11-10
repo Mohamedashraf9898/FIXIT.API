@@ -20,6 +20,8 @@ public class Offer
 
     public int CraftsmanId { get; set; }
     public virtual CraftsMan Craftsman { get; set; }
+    [Column(TypeName = "decimal(10,2)")]
+    public decimal? SuggestedPrice { get; set; }
 
     [Column(TypeName = "decimal(10,2)")]
     public decimal Amount { get; set; }

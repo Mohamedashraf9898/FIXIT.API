@@ -1,6 +1,9 @@
 ﻿using AutoMapper;
 using FIXIT.BLL.DTOs.ClientDTOs;
 using FIXIT.BLL.DTOs.CraftsmanDTOs;
+using FIXIT.BLL.DTOs.ReviewDTOs;
+using FIXIT.BLL.DTOs.ServiceRequestDTOs;
+using FIXIT.BLL.DTOs.ServicsDTOs;
 using FIXIT.BLL.DTOs.OfferDto;
 using FIXIT.BLL.DTOs.ReviewDTOs;
 using FIXIT.BLL.DTOs.ServiceRequestDTOs;
@@ -33,6 +36,13 @@ namespace FIXIT.BLL.Mapping
             CreateMap<Client,GetAllClientsDTO>().ReverseMap();
 			CreateMap<Client, CreateClientDTO>().ReverseMap();
 			CreateMap<Client, UpdateClientDTO>().ReverseMap();
+
+            //Service Mapping 
+            CreateMap<Service, GetAllServicesDTO>().ReverseMap();
+            CreateMap<Service, CreateServiceDto>().ReverseMap();
+            CreateMap<Service, UpdateServiceDto>().ReverseMap();
+            CreateMap<Service, ServiceDto>().ReverseMap();
+    
             // ============================
             // Review Mapping
             // ============================

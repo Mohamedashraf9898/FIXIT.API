@@ -31,9 +31,6 @@ namespace FIXIT.API.Controllers
 		public async Task<IActionResult> GetCraftsManById(int id)
 		{
 			var craftsMan = await _craftsManService.GetCraftsManByIdAsync(id);
-			if (craftsMan == null)
-				return NotFound();
-
 			return Ok(craftsMan);
 		}
 
@@ -43,39 +40,32 @@ namespace FIXIT.API.Controllers
 			var craftsmen = await _craftsManService.GetCraftsMenByNameAsync(fName, lName);
 			return Ok(craftsmen);
 		}
+
 		[HttpGet("GetByLocation")]
 		public async Task<IActionResult> GetByLocation(string location, string servicename)
 		{
 			var craftsmen = await _craftsManService.GetCraftsMenByLocationandServiceAsync(location, servicename);
 			return Ok(craftsmen);
 		}
+
 		[HttpPost]
 		public async Task<IActionResult> CreateCraftsMan([FromBody] CreateCraftsManDto dto)
 		{
-			if (dto == null)
-				return BadRequest();
-
 			await _craftsManService.CreateCraftsManAsync(dto);
-			return CreatedAtAction(nameof(GetAllCraftsMen), null);
+			return StatusCode(StatusCodes.Status201Created);
 		}
 
 		[HttpPut("{id:int}")]
-		public  IActionResult UpdateCraftsMan(int id, [FromBody] UpdateCraftsManDto dto)
+		public IActionResult UpdateCraftsMan(int id, [FromBody] UpdateCraftsManDto dto)
 		{
-			if (dto == null || dto.Id != id)
-				return BadRequest();
-
-			bool updated =  _craftsManService.UpdateCraftsMan(id, dto);
-			if (!updated)
-				return NotFound();
-
+			_craftsManService.UpdateCraftsMan(id, dto);
 			return NoContent();
 		}
 
 		[HttpDelete("{id:int}")]
 		public IActionResult DeleteCraftsMan(int id)
 		{
-			 _craftsManService.DeleteCraftsMan(id);
+			_craftsManService.DeleteCraftsMan(id);
 			return NoContent();
 		}
 

@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
+using FIXIT.API.Erorrs.Exceptions;
 using FIXIT.BLL.DTOs.CraftsmanDTOs;
 using FIXIT.BLL.DTOs.ServicsDTOs;
+using FIXIT.BLL.Exceptions;
 using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.BLL.Services.Intrfaces;
 using FIXIT.BLL.Services.IService;
@@ -25,56 +27,66 @@ namespace FIXIT.BLL
             this.mapper = mapper;
         }
 
-        //FIXIT.DAL.Models.Service
-        public async Task CreateServiceAsync(CreateServiceDto service)
-        {
-            await repo.AddAsync(mapper.Map<DAL.Models.Service>(service));
-            repo.Save();
-        }
+		//FIXIT.DAL.Models.Service
+		public async Task CreateServiceAsync(CreateServiceDto service)
+		{
+			if (service == null)
+				throw new ValidationException("Service data cannot be null.");
 
-        public async Task<IEnumerable<GetAllServicesDTO>> GetAllServicesAsync()
-        {
-            var services = await repo.GetAllAsync();
-            var result = mapper.Map<List<GetAllServicesDTO>>(services);
-            return result;
-        }
-        public async Task<ServiceDto> GetServiceByNameAsync(string name)
-        {
-            var ServiceNames = await repo.GetAllAsync();
-            var ServiceName = ServiceNames.FirstOrDefault
-                                            (s => string.Equals(s.ServiceName, name, StringComparison.OrdinalIgnoreCase));
-            if (ServiceName == null)
-                return new ServiceDto { Message = "هذه الخدمة غير متاحة حاليًا." };
+			await repo.AddAsync(mapper.Map<Service>(service));
+			repo.Save();
+		}
 
-            return mapper.Map<ServiceDto>(ServiceName);
-        }
-        public async Task<ServiceDto> GetServiceByIdAsync(int id)
-        {
-            var service = await repo.GetAsync(id);
-            if (service == null)
-                return new ServiceDto { Message = "هذه الخدمة غير متاحة حاليًا." };
+		public async Task<IEnumerable<GetAllServicesDTO>> GetAllServicesAsync()
+		{
+			var services = await repo.GetAllAsync();
+			if (services == null || !services.Any())
+				throw new NotFoundException(nameof(Service), "No services found.");
 
-            return mapper.Map<ServiceDto>(service);
-        }
-        public void DeleteService(int id)
-        {
-            repo.Delete(id);
-            repo.Save();
-        }
+			return mapper.Map<List<GetAllServicesDTO>>(services);
+		}
 
-        public bool UpdateService(int id, UpdateServiceDto UpdatedService)
-        {
-            if (repo.Update(mapper.Map<Service>(UpdatedService), id))
-            {
-                repo.Save();
-                return true;
+		public async Task<ServiceDto> GetServiceByNameAsync(string name)
+		{
+			var services = await repo.GetAllAsync();
+			var service = services.FirstOrDefault(s => string.Equals(s.ServiceName, name, System.StringComparison.OrdinalIgnoreCase));
 
-            }
-            else
-                return false;
-        }
-       
+			if (service == null)
+				throw new NotFoundException(nameof(Service), name);
 
+			return mapper.Map<ServiceDto>(service);
+		}
 
-    }
+		public async Task<ServiceDto> GetServiceByIdAsync(int id)
+		{
+			var service = await repo.GetAsync(id);
+			if (service == null)
+				throw new NotFoundException(nameof(Service), id);
+
+			return mapper.Map<ServiceDto>(service);
+		}
+
+		public void DeleteService(int id)
+		{
+			var service = repo.GetAsync(id).Result;
+			if (service == null)
+				throw new NotFoundException(nameof(Service), id);
+
+			repo.Delete(id);
+			repo.Save();
+		}
+
+		public bool UpdateService(int id, UpdateServiceDto updatedService)
+		{
+			if (id != updatedService.ServiceId)
+				throw new ValidationException("ID mismatch between route and body.");
+
+			var updated = repo.Update(mapper.Map<Service>(updatedService), id);
+			if (!updated)
+				throw new NotFoundException(nameof(Service), id);
+
+			repo.Save();
+			return true;
+		}
+	}
 }

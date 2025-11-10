@@ -1,5 +1,6 @@
 ﻿using FIXIT.BLL.DTOs.ServicsDTOs;
 using FIXIT.BLL.Services.IService;
+using FIXIT.DAL.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,94 +10,46 @@ namespace FIXIT.API.Controllers
     [ApiController]
     public class ServiceController : ControllerBase
     {
-        private readonly IServiceService _Service;
+        private readonly IServiceService _service;
 
         public ServiceController(IServiceService serviceService)
         {
-            _Service = serviceService;
+            _service = serviceService;
         }
-        [HttpGet]
-        public async Task<IActionResult> GetAllService()
-        {
-            var services = await _Service.GetAllServicesAsync();
-            return Ok(services);
-        }
+		[HttpGet]
+		public async Task<IActionResult> GetAllServices()
+		{
+			var services = await _service.GetAllServicesAsync();
+			return Ok(services);
+		}
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetServiceById(int id)
-        {
-            var service = await _Service.GetServiceByIdAsync(id);
-            if (service == null)
-                return NotFound();
+		[HttpGet("{id}")]
+		public async Task<IActionResult> GetServiceById(int id)
+		{
+			var service = await _service.GetServiceByIdAsync(id);
+			return Ok(service);
+		}
 
-            return Ok(service);
-        }
-        //ADD
-        [HttpPost("AddService")]
-        public async Task<IActionResult> AddService([FromBody] CreateServiceDto createdService)
-        {
-            if (createdService == null)
-                return BadRequest("Service data is required");
+		[HttpPost]
+		public async Task<IActionResult> AddService([FromBody] CreateServiceDto serviceDto)
+		{
+			await _service.CreateServiceAsync(serviceDto);
+			return StatusCode(StatusCodes.Status201Created);
+		}
 
-            await _Service.CreateServiceAsync(createdService);
-            return Ok("Service created successfully");
-        }
+		[HttpPut("{id}")]
+		public IActionResult UpdateService(int id, [FromBody] UpdateServiceDto serviceDto)
+		{
+			_service.UpdateService(id, serviceDto);
+			return NoContent();
+		}
 
+		[HttpDelete("{id}")]
+		public IActionResult DeleteService(int id)
+		{
+			_service.DeleteService(id);
+			return NoContent();
+		}
 
-
-        //[HttpGet("GetCraftsmenByServiceNearby")]
-        //public async Task<IActionResult> GetCraftsmenByServiceNearby(int serviceId, string clientAddress)
-        //{
-        //    if (serviceId <= 0)
-        //        return BadRequest("Invalid service ID");
-
-        //    if (string.IsNullOrWhiteSpace(clientAddress))
-        //        return BadRequest("Client address is required");
-
-        //    try
-        //    {
-        //        var craftsmen = await server_server.GetCraftsmenByServiceNearbyAsync(serviceId, clientAddress);
-
-        //        if (craftsmen == null || !craftsmen.Any())
-        //            return NotFound("No craftsmen found nearby for this service.");
-
-        //        return Ok(craftsmen);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, $"Internal server error: {ex.Message}");
-        //    }
-        //}
-
-
-        [HttpPut("{id}")]
-        public IActionResult UpdateService(int id, UpdateServiceDto updatedService)
-        {
-            if (id != updatedService.ServiceId)
-            {
-                return BadRequest("ID in URL does not match ID in the request body.");
-            }
-
-            var success = _Service.UpdateService(id, updatedService);
-
-            if (success)
-            {
-                return NoContent(); 
-            }
-            else
-            {
-                return NotFound($"Service with ID {id} not found."); 
-            }
-        }
-
-
-
-        [HttpDelete("{id}")]
-        public IActionResult DeleteService(int id)
-        {
-            _Service.DeleteService(id);
-            return NoContent();
-        }
-
-    }
+	}
 }

@@ -16,97 +16,49 @@ namespace FIXIT.API.Controllers
             _reviewService = reviewService;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAllReviews()
-        {
-            var reviews = await _reviewService.GetAllReviewsAsync();
-            return Ok(reviews);
-        }
+		[HttpGet]
+		public async Task<IActionResult> GetAllReviews()
+		{
+			var reviews = await _reviewService.GetAllReviewsAsync();
+			return Ok(reviews);
+		}
 
-        [HttpPost]
-        public async Task<IActionResult> CreateReview(CreateReviewDTO reviewDto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+		[HttpPost]
+		public async Task<IActionResult> CreateReview(CreateReviewDTO reviewDto)
+		{
+			var createdReview = await _reviewService.CreateReviewAsync(reviewDto);
+			return StatusCode(StatusCodes.Status201Created, createdReview);
+		}
 
-            try
-            {
-                var createdReview = await _reviewService.CreateReviewAsync(reviewDto);
-                return Ok(createdReview);
-            }
-            catch (Exception ex)
-            {
-                
-                return BadRequest(ex.Message);
-            }
-        }
+		[HttpPut("{id}")]
+		public async Task<IActionResult> UpdateReview(int id, UpdateReviewDTO reviewDto)
+		{
+			var updatedReview = await _reviewService.UpdateReviewAsync(id, reviewDto);
+			return Ok(updatedReview);
+		}
 
-        
+		[HttpDelete("{id}")]
+		public async Task<IActionResult> DeleteReview(int id)
+		{
+			await _reviewService.DeleteReviewAsync(id);
+			return NoContent();
+		}
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateReview(int id, UpdateReviewDTO reviewDto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+		[HttpGet("{id}")]
+		public async Task<IActionResult> GetReviewById(int id)
+		{
+			var review = await _reviewService.GetReviewByIdAsync(id);
+			return Ok(review);
+		}
 
-            try
-            {
-                var updatedReview = await _reviewService.UpdateReviewAsync(id, reviewDto);
-                return Ok(updatedReview);
-            }
-            catch (Exception ex)
-            {
-                return NotFound(ex.Message);
-            }
-        }
-
-       
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteReview(int id)
-        {
-            try
-            {
-                await _reviewService.DeleteReviewAsync(id);
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return NotFound(ex.Message);
-            }
-        }
+		[HttpGet("craftsman/{craftsmanId}")]
+		public async Task<IActionResult> GetReviewsForCraftsman(int craftsmanId)
+		{
+			var reviews = await _reviewService.GetReviewsForCraftsmanAsync(craftsmanId);
+			return Ok(reviews);
+		}
 
 
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetReviewById(int id)
-        {
-            try
-            {
-                var review = await _reviewService.GetReviewByIdAsync(id);
-                return Ok(review);
-            }
-            catch (Exception ex)
-            {
-                return NotFound(ex.Message); // Returns a 404 if not found
-            }
-        }
-
-        // --- ADD THIS "GET BY CRAFTSMAN" ENDPOINT ---
-
-        // GET /api/Reviews/craftsman/12 (where 12 is the craftsman's id)
-        [HttpGet("craftsman/{craftsmanId}")]
-        public async Task<IActionResult> GetReviewsForCraftsman(int craftsmanId)
-        {
-            // This will return the list of reviews, or an empty list []
-            var reviews = await _reviewService.GetReviewsForCraftsmanAsync(craftsmanId);
-            return Ok(reviews);
-        }
-
-
-
-    }
+	}
 }

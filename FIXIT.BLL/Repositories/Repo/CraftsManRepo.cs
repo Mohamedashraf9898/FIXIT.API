@@ -1,4 +1,5 @@
-﻿using FIXIT.BLL.DTOs.CraftsmanDTOs;
+﻿using FIXIT.API.Erorrs.Exceptions;
+using FIXIT.BLL.DTOs.CraftsmanDTOs;
 using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.DAL;
 using FIXIT.DAL.Models;
@@ -54,10 +55,7 @@ namespace FIXIT.BLL.Repositories.Repo
 		public async Task<CraftsMan> GetCraftsManByEmailAsync(string normalizedEmail)
 		{
 			//var query = await _dbContext.FindAsync<string>(normalizedEmail);
-			return await _dbContext.CraftsMan.FirstOrDefaultAsync(c=> c.NormalizedEmail== normalizedEmail);
-
-
-			
+			return await _dbContext.CraftsMan.FirstOrDefaultAsync(c=> c.NormalizedEmail == normalizedEmail) ?? throw new NotFoundException("",normalizedEmail);	
 		}
 	}
 }

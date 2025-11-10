@@ -17,7 +17,6 @@ namespace FIXIT.BLL.Repositories.Repo
         {
             _dbContext = dbContext;
         }
-
         public async Task<bool> DoesReviewExistForRequestAsync(int serviceRequestId)
         {
             return await _dbContext.Set<Review>()
@@ -26,7 +25,6 @@ namespace FIXIT.BLL.Repositories.Repo
 
         public async Task<IEnumerable<Review>> GetReviewsForCraftsmanAsync(int craftsmanId)
         {
-
             return await _dbContext.Set<Review>()
                 .AsNoTracking()
                 .Where(r => r.CraftsManId == craftsmanId)

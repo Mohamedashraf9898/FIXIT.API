@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FIXIT.DAL.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace FIXIT.BLL.DTOs.ClientDTOs
 {

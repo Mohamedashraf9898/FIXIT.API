@@ -1,7 +1,10 @@
-
-using System.Threading.Tasks;
+using AutoMapper;
 using FIXIT.API.Erorrs;
 using FIXIT.API.Midelwaers;
+using FIXIT.BLL.DTOs.ClientDTOs;
+using FIXIT.BLL.DTOs.CraftsmanDTOs;
+using FIXIT.BLL.Helper.PictureUrlResolver;
+using FIXIT.BLL.Helper.UploadHandler;
 using FIXIT.BLL.Mapping;
 using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.BLL.Repositories.Repo;
@@ -13,6 +16,7 @@ using FIXIT.DAL.Models;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 using CraftsManService = FIXIT.BLL.Services.Service.CraftsManService;
 
 namespace FIXIT.API
@@ -76,7 +80,19 @@ namespace FIXIT.API
             builder.Services.AddScoped<IWalletService, WalletService>();
             builder.Services.AddScoped<IWalletRepository, WalletRepository>();
             builder.Services.AddScoped<IWalletTransactionRepository, WalletTransactionRepository>();
-            //
+            //fileHandler
+            builder.Services.AddScoped<UploadHandler>(sp =>
+            {
+                var env = sp.GetRequiredService<IWebHostEnvironment>();
+                return new UploadHandler(env.WebRootPath);
+            });
+            builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
+            builder.Services.AddScoped<PictureUrlResolver<CraftsMan, CraftsManDto>>();
+            builder.Services.AddScoped<PictureUrlResolver<Client, GetAllClientsDTO>>();
+
+
+
+
 
             #endregion
 
@@ -103,10 +119,11 @@ namespace FIXIT.API
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-
+            app.UseStaticFiles();
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
+            
 
 
             app.MapControllers();

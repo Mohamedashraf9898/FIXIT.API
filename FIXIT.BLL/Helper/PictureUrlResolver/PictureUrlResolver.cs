@@ -18,10 +18,11 @@ namespace FIXIT.BLL.Helper.PictureUrlResolver
             _config = config;
         }
 
+
         public string Resolve(TSource source, TDestination destination, string destMember, ResolutionContext context)
         {
             
-            var prop = typeof(TSource).GetProperty("PictureUrl");
+            var prop = typeof(TSource).GetProperty("ProfileImage");
             if (prop != null)
             {
                 var value = prop.GetValue(source)?.ToString();

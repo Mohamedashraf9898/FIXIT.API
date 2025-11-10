@@ -6,6 +6,7 @@ using FIXIT.BLL.DTOs.ReviewDTOs;
 using FIXIT.BLL.DTOs.ServiceRequestDTOs;
 using FIXIT.BLL.DTOs.WalletDTos;
 using FIXIT.BLL.DTOs.WalletTransactionDTOs;
+using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.DAL.Models;
 using System;
 using System.Collections.Generic;
@@ -52,7 +53,8 @@ namespace FIXIT.BLL.Mapping
                 .ForMember(dest => dest.CompletedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.WalletTransaction, opt => opt.Ignore())
                 .ForMember(dest => dest.Offers, opt => opt.Ignore())
-                .ForMember(dest => dest.Review, opt => opt.Ignore());
+                .ForMember(dest => dest.Review, opt => opt.Ignore())
+                .ForMember(dest => dest.CraftsManId, opt => opt.Ignore());
 
             // ServicesRequest -> ReadServiceRequestDto
             CreateMap<ServicesRequest, ReadServiceRequestDto>()
@@ -63,7 +65,13 @@ namespace FIXIT.BLL.Mapping
                 .ForMember(dest => dest.ServiceName, opt => opt.MapFrom(src =>src.Service != null ? src.Service.ServiceName : null))
                 .ForMember(dest => dest.ReviewRatingValue, opt => opt.MapFrom(src =>src.Review != null ? src.Review.RatingValue : (int?)null))
                 .ForMember(dest => dest.ReviewComment, opt => opt.MapFrom(src =>src.Review != null ? src.Review.Comment : null))
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src =>src.Status.ToString()));
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src =>src.Status.ToString()))
+                .ForMember(dest => dest.Location, opt => opt.MapFrom(src =>
+                           src.Location != null && src.Location != ""
+                               ? src.Location
+                               : src.Client != null
+                                   ? src.Client.Location
+                                   : null ));
 
             // UpdateServiceRequestDto -> ServicesRequest
             CreateMap<UpdateServiceRequestDto, ServicesRequest>()
@@ -88,14 +96,24 @@ namespace FIXIT.BLL.Mapping
             CreateMap<CraftsmanRejectDto, Offer>();
 
             // ClientSelectCraftsmanDto -> ServicesRequest
-            CreateMap<ClientSelectCraftsmanDto, ServicesRequest>()
-                .ForMember(dest => dest.CraftsManId, opt => opt.MapFrom(src => src.CraftsmanId))
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => ServiceRequestStatus.InProgress));
-
+            //CreateMap<ClientSelectCraftsmanDto, ServicesRequest>()
+            //    .ForMember(dest => dest.CraftsManId, opt => opt.MapFrom(src => src.CraftsmanId))
+            //    .ForMember(dest => dest.Status, opt => opt.MapFrom(src => ServiceRequestStatus.InProgress));
+            CreateMap<ClientSelectCraftsmanDto, Offer>()
+    .ForMember(dest => dest.CraftsmanId, opt => opt.MapFrom(src => src.CraftsmanId))
+    .ForMember(dest => dest.ServiceRequestId, opt => opt.MapFrom(src => src.ServiceRequestId))
+    .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => 0)) // الحرفي بعد كده يحدد السعر
+    .ForMember(dest => dest.Status, opt => opt.MapFrom(src => OfferStatus.Pending))
+    .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
+    .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
+    .ForMember(dest => dest.SuggestedPrice, opt => opt.Ignore());
             // CraftsManNewOfferDto ↔ Offer
             CreateMap<CraftsManNewOfferDto, Offer>()
-                .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.NewAmount))
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => OfferStatus.Pending));
+     .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.NewAmount))
+     .ForMember(dest => dest.Status, opt => opt.MapFrom(src => OfferStatus.Pending))
+     .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
+     .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
+     .ForMember(dest => dest.SuggestedPrice, opt => opt.MapFrom(src => src.SuggestedPrice));
             // ============================
             //wallet
             // ============================

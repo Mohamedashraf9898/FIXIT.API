@@ -33,7 +33,8 @@ namespace FIXIT.BLL.Services.Service
 
             // تحديث ServiceRequest
             request.CraftsManId = dto.CraftsmanId;
-            request.Status = ServiceRequestStatus.InProgress;
+            request.Status = ServiceRequestStatus.WaitingForCraftsmanResponse;
+
             _serviceRequestRepository.Update(request, request.ServicesRequestId);
             _serviceRequestRepository.Save();
 
@@ -65,20 +66,20 @@ namespace FIXIT.BLL.Services.Service
             var request = await _serviceRequestRepository.GetAsync(offer.ServiceRequestId);
             if (request == null)
                 throw new KeyNotFoundException("Service request not found");
-
             switch (dto.Decision)
             {
                 case ClientDecision.Accept:
                     offer.Status = OfferStatus.AcceptedByClient;
-                    request.TotalAmount = offer.Amount; // تحديث حسب الـ Offer الحالي
-                    request.Status = ServiceRequestStatus.InProgress;
+                    request.TotalAmount = offer.Amount;
+                    request.Status = ServiceRequestStatus.WaitingForClientPayment;
                     break;
 
                 case ClientDecision.Reject:
                     offer.Status = OfferStatus.RejectedByClient;
-                    request.Status = ServiceRequestStatus.Pending;
+                    request.Status = ServiceRequestStatus.RejectedByClient;
                     break;
             }
+
 
             _offerRepository.Update(offer, offer.Id);
             _serviceRequestRepository.Update(request, request.ServicesRequestId);
@@ -114,12 +115,12 @@ namespace FIXIT.BLL.Services.Service
 
             offer.Status = OfferStatus.AcceptedByCraftsman;
 
-            // تحديث ServiceRequest لو متاح
+
             var request = await _serviceRequestRepository.GetAsync(dto.ServiceRequestId);
             if (request != null)
             {
-                request.TotalAmount = offer.Amount; // لو Craftsman وافق على السعر النهائي
-                request.Status = ServiceRequestStatus.InProgress;
+                request.TotalAmount = offer.Amount;
+                request.Status = ServiceRequestStatus.WaitingForClientPayment;
                 _serviceRequestRepository.Update(request, request.ServicesRequestId);
             }
 
@@ -153,20 +154,20 @@ namespace FIXIT.BLL.Services.Service
                 throw new KeyNotFoundException("Offer not found");
 
             offer.Status = OfferStatus.RejectedByCraftsman;
-
-            // تحديث حالة الطلب
-            var request = await _serviceRequestRepository.GetAsync(dto.ServiceRequestId);
-            if (request != null)
-            {
-                request.Status = ServiceRequestStatus.Pending;
-                _serviceRequestRepository.Update(request, request.ServicesRequestId);
-            }
-
+            offer.UpdatedAt = DateTime.UtcNow;
             _offerRepository.Update(offer, offer.Id);
 
             _offerRepository.Save();
             if (request != null) _serviceRequestRepository.Save();
 
+            var request = await _serviceRequestRepository.GetAsync(dto.ServiceRequestId);
+            if (request == null)
+                throw new KeyNotFoundException("Service request not found");
+
+            // عدل حالة الـ service request
+            request.Status = ServiceRequestStatus.RejectedByCraftsman;
+            _serviceRequestRepository.Update(request, request.ServicesRequestId);
+            _serviceRequestRepository.Save();
             return true;
         }
 
@@ -188,25 +189,7 @@ namespace FIXIT.BLL.Services.Service
             if (!request.SuggestedPrice.HasValue)
                 throw new InvalidOperationException("SuggestedPrice is null!");
 
-            // لو Craftsman وافق على الـ SuggestedPrice
-            if (dto.NewAmount == request.SuggestedPrice.Value)
-            {
-                currentOffer.Amount = request.SuggestedPrice.Value;
-                currentOffer.Status = OfferStatus.AcceptedByCraftsman;
-
-                request.TotalAmount = request.SuggestedPrice.Value;
-                request.Status = ServiceRequestStatus.InProgress;
-            }
-            else // لو Craftsman عمل تعديل على السعر مختلف عن SuggestedPrice
-            {
-                currentOffer.Amount = dto.NewAmount;
-                currentOffer.Status = OfferStatus.NewOfferFromCraftsman;
-
-                request.Status = ServiceRequestStatus.Pending;
-            }
-
-            // تحديث كل شيء مرة واحدة
-            _offerRepository.Update(currentOffer, currentOffer.Id);
+            request.Status = ServiceRequestStatus.WaitingForClientDecision;
             _serviceRequestRepository.Update(request, request.ServicesRequestId);
 
             _offerRepository.Save();

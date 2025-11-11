@@ -7,8 +7,10 @@ using FIXIT.BLL.Repositories.Repo;
 using FIXIT.BLL.Services.Intrfaces;
 using FIXIT.BLL.Services.IService;
 using FIXIT.BLL.Services.IService.IAuth;
+using FIXIT.BLL.Services.IService.Payment;
 using FIXIT.BLL.Services.Service;
 using FIXIT.BLL.Services.Service.Auth;
+using FIXIT.BLL.Services.Service.Payment;
 using FIXIT.DAL;
 using FIXIT.DAL.DbContexts.FixitIdentityDbContext;
 using FIXIT.DAL.Models.Identity;
@@ -65,6 +67,17 @@ namespace FIXIT.API
             });
 
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("FixItPolicy",
+                    builder =>
+                    {
+                        builder.AllowAnyOrigin()
+                               .AllowAnyMethod()
+                               .AllowAnyHeader();
+                    });
+            });
+
             #region injection
 
             builder.Services.AddAutoMapper(op => op.AddProfile<MappingProfile>()); // Mapping Registration
@@ -73,6 +86,7 @@ namespace FIXIT.API
             builder.Services.AddScoped<ICraftsManRepo, CraftsManRepo>();
             builder.Services.AddScoped<ICraftsManService, CraftsManService>();
             //client
+            builder.Services.AddScoped<IClientRepo, ClientRepo>();
             builder.Services.AddScoped<IClientService, ClientService>();
             //SertviceRequest
             builder.Services.AddScoped<IServiceRequestRepository, ServiceRequestRepository>();
@@ -84,6 +98,8 @@ namespace FIXIT.API
             builder.Services.AddScoped<IWalletService, WalletService>();
             builder.Services.AddScoped<IWalletRepository, WalletRepository>();
             builder.Services.AddScoped<IWalletTransactionRepository, WalletTransactionRepository>();
+            //payment
+            builder.Services.AddScoped<IPaymentService, PaymentService>();
             #endregion
 
             builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
@@ -158,7 +174,7 @@ namespace FIXIT.API
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-
+            app.UseCors("FixItPolicy");
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();

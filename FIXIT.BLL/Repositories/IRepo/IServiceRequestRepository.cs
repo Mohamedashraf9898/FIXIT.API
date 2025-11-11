@@ -10,5 +10,6 @@ namespace FIXIT.BLL.Repositories.IRepo
 {
     public interface IServiceRequestRepository  : IGenericRepository<ServicesRequest> 
     {
+        public Task<ServicesRequest> GetByIntentId(string paymentIntentId);
     }
 }

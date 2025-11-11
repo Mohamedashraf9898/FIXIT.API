@@ -1,11 +1,6 @@
 ﻿using FIXIT.BLL.DTOs.CraftsmanDTOs;
-using FIXIT.BLL.Repositories;
-using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.BLL.Services.Intrfaces;
-using FIXIT.DAL.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 
 namespace FIXIT.API.Controllers
 {

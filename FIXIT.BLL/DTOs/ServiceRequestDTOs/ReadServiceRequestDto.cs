@@ -23,5 +23,6 @@ namespace FIXIT.BLL.DTOs.ServiceRequestDTOs
         public DateTime? CompletedAt { get; set; }
         public string Status { get; set; }
         public decimal TotalAmount { get; set; }
+      
     }
 }

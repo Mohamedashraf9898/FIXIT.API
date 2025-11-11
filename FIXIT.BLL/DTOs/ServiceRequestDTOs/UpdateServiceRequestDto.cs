@@ -8,11 +8,13 @@ namespace FIXIT.BLL.DTOs.ServiceRequestDTOs
 {
     public class UpdateServiceRequestDto
     {
+        
         public int ServiceId { get; set; }
         public int ClientId { get; set; }
         public int CraftsManId { get; set; }
         public string? ServiceRequestImage { get; set; }
         public string Status { get; set; }
         public decimal TotalAmount { get; set; }
+      
     }
 }

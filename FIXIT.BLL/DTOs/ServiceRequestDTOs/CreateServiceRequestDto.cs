@@ -16,6 +16,9 @@ namespace FIXIT.BLL.DTOs.ServiceRequestDTOs
         public string? Location { get; set; }
         public DateTime RequestAt { get; set; } = DateTime.Now;
         public DateTime ServiceAt { get; set; }
-        public string Status { get; set;}
+        public decimal TotalAmount { get; set; }
+        public string Status { get; set; }
+
+       
     }
 }

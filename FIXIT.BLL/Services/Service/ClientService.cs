@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using FIXIT.API.Erorrs.Exceptions;
 using FIXIT.BLL.DTOs.ClientDTOs;
+using FIXIT.BLL.DTOs.CraftsmanDTOs;
 using FIXIT.BLL.Repositories.IRepo;
+using FIXIT.BLL.Repositories.Repo;
 using FIXIT.BLL.Services.Intrfaces;
 using FIXIT.DAL.Models;
 
@@ -9,10 +11,10 @@ namespace FIXIT.BLL.Services.Service
 {
     public class ClientService: IClientService
     {
-        private readonly IGenericRepository<Client> repo;
+        private readonly IClientRepo repo;
         private readonly IMapper mapper;
 
-        public ClientService(IGenericRepository<Client> repo,IMapper mapper)
+        public ClientService(IClientRepo repo,IMapper mapper)
         {
             this.repo = repo;
             this.mapper = mapper;
@@ -63,5 +65,15 @@ namespace FIXIT.BLL.Services.Service
            else
                return false;
         }
+
+        public async Task<GetAllClientsDTO> GetClientByEmail(string Email)
+        {
+            var normalizedEmail = Email.ToUpper();
+            var Client = await repo.GetClientByEmailAsync(normalizedEmail);
+            return mapper.Map<GetAllClientsDTO>(Client);
+        }
+
+
+
     }
 }

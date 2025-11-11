@@ -12,6 +12,7 @@ namespace FIXIT.BLL.Services.Intrfaces
     {
         Task<IEnumerable<GetAllClientsDTO>> GetAllClientsAsync();
         Task<GetAllClientsDTO> GetClientsByIdAsync(int id);
+        Task<GetAllClientsDTO> GetClientByEmail(string Email);
         Task CreateClientAsync(CreateClientDTO client);
         bool UpdateClient(int id, UpdateClientDTO ClientDto);
         void DeleteClient(int id);

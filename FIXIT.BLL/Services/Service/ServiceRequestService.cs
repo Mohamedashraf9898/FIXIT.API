@@ -3,16 +3,11 @@ using FIXIT.BLL.DTOs.CraftsmanDTOs;
 using FIXIT.BLL.DTOs.ServiceRequestDTOs;
 using FIXIT.BLL.DTOs.WalletTransactionDTOs;
 using FIXIT.BLL.Repositories.IRepo;
-using FIXIT.BLL.Repositories.Repo;
 using FIXIT.BLL.Services.IService;
-using FIXIT.DAL;
+using FIXIT.BLL.Services.IService.Payment;
+using FIXIT.BLL.Services.Service.Payment;
 using FIXIT.DAL.Models;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace FIXIT.BLL.Services.Service
 {
@@ -21,6 +16,7 @@ namespace FIXIT.BLL.Services.Service
         private readonly IServiceRequestRepository _serviceRequestRepository;
         private readonly ICraftsManRepo _craftsmanRepository;
         private readonly IGenericRepository<Client> _clientRepository;
+        private readonly IPaymentService paymentService;
         private readonly IWalletRepository _walletRepo;
         private readonly IWalletTransactionRepository _transactionRepo;
         private readonly IMapper _mapper;
@@ -31,7 +27,9 @@ namespace FIXIT.BLL.Services.Service
             IWalletRepository walletRepo,
             IWalletTransactionRepository transactionRepo,
             IMapper mapper,
-            IGenericRepository<Client> clientRepository)
+            IGenericRepository<Client> clientRepository,
+            IPaymentService paymentService
+            )
         {
             _serviceRequestRepository = serviceRequestRepository;
             _craftsmanRepository = craftsmanRepository;
@@ -39,13 +37,20 @@ namespace FIXIT.BLL.Services.Service
             _transactionRepo = transactionRepo;
             _mapper = mapper;
             _clientRepository = clientRepository;
+            this.paymentService = paymentService;
         }
         public async Task<bool> CreateServiceRequestAsync(CreateServiceRequestDto ServiceRequestDto)
         {
             if (ServiceRequestDto == null)
                 throw new ArgumentNullException(nameof(ServiceRequestDto), "Service Request Data Can not be null");
             var serviceRequest = _mapper.Map<ServicesRequest>(ServiceRequestDto);
-
+            var isExist = await _serviceRequestRepository.GetByIntentId(serviceRequest.PaymentIntentId!);
+            if (isExist is not null)
+            {
+                _serviceRequestRepository.Delete(isExist.ServicesRequestId);
+              await paymentService.CreateOrUpdatePaymentIntent(serviceRequest.ServicesRequestId);
+            }
+            
             await EnsureServiceRequestLocationAsync(serviceRequest);
             await _serviceRequestRepository.AddAsync(serviceRequest);
             _serviceRequestRepository.Save();

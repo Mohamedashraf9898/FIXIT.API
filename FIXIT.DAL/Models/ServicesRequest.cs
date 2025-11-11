@@ -4,9 +4,16 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace FIXIT.DAL.Models
 {
     public enum ServiceRequestStatus
-    {   Pending,
+    {
+        Pending,
+        WaitingForCraftsmanResponse,
+        WaitingForClientDecision,
+        WaitingForClientPayment,
+        RejectedByCraftsman,
+        RejectedByClient,
         InProgress,
         Completed,
+        Approved,
         Cancelled
     }
     public class ServicesRequest
@@ -36,5 +43,11 @@ namespace FIXIT.DAL.Models
         [Column(TypeName = "decimal(10,2)")]
         public decimal TotalAmount { get; set; }
         public virtual WalletTransaction WalletTransaction { get; set; }
+
+        public string? PaymentIntentId { get; set; }
+        public string? ClientSecret { get; set; }
+        
+
+    
     }
 }

@@ -1,10 +1,5 @@
-﻿using System.Threading.Tasks;
-using FIXIT.BLL.DTOs.ClientDTOs;
-using FIXIT.BLL.DTOs.CraftsmanDTOs;
-using FIXIT.BLL.Services;
+﻿using FIXIT.BLL.DTOs.ClientDTOs;
 using FIXIT.BLL.Services.Intrfaces;
-using FIXIT.DAL.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FIXIT.API.Controllers
@@ -60,6 +55,12 @@ namespace FIXIT.API.Controllers
         {
             ics.DeleteClient(id);
             return NoContent();
+        }
+        [HttpGet("GetByEmail")]
+        public async Task<IActionResult> GetByEmail(string email)
+        {
+            var Client = await ics.GetClientByEmail(email);
+            return Ok(Client);
         }
     }
 }

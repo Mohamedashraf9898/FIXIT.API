@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using FIXIT.API.Erorrs.Exceptions;
 using FIXIT.BLL.DTOs.ClientDTOs;
-using FIXIT.BLL.DTOs.CraftsmanDTOs;
 using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.BLL.Repositories.Repo;
 using FIXIT.BLL.Services.Intrfaces;
@@ -22,26 +21,32 @@ namespace FIXIT.BLL.Services.Service
 
         public async Task CreateClientAsync(CreateClientDTO client)
         {
-        await  repo.AddAsync(mapper.Map<Client>(client));
-            repo.Save();
-          
-            //throw new NotImplementedException();
-        }
+			if(client == null)
+			throw new ValidationException("Client data cannot be null");
+
+			await repo.AddAsync(mapper.Map<Client>(client));
+			repo.Save();
+		}
 
         public void DeleteClient(int id)
         {
-            repo.Delete(id);
-            repo.Save();
-            //throw new NotImplementedException();
-        }
+			var client = repo.GetAsync(id).Result;
+			if (client == null)
+				throw new NotFoundException(nameof(Client), id);
+
+			repo.Delete(id);
+			repo.Save();
+		}
 
         public async Task<IEnumerable<GetAllClientsDTO>> GetAllClientsAsync()
         {
-            var clients = await repo.GetAllAsync();
-            var result = mapper.Map<List<GetAllClientsDTO>>(clients);
-            return result;
-            //  throw new NotImplementedException();
-        }
+			var clients = await repo.GetAllAsync();
+			if (clients == null || !clients.Any())
+				throw new NotFoundException(nameof(Client), "No Clients Found");
+
+			return mapper.Map<List<GetAllClientsDTO>>(clients);
+
+		}
 
         public async Task<GetAllClientsDTO> GetClientsByIdAsync(int id)
         {
@@ -51,7 +56,7 @@ namespace FIXIT.BLL.Services.Service
             
             return mapper.Map<GetAllClientsDTO>(client);
 
-            // throw new NotImplementedException();
+         
         }
 
         public bool UpdateClient(int id, UpdateClientDTO ClientDto)
@@ -65,15 +70,5 @@ namespace FIXIT.BLL.Services.Service
            else
                return false;
         }
-
-        public async Task<GetAllClientsDTO> GetClientByEmail(string Email)
-        {
-            var normalizedEmail = Email.ToUpper();
-            var Client = await repo.GetClientByEmailAsync(normalizedEmail);
-            return mapper.Map<GetAllClientsDTO>(Client);
-        }
-
-
-
     }
 }

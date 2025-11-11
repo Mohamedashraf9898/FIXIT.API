@@ -12,9 +12,15 @@ namespace FIXIT.BLL.DTOs.ServiceRequestDTOs
         public int ServiceId { get; set; }
         public int ClientId { get; set; }
         public int CraftsManId { get; set; }
+        public string? Description { get; set; }
+        public string? Location { get; set; }
         public string? ServiceRequestImage { get; set; }
         public string Status { get; set; }
         public decimal TotalAmount { get; set; }
       
+
+        public string Status { get; set; }        // Use Enum string or actual Enum
+        public decimal? TotalAmount { get; set; } // Nullable, only updated if client/offer accepts
+
     }
 }

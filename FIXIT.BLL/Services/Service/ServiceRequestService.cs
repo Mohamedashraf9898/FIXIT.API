@@ -11,6 +11,7 @@ using FIXIT.DAL.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -55,6 +56,14 @@ namespace FIXIT.BLL.Services.Service
             await EnsureServiceRequestLocationAsync(serviceRequest);
 
             await _serviceRequestRepository.AddAsync(serviceRequest);
+            if (serviceRequest.ClientId <= 0 || serviceRequest.ServiceId <= 0)
+                throw new ValidationException("ClientId or ServiceId is invalid.");
+
+            if (string.IsNullOrEmpty(serviceRequest.Description))
+                throw new ValidationException("Description cannot be empty.");
+
+            if (serviceRequest.ServiceAt <= DateTime.UtcNow)
+                throw new ValidationException("ServiceAt must be in the future.");
             _serviceRequestRepository.Save();
 
             return true;
@@ -150,9 +159,13 @@ namespace FIXIT.BLL.Services.Service
 
         private void ValidateServiceRequestTime(ServicesRequest serviceRequest)
         {
-           var remainingTime = serviceRequest.ServiceAt - DateTime.Now;
-               if (remainingTime.TotalHours <= 1 || serviceRequest.ServiceAt <= DateTime.Now)
-                   throw new InvalidOperationException("Cannot modify the service request less than one hour before or after the scheduled time.");
+            var nowUtc = DateTime.UtcNow;
+            var requestedUtc = serviceRequest.ServiceAt.ToUniversalTime();
+
+            var remainingTime = requestedUtc - nowUtc;
+
+            if (remainingTime.TotalHours <= 1)
+                throw new InvalidOperationException("Cannot modify the service request less than one hour before or after the scheduled time.");
         }
 
         private async Task EnsureServiceRequestLocationAsync(ServicesRequest serviceRequest)

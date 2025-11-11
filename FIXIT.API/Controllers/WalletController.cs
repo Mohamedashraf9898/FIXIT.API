@@ -1,6 +1,5 @@
 ﻿using FIXIT.BLL.DTOs.WalletTransactionDTOs;
 using FIXIT.BLL.Services.IService;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FIXIT.API.Controllers
@@ -9,7 +8,6 @@ namespace FIXIT.API.Controllers
     [ApiController]
     public class WalletController : ControllerBase
     {
-
         private readonly IWalletService _walletService;
 
         public WalletController(IWalletService walletService)
@@ -17,28 +15,17 @@ namespace FIXIT.API.Controllers
             _walletService = walletService;
         }
 
-        
         [HttpGet("{craftsManId}")]
         public async Task<IActionResult> GetWallet(int craftsManId)
         {
             var wallet = await _walletService.GetWalletAsync(craftsManId);
-            if (wallet == null)
-                return NotFound($"Wallet not found for craftsman with ID {craftsManId}");
-
             return Ok(wallet);
         }
-
 
         [HttpPost("add")]
         public async Task<IActionResult> AddFunds([FromBody] CreateWalletTransactionDto dto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var result = await _walletService.AddFundsAsync(dto);
-            if (!result)
-                return BadRequest("Could not add funds. Please check craftsman ID or amount.");
-
+            await _walletService.AddFundsAsync(dto);
             return Ok(new
             {
                 message = "Funds added successfully.",
@@ -48,17 +35,10 @@ namespace FIXIT.API.Controllers
             });
         }
 
-       
         [HttpPost("withdraw")]
         public async Task<IActionResult> WithdrawFunds([FromBody] CreateWalletTransactionDto dto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var result = await _walletService.WithdrawFundsAsync(dto);
-            if (!result)
-                return BadRequest("Insufficient balance or invalid craftsman ID.");
-
+            await _walletService.WithdrawFundsAsync(dto);
             return Ok(new
             {
                 message = "Withdrawal successful.",
@@ -68,14 +48,10 @@ namespace FIXIT.API.Controllers
             });
         }
 
-    
         [HttpGet("{craftsManId}/transactions")]
         public async Task<IActionResult> GetTransactions(int craftsManId)
         {
             var transactions = await _walletService.GetWalletTransactionsAsync(craftsManId);
-            if (transactions == null || !transactions.Any())
-                return NotFound("No transactions found for this craftsman.");
-
             return Ok(transactions);
         }
     }

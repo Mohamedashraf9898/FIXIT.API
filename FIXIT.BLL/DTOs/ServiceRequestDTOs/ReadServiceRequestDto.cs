@@ -8,7 +8,7 @@ namespace FIXIT.BLL.DTOs.ServiceRequestDTOs
 {
     public class ReadServiceRequestDto
     {
-        public int ServiceRequestId { get; set; }
+        public int ServicesRequestId { get; set; }
 
         public string? CraftsManName { get; set; } // Optional, might not be assigned yet
         public string ClientName { get; set; }
@@ -26,6 +26,7 @@ namespace FIXIT.BLL.DTOs.ServiceRequestDTOs
         public DateTime? CompletedAt { get; set; }
 
         public string Status { get; set; }
+        public decimal SuggestedPrice { get; set; }
         public decimal TotalAmount { get; set; }
     }
 }

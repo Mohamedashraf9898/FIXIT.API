@@ -19,7 +19,6 @@ namespace FIXIT.API.Midelwaers
             this.logger = logger;
             this.environment = environment;
         }
-
         public async Task InvokeAsync(HttpContext context)
         {
             try
@@ -71,6 +70,7 @@ namespace FIXIT.API.Midelwaers
 
                     default:
                         context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                                        
                         response = environment.IsDevelopment() ?
                      new ApiExceptionResponse((int)HttpStatusCode.InternalServerError, ex.Message, ex.StackTrace!.ToString()) :
                      new ApiExceptionResponse((int)HttpStatusCode.InternalServerError, ex.Message);

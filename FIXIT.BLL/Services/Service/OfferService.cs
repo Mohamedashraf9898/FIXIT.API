@@ -31,13 +31,31 @@ namespace FIXIT.BLL.Services.Service
             if (request == null)
                 throw new KeyNotFoundException("Service request not found.");
 
+            // تحديث ServiceRequest
             request.CraftsManId = dto.CraftsmanId;
             request.Status = ServiceRequestStatus.WaitingForCraftsmanResponse;
 
             _serviceRequestRepository.Update(request, request.ServicesRequestId);
             _serviceRequestRepository.Save();
+
+            // إنشاء Offer تلقائي باستخدام AutoMapper
+            var offerDto = new ClientSelectCraftsmanDto
+            {
+                ServiceRequestId = dto.ServiceRequestId,
+                CraftsmanId = dto.CraftsmanId
+            };
+
+            var offer = _mapper.Map<Offer>(offerDto);
+
+            // نسخ SuggestedPrice من ServiceRequest
+            offer.SuggestedPrice = request.SuggestedPrice;
+
+            await _offerRepository.AddAsync(offer);
+            _offerRepository.Save();
+
             return true;
         }
+
 
         public async Task<bool> ClientRespondToOfferAsync(ClientRespondDto dto)
         {
@@ -64,17 +82,34 @@ namespace FIXIT.BLL.Services.Service
 
 
             _offerRepository.Update(offer, offer.Id);
-            _offerRepository.Save();
             _serviceRequestRepository.Update(request, request.ServicesRequestId);
+
+            // Save مرة واحدة لكل شيء
+            _offerRepository.Save();
             _serviceRequestRepository.Save();
 
             return true;
         }
 
+
+        //public async Task<bool> CraftsmanAcceptRequestAsync(CraftsmanAcceptDto dto)
+        //{
+        //    var offers = await _offerRepository.GetAllAsync();
+        //    var offer = offers.FirstOrDefault(o => o.ServiceRequestId == dto.ServiceRequestId);
+        //    if (offer == null)
+        //        throw new KeyNotFoundException("Offer not found");
+
+        //    offer.Status = OfferStatus.AcceptedByCraftsman;
+        //    _offerRepository.Update(offer, offer.Id);
+        //    _offerRepository.Save();
+
+        //    return true;
+        //}
         public async Task<bool> CraftsmanAcceptRequestAsync(CraftsmanAcceptDto dto)
         {
-            var offers = await _offerRepository.GetAllAsync();
-            var offer = offers.FirstOrDefault(o => o.ServiceRequestId == dto.ServiceRequestId);
+            var offer = (await _offerRepository.GetAllAsync())
+                        .FirstOrDefault(o => o.ServiceRequestId == dto.ServiceRequestId);
+
             if (offer == null)
                 throw new KeyNotFoundException("Offer not found");
 
@@ -90,22 +125,40 @@ namespace FIXIT.BLL.Services.Service
             }
 
             _offerRepository.Update(offer, offer.Id);
+
             _offerRepository.Save();
+            if (request != null) _serviceRequestRepository.Save();
 
             return true;
         }
 
+        //public async Task<bool> CraftsmanRejectRequestAsync(CraftsmanRejectDto dto)
+        //{
+        //    var offers = await _offerRepository.GetAllAsync();
+        //    var offer = offers.FirstOrDefault(o => o.ServiceRequestId == dto.ServiceRequestId);
+        //    if (offer == null)
+        //        throw new KeyNotFoundException("Offer not found");
+
+        //    offer.Status = OfferStatus.RejectedByCraftsman;
+        //    _offerRepository.Update(offer, offer.Id);
+        //    _offerRepository.Save();
+
+        //    return true;
+        //}
         public async Task<bool> CraftsmanRejectRequestAsync(CraftsmanRejectDto dto)
         {
-            var offers = await _offerRepository.GetAllAsync();
-            var offer = offers.FirstOrDefault(o => o.ServiceRequestId == dto.ServiceRequestId);
+            var offer = (await _offerRepository.GetAllAsync())
+                        .FirstOrDefault(o => o.ServiceRequestId == dto.ServiceRequestId);
+
             if (offer == null)
                 throw new KeyNotFoundException("Offer not found");
 
             offer.Status = OfferStatus.RejectedByCraftsman;
             offer.UpdatedAt = DateTime.UtcNow;
             _offerRepository.Update(offer, offer.Id);
+
             _offerRepository.Save();
+            if (request != null) _serviceRequestRepository.Save();
 
             var request = await _serviceRequestRepository.GetAsync(dto.ServiceRequestId);
             if (request == null)
@@ -118,25 +171,34 @@ namespace FIXIT.BLL.Services.Service
             return true;
         }
 
+
         public async Task<bool> CraftsmanNewOfferAsync(CraftsManNewOfferDto dto)
         {
             var request = await _serviceRequestRepository.GetAsync(dto.ServiceRequestId);
             if (request == null)
                 throw new KeyNotFoundException("Service request not found");
 
-            var offer = _mapper.Map<Offer>(dto);
-            offer.ServiceRequestId = dto.ServiceRequestId;
-            offer.Status = OfferStatus.Pending;
+            // جلب الـ Offer الحالي
+            var currentOffer = (await _offerRepository.GetAllAsync())
+                               .FirstOrDefault(o => o.ServiceRequestId == dto.ServiceRequestId);
 
-            await _offerRepository.AddAsync(offer);
-            _offerRepository.Save();
+            if (currentOffer == null)
+                throw new KeyNotFoundException("Offer not found. There must be an existing offer.");
+
+            // تأكد من SuggestedPrice
+            if (!request.SuggestedPrice.HasValue)
+                throw new InvalidOperationException("SuggestedPrice is null!");
 
             request.Status = ServiceRequestStatus.WaitingForClientDecision;
             _serviceRequestRepository.Update(request, request.ServicesRequestId);
+
+            _offerRepository.Save();
             _serviceRequestRepository.Save();
 
             return true;
+
         }
+
 
         public async Task<bool> UpdateTotalAmountAsync(int serviceRequestId, decimal finalAmount)
         {

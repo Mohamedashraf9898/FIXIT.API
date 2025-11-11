@@ -79,6 +79,16 @@ namespace FIXIT.BLL.Services.Service
                 throw new KeyNotFoundException("Offer not found");
 
             offer.Status = OfferStatus.AcceptedByCraftsman;
+
+            
+            var request = await _serviceRequestRepository.GetAsync(dto.ServiceRequestId);
+            if (request != null)
+            {
+                request.TotalAmount = offer.Amount; 
+                request.Status = ServiceRequestStatus.InProgress;
+                _serviceRequestRepository.Update(request, request.ServicesRequestId);
+            }
+
             _offerRepository.Update(offer, offer.Id);
             _offerRepository.Save();
 

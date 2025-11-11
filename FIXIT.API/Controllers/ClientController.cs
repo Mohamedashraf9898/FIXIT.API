@@ -1,6 +1,4 @@
 ﻿using FIXIT.BLL.DTOs.ClientDTOs;
-using FIXIT.BLL.DTOs.CraftsmanDTOs;
-using FIXIT.BLL.Services;
 using FIXIT.BLL.Services.Intrfaces;
 using FIXIT.BLL.Services.Service;
 using FIXIT.DAL.Models;
@@ -50,6 +48,12 @@ namespace FIXIT.API.Controllers
         {
             ics.DeleteClient(id);
             return NoContent();
+        }
+        [HttpGet("GetByEmail")]
+        public async Task<IActionResult> GetByEmail(string email)
+        {
+            var Client = await ics.GetClientByEmail(email);
+            return Ok(Client);
         }
     }
 }

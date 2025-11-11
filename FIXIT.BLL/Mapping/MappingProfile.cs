@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FIXIT.BLL.DTOs.ClientDTOs;
 using FIXIT.BLL.DTOs.CraftsmanDTOs;
+using FIXIT.BLL.DTOs.Identity;
 using FIXIT.BLL.DTOs.ReviewDTOs;
 using FIXIT.BLL.DTOs.ServiceRequestDTOs;
 using FIXIT.BLL.DTOs.ServicsDTOs;
@@ -132,6 +133,13 @@ namespace FIXIT.BLL.Mapping
 
             CreateMap<WalletTransaction, WalletTransactionDto>().ReverseMap();
             CreateMap<CreateWalletTransactionDto, WalletTransaction>().ReverseMap();
+
+			//identity 
+
+			//CreateMap<ApplicationUser, UserDto>().ReverseMap();
+			//CreateMap<ClientRegisterDto, ApplicationUser>().ReverseMap();
+			//CreateMap<CraftsManRegisterDto, ApplicationUser>().ReverseMap();
+			//CreateMap<LoginDto, ApplicationUser>().ReverseMap();
 
         }
 	}

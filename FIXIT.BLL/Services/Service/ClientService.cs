@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using FIXIT.API.Erorrs.Exceptions;
 using FIXIT.BLL.DTOs.ClientDTOs;
-using FIXIT.BLL.Exceptions;
 using FIXIT.BLL.Repositories.IRepo;
+using FIXIT.BLL.Repositories.Repo;
 using FIXIT.BLL.Services.Intrfaces;
 using FIXIT.DAL.Models;
 
@@ -10,10 +10,10 @@ namespace FIXIT.BLL.Services.Service
 {
     public class ClientService: IClientService
     {
-        private readonly IGenericRepository<Client> repo;
+        private readonly IClientRepo repo;
         private readonly IMapper mapper;
 
-        public ClientService(IGenericRepository<Client> repo,IMapper mapper)
+        public ClientService(IClientRepo repo,IMapper mapper)
         {
             this.repo = repo;
             this.mapper = mapper;
@@ -61,15 +61,14 @@ namespace FIXIT.BLL.Services.Service
 
         public bool UpdateClient(int id, UpdateClientDTO ClientDto)
         {
-			if (id != ClientDto.Id)
-				throw new ValidationException("Id mismatch between route and body.");
-
-			var updated = repo.Update(mapper.Map<Client>(ClientDto), id);
-			if (!updated)
-				throw new NotFoundException(nameof(Client), id);
-
-			repo.Save();
-			return true;
-		}
+           if( repo.Update(mapper.Map<Client>(ClientDto),id))
+            {
+                repo.Save();
+                return true;
+            
+            }
+           else
+               return false;
+        }
     }
 }

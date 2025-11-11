@@ -14,6 +14,10 @@ namespace FIXIT.BLL.DTOs.ServiceRequestDTOs
         public string? Location { get; set; } // Optional, Service layer handles default
         public string? ServiceRequestImage { get; set; }
         public DateTime ServiceAt { get; set; }
+        public decimal TotalAmount { get; set; }
+        public string Status { get; set; }
+
+       
         public decimal? SuggestedPrice { get; set; }
     }
 }

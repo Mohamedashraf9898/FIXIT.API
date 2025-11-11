@@ -64,6 +64,12 @@ namespace FIXIT.BLL.Services.Service
 
 			return mapper.Map<List<CraftsManDto>>(craftsmen);
 		}
+		public async Task<CraftsManDto> GetCraftsManByEmailAsync(string Email)
+		{
+			var normalizedEmail = Email.ToUpper();
+			var craftsMan = await craftsManRepo.GetCraftsManByEmailAsync(normalizedEmail);
+			return mapper.Map<CraftsManDto>(craftsMan);
+		}
 		public async Task CreateCraftsManAsync(CreateCraftsManDto craftsManDto)
 		{
 

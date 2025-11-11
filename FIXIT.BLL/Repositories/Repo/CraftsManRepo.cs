@@ -1,4 +1,5 @@
-﻿using FIXIT.BLL.Repositories.IRepo;
+﻿using FIXIT.BLL.DTOs.CraftsmanDTOs;
+using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.DAL;
 using FIXIT.DAL.Models;
 using Microsoft.EntityFrameworkCore;
@@ -49,6 +50,14 @@ namespace FIXIT.BLL.Repositories.Repo
 			}
 
 			return await query.OrderByDescending(c => c.Rating).ToListAsync();
+		}
+		public async Task<CraftsMan> GetCraftsManByEmailAsync(string normalizedEmail)
+		{
+			//var query = await _dbContext.FindAsync<string>(normalizedEmail);
+			return await _dbContext.CraftsMan.FirstOrDefaultAsync(c=> c.NormalizedEmail== normalizedEmail);
+
+
+			
 		}
 	}
 }

@@ -6,11 +6,12 @@ public enum ServiceRequestStatus
     Pending,
     WaitingForCraftsmanResponse,
     WaitingForClientDecision,
-    Approved,
+    WaitingForClientPayment,
     RejectedByCraftsman,
     RejectedByClient,
     InProgress,
     Completed,
+    Approved,
     Cancelled
 }
 

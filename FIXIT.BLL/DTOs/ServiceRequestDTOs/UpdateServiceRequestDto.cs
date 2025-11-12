@@ -19,8 +19,5 @@ namespace FIXIT.BLL.DTOs.ServiceRequestDTOs
         public decimal TotalAmount { get; set; }
       
 
-        public string Status { get; set; }        // Use Enum string or actual Enum
-        public decimal? TotalAmount { get; set; } // Nullable, only updated if client/offer accepts
-
     }
 }

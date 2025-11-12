@@ -38,9 +38,7 @@ namespace FIXIT.BLL.Services.Service
             IWalletTransactionRepository transactionRepo,
             IMapper mapper,
             IGenericRepository<Client> clientRepository,
-            IPaymentService paymentService
-            )
-            IGenericRepository<Client> clientRepository,
+            IPaymentService paymentService,
             IOfferRepository offerRepository)
         {
             _serviceRequestRepository = serviceRequestRepository;
@@ -54,20 +52,15 @@ namespace FIXIT.BLL.Services.Service
         }
         public async Task<bool> CreateServiceRequestAsync(CreateServiceRequestDto dto)
         {
-            if (ServiceRequestDto == null)
-                throw new ArgumentNullException(nameof(ServiceRequestDto), "Service Request Data Can not be null");
-            var serviceRequest = _mapper.Map<ServicesRequest>(ServiceRequestDto);
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto), "Service Request Data Can not be null");
+            var serviceRequest = _mapper.Map<ServicesRequest>(dto);
             var isExist = await _serviceRequestRepository.GetByIntentId(serviceRequest.PaymentIntentId!);
             if (isExist is not null)
             {
                 _serviceRequestRepository.Delete(isExist.ServicesRequestId);
               await paymentService.CreateOrUpdatePaymentIntent(serviceRequest.ServicesRequestId);
             }
-            
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
-
-            var serviceRequest = _mapper.Map<ServicesRequest>(dto);
 
             await EnsureServiceRequestLocationAsync(serviceRequest);
 

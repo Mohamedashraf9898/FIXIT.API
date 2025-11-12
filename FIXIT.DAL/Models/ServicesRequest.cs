@@ -50,8 +50,6 @@ public class ServicesRequest
  public string? ClientSecret { get; set; }
         
 
-    
-    }
     [Column(TypeName = "decimal(10,2)")]
     public decimal? SuggestedPrice { get; set; }
 
@@ -62,4 +60,5 @@ public class ServicesRequest
 
     public virtual Review? Review { get; set; }
     public virtual WalletTransaction? WalletTransaction { get; set; }
+}
 }

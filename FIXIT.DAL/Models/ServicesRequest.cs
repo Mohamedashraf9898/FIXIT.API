@@ -42,9 +42,8 @@ public class ServicesRequest
 
     public string Location { get; set; }
 
-        [DefaultValue(ServiceRequestStatus.Pending)]
-        public ServiceRequestStatus Status { get; set; }
-        public virtual Review Review { get; set; }
+        
+     public virtual Review Review { get; set; }
       
         [Column(TypeName = "decimal(10,2)")]
         public decimal TotalAmount { get; set; }
@@ -61,7 +60,6 @@ public class ServicesRequest
 
     public ServiceRequestStatus Status { get; set; } = ServiceRequestStatus.Pending;
 
-    public decimal? TotalAmount { get; set; }
 
     public virtual ICollection<Offer> Offers { get; set; } = new HashSet<Offer>();
 

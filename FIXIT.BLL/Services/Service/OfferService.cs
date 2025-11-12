@@ -157,10 +157,10 @@ namespace FIXIT.BLL.Services.Service
             offer.UpdatedAt = DateTime.UtcNow;
             _offerRepository.Update(offer, offer.Id);
 
+            var request = await _serviceRequestRepository.GetAsync(dto.ServiceRequestId);
             if (request != null) _serviceRequestRepository.Save();
             _offerRepository.Save();
 
-            var request = await _serviceRequestRepository.GetAsync(dto.ServiceRequestId);
             if (request == null)
                 throw new KeyNotFoundException("Service request not found");
 

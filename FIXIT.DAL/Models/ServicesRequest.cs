@@ -42,15 +42,12 @@ public class ServicesRequest
 
     public string Location { get; set; }
 
-        
-     public virtual Review Review { get; set; }
+   [Column(TypeName = "decimal(10,2)")]
+  public decimal TotalAmount { get; set; }
       
-        [Column(TypeName = "decimal(10,2)")]
-        public decimal TotalAmount { get; set; }
-        public virtual WalletTransaction WalletTransaction { get; set; }
 
-        public string? PaymentIntentId { get; set; }
-        public string? ClientSecret { get; set; }
+ public string? PaymentIntentId { get; set; }
+ public string? ClientSecret { get; set; }
         
 
     

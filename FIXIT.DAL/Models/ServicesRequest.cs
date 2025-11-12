@@ -17,32 +17,7 @@ namespace FIXIT.DAL.Models
         Approved,
         Cancelled
     }
-    public class ServicesRequest
-    {
-        public int ServicesRequestId { get; set; }
-        public string Description { get; set; }
-        public string ServiceRequestImage { get; set; }
-        public int CraftsManId { get; set; }
-        public int ClientId { get; set; }
-        public int ServiceId { get; set; }
-
-        public virtual CraftsMan CraftsMan { get; set; }
-        public virtual Client Client { get; set; }
-        public virtual Service Service { get; set; }
-public enum ServiceRequestStatus
-{
-    Pending,
-    WaitingForCraftsmanResponse,
-    WaitingForClientDecision,
-    WaitingForClientPayment,
-    RejectedByCraftsman,
-    RejectedByClient,
-    InProgress,
-    Completed,
-    Approved,
-    Cancelled
-}
-
+   
 public class ServicesRequest
 {
     

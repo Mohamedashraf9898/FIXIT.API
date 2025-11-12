@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+using AutoMapper;
+using FIXIT.API.Erorrs.Exceptions;
 using FIXIT.API.Erorrs.Exceptions;
 using FIXIT.BLL.DTOs.ClientDTOs;
 using FIXIT.BLL.Repositories.IRepo;
@@ -47,7 +48,14 @@ namespace FIXIT.BLL.Services.Service
 			return mapper.Map<List<GetAllClientsDTO>>(clients);
 
 		}
+		public async Task<GetAllClientsDTO> GetClientByEmail(string Email)
+		{
+ 	 	  var normalizedEmail = Email.ToUpper();
+	  	  var client = await repo.GetClientByEmailAsync(normalizedEmail);
+  	 	 return mapper.Map<GetAllClientsDTO>(client);
 
+		}
+		
         public async Task<GetAllClientsDTO> GetClientsByIdAsync(int id)
         {
             var client= await repo.GetAsync(id);

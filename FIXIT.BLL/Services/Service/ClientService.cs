@@ -2,6 +2,7 @@ using AutoMapper;
 using FIXIT.API.Erorrs.Exceptions;
 using FIXIT.API.Erorrs.Exceptions;
 using FIXIT.BLL.DTOs.ClientDTOs;
+using FIXIT.BLL.Exceptions;
 using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.BLL.Repositories.Repo;
 using FIXIT.BLL.Services.Intrfaces;

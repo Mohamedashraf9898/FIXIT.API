@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,6 +18,8 @@ namespace FIXIT.BLL.DTOs.ServiceRequestDTOs
         public string Description { get; set; }
         public string Location { get; set; }
         public string? ServiceRequestImage { get; set; }
+        public DateTime? WaitingForClientPaymentAt { get; set; }
+        public bool? IsCancelled { get; set; }
 
         public int? ReviewRatingValue { get; set; } // Optional, if review exists
         public string? ReviewComment { get; set; }  // Optional, if review exists

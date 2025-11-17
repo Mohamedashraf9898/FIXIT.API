@@ -16,7 +16,8 @@ namespace FIXIT.DAL.Models
         InProgress,
         Completed,
         Approved,
-        Cancelled
+        Cancelled,
+        CancelledDueToNonPayment
     }
    
 public class ServicesRequest
@@ -42,7 +43,7 @@ public class ServicesRequest
 
         //Abdallah
         [Required]
-        public DateTime ServiceStartTime { get; set; }
+        public DateTime ServiceStartTime { get; set; } 
 
         [Range(15, 480, ErrorMessage = "Duration must be between 15 minutes and 8 hours")]
         public DateTime? ServiceEndTime { get; set; }
@@ -50,10 +51,12 @@ public class ServicesRequest
         public string Location { get; set; }
     
      [Column(TypeName = "decimal(10,2)")]
-     public decimal TotalAmount { get; set; }
-      
+     public decimal? TotalAmount { get; set; }
+        public DateTime? WaitingForClientPaymentAt { get; set; }
+        public bool? IsCancelled { get; set; }
 
-    public string? PaymentIntentId { get; set; }
+
+        public string? PaymentIntentId { get; set; }
     public string? ClientSecret { get; set; }
         
 

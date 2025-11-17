@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,10 +15,7 @@ namespace FIXIT.BLL.DTOs.ServiceRequestDTOs
         public int CraftsManId { get; set; }
         public string? Description { get; set; }
         public string? Location { get; set; }
-        public string? ServiceRequestImage { get; set; }
-        public string Status { get; set; }
-        public decimal TotalAmount { get; set; }
-      
+        public IFormFile? ServiceRequestImage { get; set; }      
 
     }
 }

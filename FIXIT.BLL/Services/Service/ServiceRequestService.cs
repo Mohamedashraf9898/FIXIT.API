@@ -3,7 +3,9 @@ using FIXIT.BLL.DTOs.CraftsmanDTOs;
 using FIXIT.BLL.DTOs.OfferDto;
 using FIXIT.BLL.DTOs.ServiceRequestDTOs;
 using FIXIT.BLL.DTOs.WalletTransactionDTOs;
+using FIXIT.BLL.Helper.UploadHandler;
 using FIXIT.BLL.Repositories.IRepo;
+using FIXIT.BLL.Repositories.Repo;
 using FIXIT.BLL.Services.IService;
 using FIXIT.BLL.Services.IService.Payment;
 using FIXIT.BLL.Services.Service.Payment;
@@ -31,6 +33,7 @@ namespace FIXIT.BLL.Services.Service
         private readonly IWalletRepository _walletRepo;
         private readonly IWalletTransactionRepository _transactionRepo;
         private readonly IMapper _mapper;
+        private readonly UploadHandler _uploadHandler;
 
 
         public ServiceRequestService(
@@ -43,6 +46,7 @@ namespace FIXIT.BLL.Services.Service
             IPaymentService paymentService,
             IOfferRepository offerRepository,
             IAvailabilityService availabilityService,
+            UploadHandler uploadHandler,
         ITimeOffService timeOffService)
         {
             _serviceRequestRepository = serviceRequestRepository;
@@ -54,13 +58,20 @@ namespace FIXIT.BLL.Services.Service
             this.paymentService = paymentService;
             _offerRepository = offerRepository;
             _availabilityService = availabilityService;
+            _uploadHandler = uploadHandler;
             _timeOffService = timeOffService;
         }
         public async Task<bool> CreateServiceRequestAsync(CreateServiceRequestDto dto)
         {
+            string? imagePath = null;
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto), "Service Request Data Can not be null");
+            if(dto.ServiceRequestImage != null)
+            {
+                imagePath = _uploadHandler.Upload(dto.ServiceRequestImage, "ServiceRequest");
+            }
             var serviceRequest = _mapper.Map<ServicesRequest>(dto);
+            serviceRequest.ServiceRequestImage = imagePath;
             var isExist = await _serviceRequestRepository.GetByIntentId(serviceRequest.PaymentIntentId!);
             if (isExist is not null)
             {
@@ -119,7 +130,7 @@ namespace FIXIT.BLL.Services.Service
 
         public async Task<bool> UpdateServiceRequest(int id, UpdateServiceRequestDto dto)
         {
-            if (dto == null)
+               if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
 
             var existing = await _serviceRequestRepository.GetAsync(id);
@@ -129,6 +140,19 @@ namespace FIXIT.BLL.Services.Service
             ValidateServiceRequestTime(existing);
 
             _mapper.Map(dto, existing);
+            if(dto.ServiceRequestImage != null)
+            {
+                // Delete old picture if exists
+                if (!string.IsNullOrEmpty(existing.ServiceRequestImage))
+                {
+                    var oldPath = Path.Combine("wwwroot", existing.ServiceRequestImage);
+                    if (File.Exists(oldPath))
+                        File.Delete(oldPath);
+                }
+
+                // Upload new picture
+                existing.ServiceRequestImage = _uploadHandler.Upload(dto.ServiceRequestImage);
+            }
             await EnsureServiceRequestLocationAsync(existing);
 
             var updated = _serviceRequestRepository.Update(existing, id);

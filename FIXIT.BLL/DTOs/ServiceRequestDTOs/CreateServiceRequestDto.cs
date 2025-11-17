@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,12 +13,8 @@ namespace FIXIT.BLL.DTOs.ServiceRequestDTOs
         public int ServiceId { get; set; }
         public string Description { get; set; }
         public string? Location { get; set; } // Optional, Service layer handles default
-        public string? ServiceRequestImage { get; set; }
+        public IFormFile? ServiceRequestImage { get; set; }
         public DateTime ServiceStartTime { get; set; }
-        public decimal TotalAmount { get; set; }
-        public string Status { get; set; }
-
-       
         public decimal? SuggestedPrice { get; set; }
     }
 }

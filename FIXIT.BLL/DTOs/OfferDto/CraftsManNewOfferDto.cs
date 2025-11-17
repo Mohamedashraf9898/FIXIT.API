@@ -10,7 +10,7 @@ namespace FIXIT.BLL.DTOs.OfferDto
     {
         public int ServiceRequestId { get; set; }
         public int CraftsmanId { get; set; }
-        public decimal NewAmount { get; set; }
-        public decimal? SuggestedPrice { get; set; }
+        public decimal FinalAmount { get; set; }
+        public string Description { get; set; }
     }
 }

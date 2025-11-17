@@ -62,6 +62,8 @@ namespace FIXIT.BLL.Mapping
             //ServiceRequestMapping
             //==========================
             // CreateServiceRequestDto -> ServicesRequest
+            CreateMap<CreateServiceRequestDto, ServicesRequest>().ForMember(dest => dest.ServiceRequestImage,
+                    opt => opt.MapFrom<PictureUrlResolver<CreateServiceRequestDto, ServicesRequest>>());
             CreateMap<CreateServiceRequestDto, ServicesRequest>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => ServiceRequestStatus.Pending))
                 .ForMember(dest => dest.RequestAt, opt => opt.MapFrom(src => DateTime.UtcNow))
@@ -91,6 +93,8 @@ namespace FIXIT.BLL.Mapping
                                    : null ));
 
             // UpdateServiceRequestDto -> ServicesRequest
+            CreateMap<UpdateServiceRequestDto, ServicesRequest>().ForMember(dest => dest.ServiceRequestImage,
+                   opt => opt.MapFrom<PictureUrlResolver<UpdateServiceRequestDto, ServicesRequest>>());
             CreateMap<UpdateServiceRequestDto, ServicesRequest>()
                 .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null)); // update only non-null fields
 
@@ -126,11 +130,10 @@ namespace FIXIT.BLL.Mapping
     .ForMember(dest => dest.SuggestedPrice, opt => opt.Ignore());
             // CraftsManNewOfferDto ↔ Offer
             CreateMap<CraftsManNewOfferDto, Offer>()
-     .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.NewAmount))
+     .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.FinalAmount))
      .ForMember(dest => dest.Status, opt => opt.MapFrom(src => OfferStatus.Pending))
      .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
-     .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
-     .ForMember(dest => dest.SuggestedPrice, opt => opt.MapFrom(src => src.SuggestedPrice));
+     .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow));
             // ============================
             //wallet
             // ============================

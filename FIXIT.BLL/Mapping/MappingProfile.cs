@@ -3,6 +3,7 @@ using FIXIT.BLL.DTOs.ClientDTOs;
 using FIXIT.BLL.DTOs.CraftsmanDTOs;
 using FIXIT.BLL.DTOs.Identity;
 using FIXIT.BLL.DTOs.ReviewDTOs;
+using FIXIT.BLL.DTOs.SchedulingDTOs;
 using FIXIT.BLL.DTOs.ServiceRequestDTOs;
 using FIXIT.BLL.DTOs.ServicsDTOs;
 using FIXIT.BLL.DTOs.OfferDto;
@@ -133,6 +134,24 @@ namespace FIXIT.BLL.Mapping
 
             CreateMap<WalletTransaction, WalletTransactionDto>().ReverseMap();
             CreateMap<CreateWalletTransactionDto, WalletTransaction>().ReverseMap();
+
+            // ============================
+            // Availability Mapping
+            // ============================
+            CreateMap<CraftsManAvailability, AvailabilityDto>()
+                .ForMember(dest => dest.DayName, opt => opt.MapFrom(src => src.DayOfWeek.ToString()))
+                .ForMember(dest => dest.StartTimeFormatted, opt => opt.MapFrom(src => src.StartTime.ToString(@"hh\:mm")))
+                .ForMember(dest => dest.EndTimeFormatted, opt => opt.MapFrom(src => src.EndTime.ToString(@"hh\:mm")));
+            CreateMap<CreateAvailabilityDto, CraftsManAvailability>();
+            CreateMap<UpdateAvailabilityDto, CraftsManAvailability>();
+
+            // ============================
+            // Time Off Mapping
+            // ============================
+            CreateMap<CraftsManTimeOff, TimeOffDto>()
+                .ForMember(dest => dest.TypeDescription, opt => opt.MapFrom(src => src.Type.ToString()))
+                .ForMember(dest => dest.DurationDays, opt => opt.MapFrom(src => (src.EndDate - src.StartDate).Days + 1));
+            CreateMap<CreateTimeOffDto, CraftsManTimeOff>();
 
 			//identity 
 

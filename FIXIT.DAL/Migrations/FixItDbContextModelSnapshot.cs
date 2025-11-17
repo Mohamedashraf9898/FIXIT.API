@@ -129,6 +129,42 @@ namespace FIXIT.DAL.Migrations
                     b.ToTable("CraftsMen", (string)null);
                 });
 
+            modelBuilder.Entity("FIXIT.DAL.Models.CraftsManAvailability", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CraftsManId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DayOfWeek")
+                        .HasColumnType("int");
+
+                    b.Property<TimeSpan>("EndTime")
+                        .HasColumnType("time");
+
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("bit");
+
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("time");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CraftsManId");
+
+                    b.ToTable("CraftsManAvailabilities", (string)null);
+                });
+
             modelBuilder.Entity("FIXIT.DAL.Models.CraftsManService", b =>
                 {
                     b.Property<int>("CraftsManId")
@@ -145,6 +181,43 @@ namespace FIXIT.DAL.Migrations
                     b.HasIndex("ServiceId");
 
                     b.ToTable("CraftsMenServices", (string)null);
+                });
+
+            modelBuilder.Entity("FIXIT.DAL.Models.CraftsManTimeOff", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CraftsManId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsApproved")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CraftsManId");
+
+                    b.ToTable("CraftsManTimeOffs", (string)null);
                 });
 
             modelBuilder.Entity("FIXIT.DAL.Models.Identity.ApplicationUser", b =>
@@ -223,7 +296,7 @@ namespace FIXIT.DAL.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ApplicationUser");
+                    b.ToTable("ApplicationUser", (string)null);
                 });
 
             modelBuilder.Entity("FIXIT.DAL.Models.Review", b =>
@@ -273,6 +346,9 @@ namespace FIXIT.DAL.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ServiceId"));
 
+                    b.Property<int>("DisplayDurationMinutes")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("InitialPrice")
                         .HasColumnType("money");
 
@@ -283,7 +359,82 @@ namespace FIXIT.DAL.Migrations
 
                     b.HasKey("ServiceId");
 
-                    b.ToTable("Services");
+                    b.ToTable("Services", (string)null);
+                });
+
+            modelBuilder.Entity("FIXIT.DAL.Models.ServicesRequest", b =>
+                {
+                    b.Property<int>("ServicesRequestId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ServicesRequestId"));
+
+                    b.Property<int>("ClientId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ClientSecret")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CraftsManId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("EstimatedDurationMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Location")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PaymentIntentId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("RequestAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<DateTime>("ServiceAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ServiceEndTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ServiceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ServiceRequestImage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ServiceStartTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(max)")
+                        .HasDefaultValue("Pending");
+
+                    b.Property<decimal?>("SuggestedPrice")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.HasKey("ServicesRequestId");
+
+                    b.HasIndex("ClientId");
+
+                    b.HasIndex("CraftsManId");
+
+                    b.HasIndex("ServiceId");
+
+                    b.ToTable("ServicesRequests", (string)null);
                 });
 
             modelBuilder.Entity("FIXIT.DAL.Models.Wallet", b =>
@@ -312,7 +463,7 @@ namespace FIXIT.DAL.Migrations
                     b.HasIndex("CraftsManId")
                         .IsUnique();
 
-                    b.ToTable("Wallets");
+                    b.ToTable("Wallets", (string)null);
                 });
 
             modelBuilder.Entity("FIXIT.DAL.Models.WalletTransaction", b =>
@@ -345,7 +496,7 @@ namespace FIXIT.DAL.Migrations
 
                     b.HasIndex("WalletId");
 
-                    b.ToTable("WalletTransactions");
+                    b.ToTable("WalletTransactions", (string)null);
                 });
 
             modelBuilder.Entity("Offer", b =>
@@ -384,67 +535,18 @@ namespace FIXIT.DAL.Migrations
 
                     b.HasIndex("ServiceRequestId");
 
-                    b.ToTable("Offers");
+                    b.ToTable("Offers", (string)null);
                 });
 
-            modelBuilder.Entity("ServicesRequest", b =>
+            modelBuilder.Entity("FIXIT.DAL.Models.CraftsManAvailability", b =>
                 {
-                    b.Property<int>("ServicesRequestId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.HasOne("FIXIT.DAL.Models.CraftsMan", "CraftsMan")
+                        .WithMany("Availability")
+                        .HasForeignKey("CraftsManId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ServicesRequestId"));
-
-                    b.Property<int>("ClientId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("CraftsManId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Location")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("RequestAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
-
-                    b.Property<DateTime>("ServiceAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("ServiceId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ServiceRequestImage")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("Pending");
-
-                    b.Property<decimal?>("SuggestedPrice")
-                        .HasColumnType("decimal(10,2)");
-
-                    b.Property<decimal?>("TotalAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("ServicesRequestId");
-
-                    b.HasIndex("ClientId");
-
-                    b.HasIndex("CraftsManId");
-
-                    b.HasIndex("ServiceId");
-
-                    b.ToTable("ServicesRequests", (string)null);
+                    b.Navigation("CraftsMan");
                 });
 
             modelBuilder.Entity("FIXIT.DAL.Models.CraftsManService", b =>
@@ -466,6 +568,17 @@ namespace FIXIT.DAL.Migrations
                     b.Navigation("Service");
                 });
 
+            modelBuilder.Entity("FIXIT.DAL.Models.CraftsManTimeOff", b =>
+                {
+                    b.HasOne("FIXIT.DAL.Models.CraftsMan", "CraftsMan")
+                        .WithMany("TimeOffs")
+                        .HasForeignKey("CraftsManId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CraftsMan");
+                });
+
             modelBuilder.Entity("FIXIT.DAL.Models.Review", b =>
                 {
                     b.HasOne("FIXIT.DAL.Models.Client", "Client")
@@ -480,7 +593,7 @@ namespace FIXIT.DAL.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("ServicesRequest", "ServicesRequest")
+                    b.HasOne("FIXIT.DAL.Models.ServicesRequest", "ServicesRequest")
                         .WithOne("Review")
                         .HasForeignKey("FIXIT.DAL.Models.Review", "ServicesRequestId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -492,55 +605,7 @@ namespace FIXIT.DAL.Migrations
                     b.Navigation("ServicesRequest");
                 });
 
-            modelBuilder.Entity("FIXIT.DAL.Models.Wallet", b =>
-                {
-                    b.HasOne("FIXIT.DAL.Models.CraftsMan", "CraftsMan")
-                        .WithOne("Wallet")
-                        .HasForeignKey("FIXIT.DAL.Models.Wallet", "CraftsManId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CraftsMan");
-                });
-
-            modelBuilder.Entity("FIXIT.DAL.Models.WalletTransaction", b =>
-                {
-                    b.HasOne("ServicesRequest", "ServicesRequest")
-                        .WithOne("WalletTransaction")
-                        .HasForeignKey("FIXIT.DAL.Models.WalletTransaction", "ServiceRequestId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("FIXIT.DAL.Models.Wallet", "Wallet")
-                        .WithMany("WalletTransactions")
-                        .HasForeignKey("WalletId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ServicesRequest");
-
-                    b.Navigation("Wallet");
-                });
-
-            modelBuilder.Entity("Offer", b =>
-                {
-                    b.HasOne("FIXIT.DAL.Models.CraftsMan", "Craftsman")
-                        .WithMany()
-                        .HasForeignKey("CraftsmanId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ServicesRequest", "ServiceRequest")
-                        .WithMany("Offers")
-                        .HasForeignKey("ServiceRequestId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Craftsman");
-
-                    b.Navigation("ServiceRequest");
-                });
-
-            modelBuilder.Entity("ServicesRequest", b =>
+            modelBuilder.Entity("FIXIT.DAL.Models.ServicesRequest", b =>
                 {
                     b.HasOne("FIXIT.DAL.Models.Client", "Client")
                         .WithMany("ServicesRequest")
@@ -567,6 +632,54 @@ namespace FIXIT.DAL.Migrations
                     b.Navigation("Service");
                 });
 
+            modelBuilder.Entity("FIXIT.DAL.Models.Wallet", b =>
+                {
+                    b.HasOne("FIXIT.DAL.Models.CraftsMan", "CraftsMan")
+                        .WithOne("Wallet")
+                        .HasForeignKey("FIXIT.DAL.Models.Wallet", "CraftsManId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CraftsMan");
+                });
+
+            modelBuilder.Entity("FIXIT.DAL.Models.WalletTransaction", b =>
+                {
+                    b.HasOne("FIXIT.DAL.Models.ServicesRequest", "ServicesRequest")
+                        .WithOne("WalletTransaction")
+                        .HasForeignKey("FIXIT.DAL.Models.WalletTransaction", "ServiceRequestId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("FIXIT.DAL.Models.Wallet", "Wallet")
+                        .WithMany("WalletTransactions")
+                        .HasForeignKey("WalletId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ServicesRequest");
+
+                    b.Navigation("Wallet");
+                });
+
+            modelBuilder.Entity("Offer", b =>
+                {
+                    b.HasOne("FIXIT.DAL.Models.CraftsMan", "Craftsman")
+                        .WithMany()
+                        .HasForeignKey("CraftsmanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FIXIT.DAL.Models.ServicesRequest", "ServiceRequest")
+                        .WithMany("Offers")
+                        .HasForeignKey("ServiceRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Craftsman");
+
+                    b.Navigation("ServiceRequest");
+                });
+
             modelBuilder.Entity("FIXIT.DAL.Models.Client", b =>
                 {
                     b.Navigation("Reviews");
@@ -576,11 +689,15 @@ namespace FIXIT.DAL.Migrations
 
             modelBuilder.Entity("FIXIT.DAL.Models.CraftsMan", b =>
                 {
+                    b.Navigation("Availability");
+
                     b.Navigation("CraftsManServices");
 
                     b.Navigation("Reviews");
 
                     b.Navigation("ServicesRequests");
+
+                    b.Navigation("TimeOffs");
 
                     b.Navigation("Wallet");
                 });
@@ -592,18 +709,18 @@ namespace FIXIT.DAL.Migrations
                     b.Navigation("ServicesRequests");
                 });
 
-            modelBuilder.Entity("FIXIT.DAL.Models.Wallet", b =>
-                {
-                    b.Navigation("WalletTransactions");
-                });
-
-            modelBuilder.Entity("ServicesRequest", b =>
+            modelBuilder.Entity("FIXIT.DAL.Models.ServicesRequest", b =>
                 {
                     b.Navigation("Offers");
 
                     b.Navigation("Review");
 
                     b.Navigation("WalletTransaction");
+                });
+
+            modelBuilder.Entity("FIXIT.DAL.Models.Wallet", b =>
+                {
+                    b.Navigation("WalletTransactions");
                 });
 #pragma warning restore 612, 618
         }

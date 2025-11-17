@@ -112,6 +112,13 @@ namespace FIXIT.API
             builder.Services.AddScoped<IWalletTransactionRepository, WalletTransactionRepository>();
             //payment
             builder.Services.AddScoped<IPaymentService, PaymentService>();
+            
+            //scheduling
+            builder.Services.AddScoped<IAvailabilityRepository, AvailabilityRepository>();
+            builder.Services.AddScoped<ITimeOffRepository, TimeOffRepository>();
+            builder.Services.AddScoped<IAvailabilityService, AvailabilityService>();
+            builder.Services.AddScoped<ITimeOffService, TimeOffService>();
+            
             #endregion
 
             builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>

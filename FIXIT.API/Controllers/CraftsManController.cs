@@ -1,11 +1,6 @@
 ﻿using FIXIT.BLL.DTOs.CraftsmanDTOs;
-using FIXIT.BLL.Repositories;
-using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.BLL.Services.Intrfaces;
-using FIXIT.DAL.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 
 namespace FIXIT.API.Controllers
 {
@@ -31,9 +26,6 @@ namespace FIXIT.API.Controllers
 		public async Task<IActionResult> GetCraftsManById(int id)
 		{
 			var craftsMan = await _craftsManService.GetCraftsManByIdAsync(id);
-			if (craftsMan == null)
-				return NotFound();
-
 			return Ok(craftsMan);
 		}
 
@@ -44,14 +36,25 @@ namespace FIXIT.API.Controllers
 			return Ok(craftsmen);
 		}
 
+		[HttpGet("GetByLocation")]
+		public async Task<IActionResult> GetByLocation(string location, string servicename)
+		{
+			var craftsmen = await _craftsManService.GetCraftsMenByLocationandServiceAsync(location, servicename);
+			return Ok(craftsmen);
+		}
+		[HttpGet("GetByEmail")]
+		public async Task<IActionResult> GetByEmail(string email)
+		{
+			var craftsman = await _craftsManService.GetCraftsManByEmailAsync(email);
+			return Ok(craftsman);
+		}
+
+
 		[HttpPost]
 		public async Task<IActionResult> CreateCraftsMan( CreateCraftsManDto dto)
 		{
-			if (dto == null)
-				return BadRequest();
-
 			await _craftsManService.CreateCraftsManAsync(dto);
-			return CreatedAtAction(nameof(GetAllCraftsMen), null);
+			return StatusCode(StatusCodes.Status201Created);
 		}
 
 		[HttpPut]
@@ -70,8 +73,9 @@ namespace FIXIT.API.Controllers
 		[HttpDelete("{id:int}")]
 		public IActionResult DeleteCraftsMan(int id)
 		{
-			 _craftsManService.DeleteCraftsMan(id);
+			_craftsManService.DeleteCraftsMan(id);
 			return NoContent();
 		}
+
 	}
 }

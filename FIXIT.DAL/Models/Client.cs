@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FIXIT.DAL.Models.Identity;
 
 namespace FIXIT.DAL.Models
 {
     public class Client :BaseEntity
     {
+      
         public int TotalRequests { get; set; }
         public string? ProfileImage { get; set; }
         public virtual ICollection<ServicesRequest> ServicesRequest  { get; set; }

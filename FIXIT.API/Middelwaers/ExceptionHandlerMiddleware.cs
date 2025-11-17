@@ -1,6 +1,9 @@
-﻿using System.Net;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Net;
 using FIXIT.API.Erorrs;
 using FIXIT.API.Erorrs.Exceptions;
+using FIXIT.BLL.Exceptions;
+using ValidationException = FIXIT.BLL.Exceptions.ValidationException;
 
 namespace FIXIT.API.Midelwaers
 {
@@ -16,7 +19,6 @@ namespace FIXIT.API.Midelwaers
             this.logger = logger;
             this.environment = environment;
         }
-
         public async Task InvokeAsync(HttpContext context)
         {
             try
@@ -50,12 +52,25 @@ namespace FIXIT.API.Midelwaers
                         context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                         response = new ApiResponse((int)HttpStatusCode.NotFound, ex.Message);
                         break;
+
+                    case ValidationException validationException:
+                        context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                        response = new ApiValidationErorrResponse(ex.Message);
+                        break;
+
                     case BadRequestException:
                         context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                         response = new ApiResponse((int)HttpStatusCode.BadRequest, ex.Message);
                         break;
+
+                    case UnAuthoraizedException:
+                        context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                        response = new ApiResponse((int)HttpStatusCode.Unauthorized, ex.Message);
+                        break;
+
                     default:
                         context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                                        
                         response = environment.IsDevelopment() ?
                      new ApiExceptionResponse((int)HttpStatusCode.InternalServerError, ex.Message, ex.StackTrace!.ToString()) :
                      new ApiExceptionResponse((int)HttpStatusCode.InternalServerError, ex.Message);

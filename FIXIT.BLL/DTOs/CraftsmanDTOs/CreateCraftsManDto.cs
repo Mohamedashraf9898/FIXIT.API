@@ -22,6 +22,7 @@ namespace FIXIT.BLL.DTOs.CraftsmanDTOs
 		public int ExperienceOfYears { get; set; }
 		public decimal HourlyRate { get; set; }
 
+		public string NormalizedEmail { get; set; }
 
 
 	}

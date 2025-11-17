@@ -1,8 +1,11 @@
-﻿using AutoMapper;
+using AutoMapper;
+using FIXIT.API.Erorrs.Exceptions;
 using FIXIT.API.Erorrs.Exceptions;
 using FIXIT.BLL.DTOs.ClientDTOs;
 using FIXIT.BLL.Helper.UploadHandler;
+using FIXIT.BLL.Exceptions;
 using FIXIT.BLL.Repositories.IRepo;
+using FIXIT.BLL.Repositories.Repo;
 using FIXIT.BLL.Services.Intrfaces;
 using FIXIT.DAL.Models;
 
@@ -10,11 +13,11 @@ namespace FIXIT.BLL.Services.Service
 {
     public class ClientService: IClientService
     {
-        private readonly IGenericRepository<Client> repo;
+        private readonly IClientRepo repo;
         private readonly IMapper mapper;
         private readonly UploadHandler uploadHandler;
 
-        public ClientService(IGenericRepository<Client> repo,IMapper mapper, UploadHandler uploadHandler)
+        public ClientService(IClientRepo repo,IMapper mapper, UploadHandler uploadHandler)
         {
             this.repo = repo;
             this.mapper = mapper;
@@ -42,19 +45,31 @@ namespace FIXIT.BLL.Services.Service
 
         public void DeleteClient(int id)
         {
-            repo.Delete(id);
-            repo.Save();
-            //throw new NotImplementedException();
-        }
+			var client = repo.GetAsync(id).Result;
+			if (client == null)
+				throw new NotFoundException(nameof(Client), id);
+
+			repo.Delete(id);
+			repo.Save();
+		}
 
         public async Task<IEnumerable<GetAllClientsDTO>> GetAllClientsAsync()
         {
-            var clients = await repo.GetAllAsync();
-            var result = mapper.Map<List<GetAllClientsDTO>>(clients);
-            return result;
-            //  throw new NotImplementedException();
-        }
+			var clients = await repo.GetAllAsync();
+			if (clients == null || !clients.Any())
+				throw new NotFoundException(nameof(Client), "No Clients Found");
 
+			return mapper.Map<List<GetAllClientsDTO>>(clients);
+
+		}
+		public async Task<GetAllClientsDTO> GetClientByEmail(string Email)
+		{
+ 	 	  var normalizedEmail = Email.ToUpper();
+	  	  var client = await repo.GetClientByEmailAsync(normalizedEmail);
+  	 	 return mapper.Map<GetAllClientsDTO>(client);
+
+		}
+		
         public async Task<GetAllClientsDTO> GetClientsByIdAsync(int id)
         {
             var client= await repo.GetAsync(id);
@@ -63,7 +78,7 @@ namespace FIXIT.BLL.Services.Service
             
             return mapper.Map<GetAllClientsDTO>(client);
 
-            // throw new NotImplementedException();
+         
         }
 
         public async Task<bool> UpdateClientAsync(int id, UpdateClientDTO clientDto)

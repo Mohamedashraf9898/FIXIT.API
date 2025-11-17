@@ -1,7 +1,9 @@
 ﻿
 using AutoMapper;
+using FIXIT.API.Erorrs.Exceptions;
 using FIXIT.BLL.DTOs.CraftsmanDTOs;
 using FIXIT.BLL.Helper.UploadHandler;
+using FIXIT.BLL.Exceptions;
 using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.BLL.Repositories.Repo;
 using FIXIT.BLL.Services.Intrfaces;
@@ -30,20 +32,27 @@ namespace FIXIT.BLL.Services.Service
         }
 		public async Task<List<CraftsManDto>> GetAllCraftsMenAsync()
 		{
-			List<CraftsMan> craftsMen = await craftsManRepo.GetAllAsync();
-			var result = mapper.Map<List<CraftsManDto>>(craftsMen);
-			return result;
+			var craftsMen = await craftsManRepo.GetAllAsync();
+			if (craftsMen == null || !craftsMen.Any())
+				throw new NotFoundException(nameof(CraftsMan), "No craftsmen found.");
+
+			return mapper.Map<List<CraftsManDto>>(craftsMen);
 		}
 		public async Task<CraftsManDto> GetCraftsManByIdAsync(int id)
 		{
-			CraftsMan craftsMan = await craftsManRepo.GetAsync(id);
-			if (craftsMan is null)
-				return null;	
+			var craftsMan = await craftsManRepo.GetAsync(id);
+			if (craftsMan == null)
+				throw new NotFoundException(nameof(CraftsMan), id);
+
 			return mapper.Map<CraftsManDto>(craftsMan);
 		}
 		public async Task<List<CraftsManDto>> GetCraftsMenByNameAsync(string? fName, string? lName)
 		{
 			var craftsMen = await craftsManRepo.GetCraftsManByNameAsync(fName, lName);
+
+			if (craftsMen == null || !craftsMen.Any())
+				throw new NotFoundException(nameof(CraftsMan), "No craftsmen found with the given name.");
+
 			return mapper.Map<List<CraftsManDto>>(craftsMen);
 		}
         public async Task CreateCraftsManAsync(CreateCraftsManDto craftsManDto)
@@ -61,10 +70,41 @@ namespace FIXIT.BLL.Services.Service
             await craftsManRepo.AddAsync(craftsMan);
             craftsManRepo.Save();
         }
+		public async Task<List<CraftsManDto>> GetCraftsMenByLocationandServiceAsync(string location, string servicename)
+		{
+			if (string.IsNullOrWhiteSpace(location) || string.IsNullOrWhiteSpace(servicename))
+				throw new ValidationException("Location and ServiceName are required.");
+
+			var craftsmen = await craftsManRepo.GetCraftsMenByLocationandServiceAsync(location, servicename);
+
+			if (craftsmen == null || !craftsmen.Any())
+				throw new NotFoundException(nameof(CraftsMan), "No craftsmen found for this location and service.");
+
+			return mapper.Map<List<CraftsManDto>>(craftsmen);
+		}
+		public async Task<CraftsManDto> GetCraftsManByEmailAsync(string Email)
+		{
+			var normalizedEmail = Email.ToUpper();
+			var craftsMan = await craftsManRepo.GetCraftsManByEmailAsync(normalizedEmail);
+			return mapper.Map<CraftsManDto>(craftsMan);
+		}
+		public async Task CreateCraftsManAsync(CreateCraftsManDto craftsManDto)
+		{
+
+			if (craftsManDto == null)
+				throw new ValidationException("Craftsman data cannot be null.");
+
+			await craftsManRepo.AddAsync(mapper.Map<CraftsMan>(craftsManDto));
+			craftsManRepo.Save();
+		}
 
 
         public void DeleteCraftsMan(int id)
 		{
+			var craftsMan = craftsManRepo.GetAsync(id).Result;
+			if (craftsMan == null)
+				throw new NotFoundException(nameof(CraftsMan), id);
+
 			craftsManRepo.Delete(id);
 			craftsManRepo.Save();
 		}
@@ -108,11 +148,18 @@ namespace FIXIT.BLL.Services.Service
 
         public async void CreateCraftService(CreateCraftsManServiceDto serviceDto)
 		{
+			if (serviceDto == null)
+				throw new ValidationException("Service data cannot be null.");
+
 			await generic.AddAsync(mapper.Map<CraftsManService>(serviceDto));
 			generic.Save();
 		}
 		public void DeleteCraftsService(int id)
 		{
+			var service = generic.GetAsync(id).Result;
+			if (service == null)
+				throw new NotFoundException(nameof(CraftsManService), id);
+
 			generic.Delete(id);
 			generic.Save();
 		}

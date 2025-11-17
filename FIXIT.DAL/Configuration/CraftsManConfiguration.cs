@@ -51,6 +51,7 @@ namespace FIXIT.DAL.Configuration
                    .WithOne(w => w.CraftsMan)
                    .HasForeignKey<Wallet>(w => w.CraftsManId)
                    .OnDelete(DeleteBehavior.Cascade);
+       
 
         }
     }

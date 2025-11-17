@@ -8,11 +8,16 @@ namespace FIXIT.BLL.DTOs.ServiceRequestDTOs
 {
     public class CreateServiceRequestDto
     {
-        public string ClientName { get; set; }
-        public string ServiceName { get; set; }
-        public string CraftsManName { get; set; }
-        public string ReviewComment { get; set; }
-        public int ReviewRatingValue { get; set; }
+        public int ClientId { get; set; }
+        public int ServiceId { get; set; }
+        public string Description { get; set; }
+        public string? Location { get; set; } // Optional, Service layer handles default
+        public string? ServiceRequestImage { get; set; }
+        public DateTime ServiceAt { get; set; }
+        public decimal TotalAmount { get; set; }
         public string Status { get; set; }
+
+       
+        public decimal? SuggestedPrice { get; set; }
     }
 }

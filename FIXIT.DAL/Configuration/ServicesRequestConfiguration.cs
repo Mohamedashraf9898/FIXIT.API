@@ -25,6 +25,8 @@ namespace FIXIT.DAL.Configuration
             builder.Property(sr => sr.Status)
                    .HasConversion<string>()
                    .HasDefaultValue(ServiceRequestStatus.Pending);
+            builder.Property(e => e.IsCancelled)
+                   .HasDefaultValue(false);
 
             builder.Property(sr => sr.RequestAt)
                    .HasDefaultValueSql("GETDATE()"); 

@@ -95,7 +95,8 @@ namespace FIXIT.BLL.Services.Service.Auth
                 PhoneNumber = dto.PhoneNumber,
                 ProfileImage = dto.ProfileImage,
                 Gender = dto.Gender,
-                DateOfBirth=dto.DateOfBirth
+                DateOfBirth=dto.DateOfBirth,
+                NormalizedEmail = user.NormalizedEmail!
 
             });
 
@@ -145,7 +146,7 @@ namespace FIXIT.BLL.Services.Service.Auth
                 Gender = dto.Gender,
                 NationalId = dto.NationalId,
                 DateOfBirth = dto.DateOfBirth,
-                NormalizedEmail=dto.Email.ToUpper()
+                NormalizedEmail = user.NormalizedEmail!
             });
 
             return new UserDto

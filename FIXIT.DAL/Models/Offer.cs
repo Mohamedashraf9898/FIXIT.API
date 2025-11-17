@@ -8,7 +8,8 @@ public enum OfferStatus
     AcceptedByClient,
     RejectedByClient,
     AcceptedByCraftsman,
-    RejectedByCraftsman
+    RejectedByCraftsman,
+    Cancelled
 }
 
 public class Offer

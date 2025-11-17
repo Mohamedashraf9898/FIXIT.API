@@ -88,15 +88,15 @@ namespace FIXIT.BLL.Services.Service
 			var craftsMan = await craftsManRepo.GetCraftsManByEmailAsync(normalizedEmail);
 			return mapper.Map<CraftsManDto>(craftsMan);
 		}
-		public async Task CreateCraftsManAsync(CreateCraftsManDto craftsManDto)
-		{
+		//public async Task CreateCraftsManAsync(CreateCraftsManDto craftsManDto)
+		//{
 
-			if (craftsManDto == null)
-				throw new ValidationException("Craftsman data cannot be null.");
+		//	if (craftsManDto == null)
+		//		throw new ValidationException("Craftsman data cannot be null.");
 
-			await craftsManRepo.AddAsync(mapper.Map<CraftsMan>(craftsManDto));
-			craftsManRepo.Save();
-		}
+		//	await craftsManRepo.AddAsync(mapper.Map<CraftsMan>(craftsManDto));
+		//	craftsManRepo.Save();
+		//}
 
 
         public void DeleteCraftsMan(int id)

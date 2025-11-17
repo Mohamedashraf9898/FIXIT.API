@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FIXIT.DAL.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace FIXIT.BLL.DTOs.Identity
 {
@@ -27,7 +28,7 @@ namespace FIXIT.BLL.DTOs.Identity
         public required string Location { get; set; }
         [Required]
         public required string PhoneNumber { get; set; }
-        public string? ProfileImage { get; set; }
+        public IFormFile? ProfileImage { get; set; }
         [Required]
         public required Gender Gender { get; set; }
         [Required]

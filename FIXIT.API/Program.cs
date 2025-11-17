@@ -30,6 +30,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using Microsoft.IdentityModel.Tokens;
 using CraftsManService = FIXIT.BLL.Services.Service.CraftsManService;
+using FIXIT.DAL.Models;
 
 namespace FIXIT.API
 {

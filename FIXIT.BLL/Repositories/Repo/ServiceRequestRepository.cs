@@ -26,5 +26,15 @@ namespace FIXIT.BLL.Repositories.Repo
 
             return isexist!;
         }
+        public async Task<List<ServicesRequest>> GetByDateAsync(int craftsmanId, DateTime date)
+        {
+            return await _dbContext.ServicesRequests
+                .AsNoTracking()
+                .Where(r => r.CraftsManId == craftsmanId
+                         && r.ServiceStartTime.Date == date.Date
+                         && r.Status != ServiceRequestStatus.RejectedByCraftsman
+                         && r.Status != ServiceRequestStatus.Cancelled)
+                .ToListAsync();
+        }
     }
 }

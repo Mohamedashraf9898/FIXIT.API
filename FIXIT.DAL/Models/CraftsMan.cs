@@ -18,7 +18,8 @@ namespace FIXIT.DAL.Models
         
         public virtual ICollection<CraftsManService> CraftsManServices { get; set; } = new HashSet<CraftsManService>();
         public virtual ICollection<ServicesRequest> ServicesRequests { get; set; } = new HashSet<ServicesRequest>();
-
+        public virtual ICollection<CraftsManAvailability> Availability { get; set; } = new HashSet<CraftsManAvailability>();
+        public virtual ICollection<CraftsManTimeOff> TimeOffs { get; set; } = new HashSet<CraftsManTimeOff>();
         public virtual ICollection<Review> Reviews { get; set; } = new HashSet<Review>();
    
         public virtual Wallet Wallet { get; set; }

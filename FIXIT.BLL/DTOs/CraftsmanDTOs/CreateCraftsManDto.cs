@@ -21,9 +21,9 @@ namespace FIXIT.BLL.DTOs.CraftsmanDTOs
 		public IFormFile? ProfileImage { get; set; }
 		public int ExperienceOfYears { get; set; }
 		public decimal HourlyRate { get; set; }
-
 		public string NormalizedEmail { get; set; }
+        public List<string> ServiceNames { get; set; }
 
 
-	}
+    }
 }

@@ -51,14 +51,14 @@ namespace FIXIT.API.Controllers
 
 
 		[HttpPost]
-		public async Task<IActionResult> CreateCraftsMan( CreateCraftsManDto dto)
+		public async Task<IActionResult> CreateCraftsMan([FromBody]	CreateCraftsManDto dto)
 		{
 			await _craftsManService.CreateCraftsManAsync(dto);
 			return StatusCode(StatusCodes.Status201Created);
 		}
 
 		[HttpPut]
-		public  async Task<IActionResult> UpdateCraftsMan(int id,  UpdateCraftsManDto dto)
+		public  async Task<IActionResult> UpdateCraftsMan(int id, [FromBody] UpdateCraftsManDto dto)
 		{
 			if (dto == null || dto.Id != id)
 				return BadRequest();

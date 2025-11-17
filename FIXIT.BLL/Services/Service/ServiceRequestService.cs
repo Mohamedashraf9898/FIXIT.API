@@ -26,6 +26,8 @@ namespace FIXIT.BLL.Services.Service
         private readonly IGenericRepository<Client> _clientRepository;
         private readonly IPaymentService paymentService;
         private readonly IOfferRepository _offerRepository;
+        private readonly IAvailabilityService _availabilityService;
+        private readonly ITimeOffService _timeOffService;
         private readonly IWalletRepository _walletRepo;
         private readonly IWalletTransactionRepository _transactionRepo;
         private readonly IMapper _mapper;
@@ -39,7 +41,9 @@ namespace FIXIT.BLL.Services.Service
             IMapper mapper,
             IGenericRepository<Client> clientRepository,
             IPaymentService paymentService,
-            IOfferRepository offerRepository)
+            IOfferRepository offerRepository,
+            IAvailabilityService availabilityService,
+        ITimeOffService timeOffService)
         {
             _serviceRequestRepository = serviceRequestRepository;
             _craftsmanRepository = craftsmanRepository;
@@ -49,6 +53,8 @@ namespace FIXIT.BLL.Services.Service
             _clientRepository = clientRepository;
             this.paymentService = paymentService;
             _offerRepository = offerRepository;
+            _availabilityService = availabilityService;
+            _timeOffService = timeOffService;
         }
         public async Task<bool> CreateServiceRequestAsync(CreateServiceRequestDto dto)
         {
@@ -71,7 +77,7 @@ namespace FIXIT.BLL.Services.Service
             if (string.IsNullOrEmpty(serviceRequest.Description))
                 throw new ValidationException("Description cannot be empty.");
 
-            if (serviceRequest.ServiceAt <= DateTime.UtcNow)
+            if (serviceRequest.ServiceStartTime <= DateTime.UtcNow)
                 throw new ValidationException("ServiceAt must be in the future.");
             _serviceRequestRepository.Save();
 
@@ -169,7 +175,7 @@ namespace FIXIT.BLL.Services.Service
         private void ValidateServiceRequestTime(ServicesRequest serviceRequest)
         {
             var nowUtc = DateTime.UtcNow;
-            var requestedUtc = serviceRequest.ServiceAt.ToUniversalTime();
+            var requestedUtc = serviceRequest.ServiceStartTime.ToUniversalTime();
 
             var remainingTime = requestedUtc - nowUtc;
 
@@ -239,6 +245,36 @@ namespace FIXIT.BLL.Services.Service
 
 
         #endregion
+        private async Task<bool> IsSlotAvailable(int craftsmanId, DateTime startTime, int durationMinutes)
+        {
+            if (await _timeOffService.HasTimeOffOnDateAsync(craftsmanId, startTime))
+                return false;
+
+            var dayOfWeek = startTime.DayOfWeek;
+            var availability = await _availabilityService.GetByDayAsync(craftsmanId, dayOfWeek);
+
+            if (availability == null || !availability.IsAvailable)
+                return false; 
+
+            var requestTime = startTime.TimeOfDay;
+            var requestEnd = requestTime.Add(TimeSpan.FromMinutes(durationMinutes));
+
+            if (requestTime < availability.StartTime || requestEnd > availability.EndTime)
+                return false;
+
+
+            var bookedRequests = await _serviceRequestRepository.GetByDateAsync(craftsmanId, startTime.Date);
+
+            bool isConflict = bookedRequests.Any(req =>
+                IsOverlapping(requestTime, requestEnd, req.ServiceStartTime.TimeOfDay, req.ServiceEndTime.Value.TimeOfDay));
+
+            return !isConflict;
+
+        }
+        private bool IsOverlapping(TimeSpan start1, TimeSpan end1, TimeSpan start2, TimeSpan end2)
+        {
+            return start1 < end2 && start2 < end1;
+        }
 
     }
 }

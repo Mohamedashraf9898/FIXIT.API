@@ -1,4 +1,5 @@
 ﻿using FIXIT.DAL.Models;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +18,7 @@ namespace FIXIT.BLL.DTOs.CraftsmanDTOs
 		public Gender Gender { get; set; }
 		public DateTime DateOfBirth { get; set; }
 		public string Describtion { get; set; }
-		public string ProfileImage { get; set; }
+		public IFormFile? ProfileImage { get; set; }
 		public int ExperienceOfYears { get; set; }
 		public decimal HourlyRate { get; set; }
 

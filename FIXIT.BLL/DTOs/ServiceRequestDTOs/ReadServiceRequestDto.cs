@@ -22,7 +22,7 @@ namespace FIXIT.BLL.DTOs.ServiceRequestDTOs
         public string? ReviewComment { get; set; }  // Optional, if review exists
 
         public DateTime RequestAt { get; set; }
-        public DateTime ServiceAt { get; set; }
+        public DateTime ServiceStartTime { get; set; }
         public DateTime? CompletedAt { get; set; }
 
         public string Status { get; set; }

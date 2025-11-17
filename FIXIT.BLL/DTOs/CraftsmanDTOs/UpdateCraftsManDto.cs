@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,7 +13,7 @@ namespace FIXIT.BLL.DTOs.CraftsmanDTOs
 		public string FName { get; set; }
 		public string LName { get; set; }
 		public string Describtion { get; set; }
-		public string ProfileImage { get; set; }
+		public IFormFile? ProfileImage { get; set; }
 		public int ExperienceOfYears { get; set; }
 		public decimal HourlyRate { get; set; }
 

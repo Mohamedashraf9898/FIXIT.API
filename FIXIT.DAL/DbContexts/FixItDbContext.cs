@@ -31,6 +31,9 @@ namespace FIXIT.DAL
         public DbSet<Offer> Offers { get; set; }
         public DbSet<Wallet> Wallets { get; set; }
         public DbSet<WalletTransaction> WalletTransactions { get; set; }
+        public DbSet<Review> Reviews { get; set; }
+        public DbSet<CraftsManAvailability> CraftsManAvailabilities { get; set; }
+        public DbSet<CraftsManTimeOff> CraftsManTimeOffs { get; set; }
 
     }
 }

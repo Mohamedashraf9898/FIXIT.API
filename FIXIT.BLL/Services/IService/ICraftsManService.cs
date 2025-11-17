@@ -15,8 +15,9 @@ namespace FIXIT.BLL.Services.Intrfaces
 		Task<List<CraftsManDto>> GetCraftsMenByNameAsync(string? fname,string? lname);
 		Task<List<CraftsManDto>> GetCraftsMenByLocationandServiceAsync(string location, string servicename);
 		Task CreateCraftsManAsync(CreateCraftsManDto craftsMan);
+	  Task<bool>UpdateCraftsManAsync(int id, UpdateCraftsManDto craftsManDto);
 		Task<CraftsManDto> GetCraftsManByEmailAsync(string normalizedEmail);
-		bool UpdateCraftsMan(int id, UpdateCraftsManDto craftsManDto);
+	
 
 		void DeleteCraftsMan(int id);
 

@@ -1,5 +1,6 @@
 ﻿using FIXIT.DAL.Models;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FIXIT.DAL.Models
@@ -37,17 +38,23 @@ public class ServicesRequest
     public virtual Service Service { get; set; }
 
     public DateTime RequestAt { get; set; }
-    public DateTime ServiceAt { get; set; } 
     public DateTime? CompletedAt { get; set; }
 
-    public string Location { get; set; }
+        //Abdallah
+        [Required]
+        public DateTime ServiceStartTime { get; set; }
 
-   [Column(TypeName = "decimal(10,2)")]
-  public decimal TotalAmount { get; set; }
+        [Range(15, 480, ErrorMessage = "Duration must be between 15 minutes and 8 hours")]
+        public DateTime? ServiceEndTime { get; set; }
+        public int? EstimatedDurationMinutes { get; set; }
+        public string Location { get; set; }
+    
+     [Column(TypeName = "decimal(10,2)")]
+     public decimal TotalAmount { get; set; }
       
 
- public string? PaymentIntentId { get; set; }
- public string? ClientSecret { get; set; }
+    public string? PaymentIntentId { get; set; }
+    public string? ClientSecret { get; set; }
         
 
     [Column(TypeName = "decimal(10,2)")]

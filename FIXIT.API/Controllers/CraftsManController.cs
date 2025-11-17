@@ -51,16 +51,22 @@ namespace FIXIT.API.Controllers
 
 
 		[HttpPost]
-		public async Task<IActionResult> CreateCraftsMan([FromBody] CreateCraftsManDto dto)
+		public async Task<IActionResult> CreateCraftsMan( CreateCraftsManDto dto)
 		{
 			await _craftsManService.CreateCraftsManAsync(dto);
 			return StatusCode(StatusCodes.Status201Created);
 		}
 
-		[HttpPut("{id:int}")]
-		public IActionResult UpdateCraftsMan(int id, [FromBody] UpdateCraftsManDto dto)
+		[HttpPut]
+		public  async Task<IActionResult> UpdateCraftsMan(int id,  UpdateCraftsManDto dto)
 		{
-			_craftsManService.UpdateCraftsMan(id, dto);
+			if (dto == null || dto.Id != id)
+				return BadRequest();
+
+			bool updated = await _craftsManService.UpdateCraftsManAsync(id, dto);
+			if (!updated)
+				return NotFound();
+
 			return NoContent();
 		}
 

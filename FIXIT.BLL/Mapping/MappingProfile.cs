@@ -10,6 +10,9 @@ using FIXIT.BLL.DTOs.ReviewDTOs;
 using FIXIT.BLL.DTOs.ServiceRequestDTOs;
 using FIXIT.BLL.DTOs.WalletDTos;
 using FIXIT.BLL.DTOs.WalletTransactionDTOs;
+using FIXIT.BLL.Helper.PictureUrlResolver;
+using FIXIT.DAL.Models;
+using Microsoft.AspNetCore.Http;
 using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.DAL.Models;
 using System;
@@ -24,18 +27,20 @@ namespace FIXIT.BLL.Mapping
 	{
 		public MappingProfile() 
 		{
-            // ============================
-            //CraftsMan mapping
-            // ============================
-            CreateMap<CraftsMan,CraftsManDto>().ReverseMap();
+			//CraftsMan mapping
+			CreateMap<CraftsMan, CraftsManDto>()
+				.ForMember(dest => dest.ProfileImage,
+					opt => opt.MapFrom<PictureUrlResolver<CraftsMan, CraftsManDto>>())
+				.ReverseMap();
 			CreateMap<CraftsMan,CreateCraftsManDto>().ReverseMap();
 			CreateMap<CraftsMan, UpdateCraftsManDto>().ReverseMap();
 			CreateMap<CraftsManService,CreateCraftsManServiceDto>().ReverseMap();
-            // ============================
             //CLient Maping 
-            // ============================
-            CreateMap<Client,GetAllClientsDTO>().ReverseMap();
-			CreateMap<Client, CreateClientDTO>().ReverseMap();
+            // CLient Maping 
+            CreateMap<Client, GetAllClientsDTO>().ForMember(dest => dest.ProfileImage,
+                opt => opt.MapFrom<PictureUrlResolver<Client, GetAllClientsDTO>>()).ReverseMap();
+            CreateMap<Client, CreateClientDTO>().ReverseMap();
+    
 			CreateMap<Client, UpdateClientDTO>().ReverseMap();
 
             //Service Mapping 

@@ -36,11 +36,15 @@ namespace FIXIT.API.Controllers
             await ics.CreateClientAsync(createClientDTO);
             return Created();
         }
-		[HttpPut("{id:int}")]
-		public ActionResult Update(int id, UpdateClientDTO clientdto)
+        [HttpPut]
+        public async Task<ActionResult> Update(int id, UpdateClientDTO clientdto)
         {
-            ics.UpdateClient(id, clientdto);
-            return NoContent();
+            if (clientdto.Id == id)
+            {
+                if (await ics.UpdateClientAsync(id, clientdto))
+                    return NoContent();
+            }
+            return NotFound();
         }
 
 		[HttpDelete("{id:int}")]

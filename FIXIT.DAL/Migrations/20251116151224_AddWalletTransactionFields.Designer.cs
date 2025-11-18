@@ -4,6 +4,7 @@ using FIXIT.DAL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FIXIT.DAL.Migrations
 {
     [DbContext(typeof(FixItDbContext))]
-    partial class FixItDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251116151224_AddWalletTransactionFields")]
+    partial class AddWalletTransactionFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -395,9 +398,6 @@ namespace FIXIT.DAL.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(10,2)");
 
-                    b.Property<int>("CraftsManId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
@@ -412,22 +412,13 @@ namespace FIXIT.DAL.Migrations
                     b.Property<int?>("ServiceRequestId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ServicesRequestId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Status")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("TransactionDate")
-                        .HasColumnType("datetime2");
 
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
                     b.Property<int>("WalletId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("WalletId1")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -438,40 +429,7 @@ namespace FIXIT.DAL.Migrations
 
                     b.HasIndex("WalletId");
 
-                    b.HasIndex("WalletId1");
-
                     b.ToTable("WalletTransactions");
-                });
-
-            modelBuilder.Entity("FIXIT.DAL.Models.WithdrawalRequest", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("CraftsManId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ProcessedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("RequestedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("WithdrawalRequests");
                 });
 
             modelBuilder.Entity("Offer", b =>
@@ -606,12 +564,8 @@ namespace FIXIT.DAL.Migrations
                     b.HasOne("FIXIT.DAL.Models.Wallet", "Wallet")
                         .WithMany("WalletTransactions")
                         .HasForeignKey("WalletId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("FIXIT.DAL.Models.Wallet", null)
-                        .WithMany("Transactions")
-                        .HasForeignKey("WalletId1");
 
                     b.Navigation("ServicesRequest");
 
@@ -673,8 +627,6 @@ namespace FIXIT.DAL.Migrations
 
             modelBuilder.Entity("FIXIT.DAL.Models.Wallet", b =>
                 {
-                    b.Navigation("Transactions");
-
                     b.Navigation("WalletTransactions");
                 });
 #pragma warning restore 612, 618

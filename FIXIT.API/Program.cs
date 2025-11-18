@@ -1,9 +1,6 @@
-using System.Text;
-
-using System.Threading.Tasks;
-using FIXIT.BLL;
 using FIXIT.API.Erorrs;
 using FIXIT.API.Midelwaers;
+using FIXIT.BLL;
 using FIXIT.BLL.Mapping;
 using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.BLL.Repositories.Repo;
@@ -16,6 +13,7 @@ using FIXIT.BLL.Services.Service;
 using FIXIT.BLL.Services.Service.Auth;
 using FIXIT.BLL.Services.Service.Payment;
 using FIXIT.DAL;
+using FIXIT.DAL.Configuration;
 using FIXIT.DAL.DbContexts.FixitIdentityDbContext;
 using FIXIT.DAL.Models.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -23,6 +21,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.Threading.Tasks;
 using CraftsManService = FIXIT.BLL.Services.Service.CraftsManService;
 
 namespace FIXIT.API
@@ -112,6 +112,13 @@ namespace FIXIT.API
             builder.Services.AddScoped<IWalletTransactionRepository, WalletTransactionRepository>();
             //payment
             builder.Services.AddScoped<IPaymentService, PaymentService>();
+
+            //VodafoneCash
+            builder.Services.Configure<VodafoneCashSettings>(
+                    builder.Configuration.GetSection("VodafoneCashSettings"));
+            builder.Services.AddHttpClient<IVodafoneCashService, VodafoneCashService>();
+
+
             #endregion
 
             builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>

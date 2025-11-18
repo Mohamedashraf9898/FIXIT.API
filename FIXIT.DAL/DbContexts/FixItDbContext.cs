@@ -20,9 +20,21 @@ namespace FIXIT.DAL
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+           
+            #region gehad
+            modelBuilder.Entity<WithdrawalRequest>()
+                .Property(w => w.Amount)
+                .HasColumnType("decimal(18,2)");
+            modelBuilder.Entity<WalletTransaction>()
+                .HasOne(wt => wt.Wallet)
+                .WithMany(w => w.WalletTransactions)
+                .HasForeignKey(wt => wt.WalletId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            #endregion
 
         }
-        
+
 
         public DbSet<Client> Clients { get; set; }
         public DbSet<CraftsMan> CraftsMan { get; set; }
@@ -31,6 +43,7 @@ namespace FIXIT.DAL
         public DbSet<Offer> Offers { get; set; }
         public DbSet<Wallet> Wallets { get; set; }
         public DbSet<WalletTransaction> WalletTransactions { get; set; }
+        public DbSet<WithdrawalRequest> WithdrawalRequests { get; set; }
 
     }
 }

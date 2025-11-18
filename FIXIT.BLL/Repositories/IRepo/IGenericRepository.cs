@@ -15,5 +15,11 @@ namespace FIXIT.BLL.Repositories.IRepo
         void Delete(int id);
 
         int Save();
+
+        #region gehad
+        IQueryable<T> GetAll();
+        Task<int> SaveAsync();
+
+        #endregion 
     }
 }

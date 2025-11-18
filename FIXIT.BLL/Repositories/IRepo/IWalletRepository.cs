@@ -10,5 +10,7 @@ namespace FIXIT.BLL.Repositories.IRepo
     public interface IWalletRepository : IGenericRepository<Wallet>
     {
         Task<Wallet> GetWalletByCraftsManIdAsync(int craftsManId);
+        Task AddTransactionAsync(WalletTransaction transaction);
+        Task UpdateWalletAsync(Wallet wallet);
     }
 }

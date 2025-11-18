@@ -18,11 +18,22 @@ namespace FIXIT.BLL.Repositories.Repo
             _context = dbContext;
         }
 
+        public async Task AddTransactionAsync(WalletTransaction transaction)
+        {
+            await _context.Set<WalletTransaction>().AddAsync(transaction);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<Wallet> GetWalletByCraftsManIdAsync(int craftsManId)
         {
             return await _context.Wallets
                 .FirstOrDefaultAsync(w => w.CraftsManId == craftsManId);
         }
 
+        public async Task UpdateWalletAsync(Wallet wallet)
+        {
+            _context.Update(wallet);
+            await _context.SaveChangesAsync();
+        }
     }
 }

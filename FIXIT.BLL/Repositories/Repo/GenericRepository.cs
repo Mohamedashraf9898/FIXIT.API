@@ -12,12 +12,15 @@ namespace FIXIT.BLL.Repositories.Repo
 {
     public class GenericRepository<T> : IGenericRepository<T> where T :class
     {
-        private  readonly FixItDbContext _dbContext;
+        private readonly FixItDbContext _dbContext;
+        private readonly DbSet<T> _dbSet;
 
         public GenericRepository(FixItDbContext dbContext)
         {
             _dbContext = dbContext;
+            _dbSet = _dbContext.Set<T>(); 
         }
+
 
         public void Delete(int id)
         {
@@ -68,6 +71,16 @@ namespace FIXIT.BLL.Repositories.Repo
                 _dbContext.Entry(res).CurrentValues.SetValues(t);
                 return true;
             }
+        }
+
+        public IQueryable<T> GetAll()
+        {
+            return _dbSet.AsQueryable();
+        }
+
+        async Task<int> IGenericRepository<T>.SaveAsync()
+        {
+            return await _dbContext.SaveChangesAsync();
         }
     }
 }

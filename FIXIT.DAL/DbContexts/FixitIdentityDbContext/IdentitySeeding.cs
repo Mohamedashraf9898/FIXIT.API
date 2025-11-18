@@ -27,7 +27,7 @@ namespace FIXIT.DAL.DbContexts.FixitIdentityDbContext
                 }
             }
 
-           
+
             string adminEmail = "admin@fixit.com";
             string adminPassword = "Admin@123";
 

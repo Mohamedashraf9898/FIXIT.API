@@ -140,7 +140,7 @@ namespace FIXIT.BLL.Services.Service.Payment
                     var transaction = new WalletTransaction
                     {
                         CraftsManId = craftsman.Id,
-                        ServicesRequestId = serviceRequest.ServicesRequestId,
+                        ServiceRequestId = serviceRequest.ServicesRequestId,
                         Amount = craftsmanAmount,
                         TransactionDate = DateTime.UtcNow,
                         Type = TransactionType.Income

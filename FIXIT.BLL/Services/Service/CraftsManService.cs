@@ -88,7 +88,9 @@ namespace FIXIT.BLL.Services.Service
 		{
 			var normalizedEmail = Email.ToUpper();
 			var craftsMan = await craftsManRepo.GetCraftsManByEmailAsync(normalizedEmail);
-			return mapper.Map<CraftsManDto>(craftsMan);
+			if (craftsMan == null )
+                throw new NotFoundException(nameof(CraftsMan), "No CraftsMan was  Found");
+            return mapper.Map<CraftsManDto>(craftsMan);
 		}
 		//public async Task CreateCraftsManAsync(CreateCraftsManDto craftsManDto)
 		//{

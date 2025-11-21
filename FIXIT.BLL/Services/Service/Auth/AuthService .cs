@@ -96,13 +96,13 @@ namespace FIXIT.BLL.Services.Service.Auth
                 LName = dto.LName,
                 Location = dto.Location,
                 PhoneNumber = dto.PhoneNumber,
-                ProfileImage = "Images/default.png",
+                ProfileImage = $"Images\\default.png",
                 Gender = dto.Gender,
                 DateOfBirth=dto.DateOfBirth,
                 NormalizedEmail = user.NormalizedEmail!
-
+                
             });
-
+            
             return new UserDto
             {
                 Id = user.Id,
@@ -142,7 +142,7 @@ namespace FIXIT.BLL.Services.Service.Auth
                 LName = dto.LName,
                 Location = dto.Location,
                 PhoneNumber = dto.PhoneNumber,
-                ProfileImage = "Images/default.png",
+                ProfileImage = $"Images\\default.png",
                 Describtion = dto.Description!,
                 HourlyRate = dto.HourlyRate,
                 ExperienceOfYears = dto.ExperienceOfYears,

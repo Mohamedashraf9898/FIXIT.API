@@ -58,7 +58,7 @@ namespace FIXIT.BLL.Services.Service
         {
 			var clients = await repo.GetAllAsync();
 			if (clients == null || !clients.Any())
-				throw new NotFoundException(nameof(Client), "No Clients Found");
+				throw new NotFoundException(nameof(Client), "No Clients were Found");
 
 			return mapper.Map<List<GetAllClientsDTO>>(clients);
 
@@ -67,7 +67,9 @@ namespace FIXIT.BLL.Services.Service
 		{
  	 	  var normalizedEmail = Email.ToUpper();
 	  	  var client = await repo.GetClientByEmailAsync(normalizedEmail);
-  	 	 return mapper.Map<GetAllClientsDTO>(client);
+            if (client == null)
+                 throw new NotFoundException(nameof(Client), "No Client was  Found");
+            return mapper.Map<GetAllClientsDTO>(client);
 
 		}
 		

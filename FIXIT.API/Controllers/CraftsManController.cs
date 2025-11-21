@@ -57,8 +57,8 @@ namespace FIXIT.API.Controllers
 			return StatusCode(StatusCodes.Status201Created);
 		}
 
-		[HttpPut]
-		public  async Task<IActionResult> UpdateCraftsMan(int id, [FromBody] UpdateCraftsManDto dto)
+		[HttpPut("{id:int}")]
+		public  async Task<IActionResult> UpdateCraftsMan(int id, [FromForm] UpdateCraftsManDto dto)
 		{
 			if (dto == null || dto.Id != id)
 				return BadRequest();

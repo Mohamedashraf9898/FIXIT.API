@@ -1,26 +1,15 @@
 ﻿using AutoMapper;
 using FIXIT.BLL.DTOs.ClientDTOs;
 using FIXIT.BLL.DTOs.CraftsmanDTOs;
-using FIXIT.BLL.DTOs.Identity;
+using FIXIT.BLL.DTOs.OfferDto;
 using FIXIT.BLL.DTOs.ReviewDTOs;
 using FIXIT.BLL.DTOs.SchedulingDTOs;
 using FIXIT.BLL.DTOs.ServiceRequestDTOs;
 using FIXIT.BLL.DTOs.ServicsDTOs;
-using FIXIT.BLL.DTOs.OfferDto;
-using FIXIT.BLL.DTOs.ReviewDTOs;
-using FIXIT.BLL.DTOs.ServiceRequestDTOs;
 using FIXIT.BLL.DTOs.WalletDTos;
 using FIXIT.BLL.DTOs.WalletTransactionDTOs;
 using FIXIT.BLL.Helper.PictureUrlResolver;
 using FIXIT.DAL.Models;
-using Microsoft.AspNetCore.Http;
-using FIXIT.BLL.Repositories.IRepo;
-using FIXIT.DAL.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FIXIT.BLL.Mapping
 {
@@ -35,15 +24,18 @@ namespace FIXIT.BLL.Mapping
 				.ReverseMap();
 			CreateMap<CraftsMan,CreateCraftsManDto>().ForMember(dest => dest.ServiceNames,
         opt => opt.MapFrom(src => src.CraftsManServices.Select(cs => cs.Service.ServiceName).ToList())).ReverseMap();
-			CreateMap<CraftsMan, UpdateCraftsManDto>().ReverseMap();
-			CreateMap<CraftsManService,CreateCraftsManServiceDto>().ReverseMap();
+            CreateMap<CraftsMan, UpdateCraftsManDto>().ReverseMap()
+    .ForMember(dest => dest.ProfileImage, opt => opt.Condition(src => src.ProfileImage != null));
+
+            CreateMap<CraftsManService,CreateCraftsManServiceDto>().ReverseMap();
             //CLient Maping 
             // CLient Maping 
             CreateMap<Client, GetAllClientsDTO>().ForMember(dest => dest.ProfileImage,
                 opt => opt.MapFrom<PictureUrlResolver<Client, GetAllClientsDTO>>()).ReverseMap();
             CreateMap<Client, CreateClientDTO>().ReverseMap();
     
-			CreateMap<Client, UpdateClientDTO>().ReverseMap();
+			CreateMap<Client, UpdateClientDTO>().ReverseMap()
+                .ForMember(dest => dest.ProfileImage, opt => opt.Condition(src => src.ProfileImage != null));
 
             //Service Mapping 
             CreateMap<Service, GetAllServicesDTO>().ReverseMap();

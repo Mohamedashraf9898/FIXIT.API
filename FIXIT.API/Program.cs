@@ -30,6 +30,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using Microsoft.IdentityModel.Tokens;
 using CraftsManService = FIXIT.BLL.Services.Service.CraftsManService;
+using Microsoft.AspNetCore.Http.Features;
 using FIXIT.DAL.Models;
 
 namespace FIXIT.API
@@ -206,9 +207,23 @@ namespace FIXIT.API
             {
                 logger.LogError(ex, "An error occurred while migrating the database.");
             }
-
             app.UseMiddleware<ExceptionHandlerMiddlewares>();
+           
+            // iform
+            //builder.Services.Configure<FormOptions>(options =>
+            //{
+            //    options.MultipartBodyLengthLimit = 50_000_000; // 50 MB
+            //});
 
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Method == HttpMethods.Put || context.Request.Method == HttpMethods.Post)
+                {
+                    context.Request.EnableBuffering();
+                }
+                await next();
+            });
+            //
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();

@@ -5,7 +5,7 @@ namespace FIXIT.BLL.DTOs.CraftsmanDTOs
    
     public class CraftsManDto
 	{
-        
+        public int Id { get; set; }
         public string FName { get; set; }
 		public string LName { get; set; }
 		public string Describtion { get; set; }
@@ -15,7 +15,10 @@ namespace FIXIT.BLL.DTOs.CraftsmanDTOs
 		public bool IsVerified { get; set; }
 		public string NormalizedEmail { get; set; }
 
+        public int ExperienceOfYears { get; set; }
+        public decimal HourlyRate { get; set; }
+        public string PhoneNumber { get; set; }
 
 
-	}
+    }
 }

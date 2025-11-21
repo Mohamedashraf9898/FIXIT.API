@@ -28,7 +28,7 @@ namespace FIXIT.API.Controllers
         }
 
         [HttpPost("register/client")]
-        public async Task<IActionResult> RegisterClient([FromForm] ClientRegisterDto dto)
+        public async Task<IActionResult> RegisterClient([FromBody] ClientRegisterDto dto)
         {
             
                 var user = await _authService.RegisterClientAsync(dto);

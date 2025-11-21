@@ -82,7 +82,10 @@ namespace FIXIT.BLL.Services.Service.Auth
 
             var result = await _userManager.CreateAsync(user, dto.Password);
             if (!result.Succeeded)
-                throw new ValidationException();
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new ValidationException($"Registration failed: {errors}");
+            }
 
             await _userManager.AddToRoleAsync(user, "Client");
 
@@ -93,7 +96,7 @@ namespace FIXIT.BLL.Services.Service.Auth
                 LName = dto.LName,
                 Location = dto.Location,
                 PhoneNumber = dto.PhoneNumber,
-                ProfileImage = dto.ProfileImage,
+                ProfileImage = "Images/default.png",
                 Gender = dto.Gender,
                 DateOfBirth=dto.DateOfBirth,
                 NormalizedEmail = user.NormalizedEmail!
@@ -127,8 +130,8 @@ namespace FIXIT.BLL.Services.Service.Auth
             var result = await _userManager.CreateAsync(user, dto.Password);
             if (!result.Succeeded)
             {
-                var errors = string.Join("; ", result.Errors.Select(e => e.Description));
-                throw new ValidationException(errors);
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new ValidationException($"Registration failed: {errors}");
             }
             await _userManager.AddToRoleAsync(user, "CraftsMan");
 
@@ -139,8 +142,8 @@ namespace FIXIT.BLL.Services.Service.Auth
                 LName = dto.LName,
                 Location = dto.Location,
                 PhoneNumber = dto.PhoneNumber,
-                ProfileImage = dto.ProfileImage,
-                Describtion = dto.Description,
+                ProfileImage = "Images/default.png",
+                Describtion = dto.Description!,
                 HourlyRate = dto.HourlyRate,
                 ExperienceOfYears = dto.ExperienceOfYears,
                 Gender = dto.Gender,

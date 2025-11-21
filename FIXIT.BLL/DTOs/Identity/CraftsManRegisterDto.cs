@@ -28,8 +28,7 @@ namespace FIXIT.BLL.DTOs.Identity
         public required string Location { get; set; }
         [Required]
         public required string PhoneNumber { get; set; }
-        [Required]
-        public IFormFile ProfileImage { get; set; }
+      
         public string? Description { get; set; }
         
         public decimal HourlyRate { get; set; }

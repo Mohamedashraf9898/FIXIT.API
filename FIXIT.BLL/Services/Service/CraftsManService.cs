@@ -57,15 +57,17 @@ namespace FIXIT.BLL.Services.Service
 		}
         public async Task CreateCraftsManAsync(CreateCraftsManDto craftsManDto)
         {
-            string? imagePath = null;
+            //string? imagePath = null;
 
-            if (craftsManDto.ProfileImage != null)
-            {
-                imagePath = uploadHandler.Upload(craftsManDto.ProfileImage, "CraftsMen");
-            }
+            //if (craftsManDto.ProfileImage != null)
+            //{
+            //    imagePath = uploadHandler.Upload(craftsManDto.ProfileImage, "CraftsMen");
+            //}
 
+			if (craftsManDto == null)
+                throw new ValidationException("CraftsMan data cannot be null.");
             var craftsMan = mapper.Map<CraftsMan>(craftsManDto);
-            craftsMan.ProfileImage = imagePath;
+            //craftsMan.ProfileImage = imagePath;
 
             await craftsManRepo.AddAsync(craftsMan);
             craftsManRepo.Save();

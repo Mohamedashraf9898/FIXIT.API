@@ -18,7 +18,7 @@ namespace FIXIT.BLL.DTOs.CraftsmanDTOs
 		public Gender Gender { get; set; }
 		public DateTime DateOfBirth { get; set; }
 		public string Describtion { get; set; }
-		public IFormFile? ProfileImage { get; set; }
+		public string? ProfileImage { get; set; }
 		public int ExperienceOfYears { get; set; }
 		public decimal HourlyRate { get; set; }
 		public string NormalizedEmail { get; set; }

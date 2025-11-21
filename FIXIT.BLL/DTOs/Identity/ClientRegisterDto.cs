@@ -28,7 +28,7 @@ namespace FIXIT.BLL.DTOs.Identity
         public required string Location { get; set; }
         [Required]
         public required string PhoneNumber { get; set; }
-        public IFormFile? ProfileImage { get; set; }
+     
         [Required]
         public required Gender Gender { get; set; }
         [Required]

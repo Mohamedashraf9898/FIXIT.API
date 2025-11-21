@@ -26,15 +26,16 @@ namespace FIXIT.BLL.Services.Service
 
         public async Task CreateClientAsync(CreateClientDTO client)
         {
-            string? imagePath = null;
+            //string? imagePath = null;
 
-            if (client.ProfileImage != null)
-            {
-                imagePath =  uploadHandler.Upload(client.ProfileImage, "Clients");
-            }
-
+            //if (client.ProfileImage != null)
+            //{
+            //    imagePath = uploadHandler.Upload(client.ProfileImage, "Clients");
+            //}
+            if (client == null) throw new ValidationException("Client data cannot be null.");
             var clientEntity = mapper.Map<Client>(client);
-            clientEntity.ProfileImage = imagePath;
+
+            //clientEntity.ProfileImage = imagePath;
 
             await repo.AddAsync(clientEntity);
 

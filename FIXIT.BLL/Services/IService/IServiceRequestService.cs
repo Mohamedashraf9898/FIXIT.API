@@ -26,7 +26,8 @@ namespace FIXIT.BLL.Services.IService
 
         #region ForPaymentService
         //osama
-        Task<bool> CompleteServiceRequestAsync(int requestId);
+        Task<bool> CompleteServiceRequestAsync(int serviceRequestId);
+
         //end osama 
         #endregion
 

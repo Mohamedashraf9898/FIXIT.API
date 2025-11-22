@@ -63,10 +63,10 @@ namespace FIXIT.BLL.Services.Service
 			if (craftsManDto == null)
                 throw new ValidationException("CraftsMan data cannot be null.");
             var craftsMan = mapper.Map<CraftsMan>(craftsManDto);
-			var craftsmanwallet = new Wallet() { CraftsManId = craftsMan.Id, Balance = 0 };
-			await wallet.AddAsync(craftsmanwallet);
             await craftsManRepo.AddAsync(craftsMan);
             craftsManRepo.Save();
+			var craftsmanwallet = new Wallet() { CraftsManId = craftsMan.Id, Balance = 0 };
+			await wallet.AddAsync(craftsmanwallet);
 			wallet.Save();
         }
 		public async Task<List<CraftsManDto>> GetCraftsMenByLocationandServiceAsync(string location, string servicename)

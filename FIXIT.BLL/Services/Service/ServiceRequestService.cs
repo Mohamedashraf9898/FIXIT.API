@@ -223,7 +223,7 @@ namespace FIXIT.BLL.Services.Service
         }
         #endregion
         #region ForPaymentService
-        //osama added a payment method
+       // osama added a payment method
         //public async Task<bool> CompleteServiceRequestAsync(int serviceRequestId)
         //{
         //    var serviceRequest = await _serviceRequestRepository.GetAsync(serviceRequestId);

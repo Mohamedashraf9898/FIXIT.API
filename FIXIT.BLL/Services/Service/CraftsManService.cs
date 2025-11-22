@@ -20,14 +20,16 @@ namespace FIXIT.BLL.Services.Service
 	{
 		private readonly ICraftsManRepo craftsManRepo;
 		private readonly IGenericRepository<CraftsManService> generic;
-		private readonly IMapper mapper;
+        private readonly IGenericRepository<Wallet> wallet;
+        private readonly IMapper mapper;
         private readonly UploadHandler uploadHandler;
 
-        public CraftsManService(ICraftsManRepo craftsManRepo,IGenericRepository<CraftsManService> generic,IMapper mapper, UploadHandler uploadHandler) 
+        public CraftsManService(ICraftsManRepo craftsManRepo,IGenericRepository<CraftsManService> generic,IGenericRepository<Wallet> wallet, IMapper mapper, UploadHandler uploadHandler) 
 		{
 			this.craftsManRepo = craftsManRepo;
 			this.generic = generic;
-			this.mapper = mapper;
+            this.wallet = wallet;
+            this.mapper = mapper;
             this.uploadHandler = uploadHandler;
         }
 		public async Task<List<CraftsManDto>> GetAllCraftsMenAsync()
@@ -57,20 +59,15 @@ namespace FIXIT.BLL.Services.Service
 		}
         public async Task CreateCraftsManAsync(CreateCraftsManDto craftsManDto)
         {
-            //string? imagePath = null;
-
-            //if (craftsManDto.ProfileImage != null)
-            //{
-            //    imagePath = uploadHandler.Upload(craftsManDto.ProfileImage, "CraftsMen");
-            //}
-
+        
 			if (craftsManDto == null)
                 throw new ValidationException("CraftsMan data cannot be null.");
             var craftsMan = mapper.Map<CraftsMan>(craftsManDto);
-            //craftsMan.ProfileImage = imagePath;
-
+			var craftsmanwallet = new Wallet() { CraftsManId = craftsMan.Id, Balance = 0 };
+			await wallet.AddAsync(craftsmanwallet);
             await craftsManRepo.AddAsync(craftsMan);
             craftsManRepo.Save();
+			wallet.Save();
         }
 		public async Task<List<CraftsManDto>> GetCraftsMenByLocationandServiceAsync(string location, string servicename)
 		{

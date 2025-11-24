@@ -12,6 +12,6 @@ namespace FIXIT.BLL.Services.IService.Payment
     {
 
         Task<ReadServiceRequestDto?> CreateOrUpdatePaymentIntent(int serviceRequestId);
-        Task UpdatePaymentStatus(string requestBody, string paymentStatus);
+        Task UpdatePaymentStatus(string requestBody, string stripeSignature);
     }
 }

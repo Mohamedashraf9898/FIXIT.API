@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FIXIT.API.Erorrs.Exceptions;
 using FIXIT.BLL.DTOs.ServiceRequestDTOs;
+using FIXIT.BLL.Exceptions;
 using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.BLL.Services.IService.Payment;
 using FIXIT.DAL.Models;
@@ -10,108 +11,150 @@ using Stripe;
 
 namespace FIXIT.BLL.Services.Service.Payment
 {
-    public class PaymentService(IServiceRequestRepository serviceRequestService, IMapper mapper, IConfiguration configuration,ILogger<ServicesRequest> logger) : IPaymentService
+    public class PaymentService : IPaymentService
     {
+        private readonly IServiceRequestRepository _serviceRequestService;
+        private readonly IMapper _mapper;
+        private readonly IConfiguration _configuration;
+        private readonly ILogger<PaymentService> _logger;
+
+        public PaymentService(
+            IServiceRequestRepository serviceRequestService,
+            IMapper mapper,
+            IConfiguration configuration,
+            ILogger<PaymentService> logger)
+        {
+            _serviceRequestService = serviceRequestService;
+            _mapper = mapper;
+            _configuration = configuration;
+            _logger = logger;
+        }
+
         public async Task<ReadServiceRequestDto?> CreateOrUpdatePaymentIntent(int serviceRequestId)
         {
-            StripeConfiguration.ApiKey = configuration["StripeSettings:PublishableKey"];
-            var serviceRequest = await serviceRequestService.GetAsync(serviceRequestId);
+            StripeConfiguration.ApiKey = _configuration["StripeSettings:SecretKey"];
+            var serviceRequest = await _serviceRequestService.GetAsync(serviceRequestId);
+
             if (serviceRequest == null)
-            {
                 throw new NotFoundException("Service request not found", serviceRequestId);
-            }
 
-            if (serviceRequest.TotalAmount > 0)
+            if (!serviceRequest.TotalAmount.HasValue || serviceRequest.TotalAmount <= 0)
             {
-
+                serviceRequest.TotalAmount = 200;
             }
-            PaymentIntent? paymentIntent = null;
+
+            var amount = (long)(serviceRequest.TotalAmount.Value * 100);
             PaymentIntentService intentService = new PaymentIntentService();
-            //create payment intent
+            PaymentIntent? paymentIntent = null;
+
             if (string.IsNullOrEmpty(serviceRequest.PaymentIntentId))
             {
-                var options = new PaymentIntentCreateOptions()
+                var options = new PaymentIntentCreateOptions
                 {
-
-
-                    Amount = (long)serviceRequest.TotalAmount * 100,
+                    Amount = amount,
                     Currency = "USD",
-                    PaymentMethodTypes = new List<string>()
-                    {
-                        "card"
-                    }
-
+                    PaymentMethodTypes = new List<string> { "card" }
                 };
+
                 paymentIntent = await intentService.CreateAsync(options);
                 serviceRequest.PaymentIntentId = paymentIntent.Id;
                 serviceRequest.ClientSecret = paymentIntent.ClientSecret;
-
             }
-            else // update payment intent
+            else
             {
-                var optoins = new PaymentIntentUpdateOptions()
+                var options = new PaymentIntentUpdateOptions
                 {
-                    Amount = (long)serviceRequest.TotalAmount * 100,
+                    Amount = amount
                 };
-
-                await intentService.UpdateAsync(serviceRequest.PaymentIntentId, optoins);
+                await intentService.UpdateAsync(serviceRequest.PaymentIntentId, options);
             }
 
-            serviceRequestService.Update(serviceRequest, serviceRequestId);
-            serviceRequestService.Save();
-            var dto = mapper.Map<ReadServiceRequestDto>(serviceRequest);
-            return dto;
+            _serviceRequestService.Update(serviceRequest, serviceRequestId);
+            _serviceRequestService.Save();
+
+            return _mapper.Map<ReadServiceRequestDto>(serviceRequest);
         }
 
-        public async Task UpdatePaymentStatus(string requestBody, string paymentStatus)
+        public async Task UpdatePaymentStatus(string requestBody, string stripeSignature)
         {
-
-
-
-            //var stripeEvent = EventUtility.ParseEvent(json);
-            //var signatureHeader = Request.Headers["Stripe-Signature"];
-
-            var stripeEvent = EventUtility.ConstructEvent(requestBody, paymentStatus, configuration.GetSection("StripeSettings:Webhook:Secret").Value);
-            //signatureHeader, endpointSecret);
-
-            var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
-            ServicesRequest? serviceRequest ;
-
-            if (stripeEvent.Type == EventTypes.PaymentIntentSucceeded)
+            try
             {
+                var webhookSecret = _configuration.GetSection("StripeSettings:Webhook:Secret").Value;
 
-                serviceRequest = await UpdatePayment(paymentIntent.Id,true);
-                logger.LogInformation($"Payment succeeded for ServiceRequestId: {serviceRequest.ServicesRequestId}");
+                if (string.IsNullOrEmpty(webhookSecret))
+                {
+                    _logger.LogError("❌ Webhook secret is NULL!");
+                    return;
+                }
 
+                var stripeEvent = EventUtility.ConstructEvent(
+                    requestBody,
+                    stripeSignature,
+                    webhookSecret
+                );
+
+                _logger.LogInformation("✅ Event: {Type}", stripeEvent.Type);
+
+                if (stripeEvent.Type != EventTypes.PaymentIntentSucceeded &&
+                    stripeEvent.Type != EventTypes.PaymentIntentPaymentFailed)
+                {
+                    return;
+                }
+
+                var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
+
+                if (paymentIntent == null)
+                {
+                    return;
+                }
+
+                if (stripeEvent.Type == EventTypes.PaymentIntentSucceeded)
+                {
+                    var serviceRequest = await UpdatePayment(paymentIntent.Id, true);
+                    _logger.LogInformation("✅ Payment succeeded for ServiceRequest: {Id}", serviceRequest.ServicesRequestId);
+                }
+                else if (stripeEvent.Type == EventTypes.PaymentIntentPaymentFailed)
+                {
+                    var serviceRequest = await UpdatePayment(paymentIntent.Id, false);
+                    _logger.LogInformation("⚠️ Payment failed for ServiceRequest: {Id}", serviceRequest.ServicesRequestId);
+                }
             }
-            else if (stripeEvent.Type == EventTypes.PaymentIntentPaymentFailed)
+            catch (Stripe.StripeException)
             {
-                serviceRequest = await UpdatePayment(paymentIntent.Id,false);
-                logger.LogInformation($"Payment failed for ServiceRequestId: {serviceRequest.ServicesRequestId}");  
+                // Silently ignore signature validation errors (duplicate webhooks)
+                return;
             }
-
-
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Unexpected error");
+                throw;
+            }
         }
 
-
-        private async Task<ServicesRequest> UpdatePayment(string paymentIntentId,bool isPayed)
+        private async Task<ServicesRequest> UpdatePayment(string paymentIntentId, bool isPayed)
         {
+            var serviceRequest = await _serviceRequestService.GetByIntentId(paymentIntentId);
 
-            var serviceRequest = await serviceRequestService.GetByIntentId(paymentIntentId);
             if (serviceRequest == null)
             {
                 throw new NotFoundException("Service request not found", paymentIntentId);
             }
-            serviceRequest.Status= isPayed ? ServiceRequestStatus.InProgress : ServiceRequestStatus.WaitingForClientPayment;
-            serviceRequestService.Update(serviceRequest, serviceRequest.ServicesRequestId);
-            serviceRequestService.Save();
+
+            var expectedStatus = isPayed
+                ? ServiceRequestStatus.InProgress
+                : ServiceRequestStatus.WaitingForClientPayment;
+
+            if (serviceRequest.Status == expectedStatus)
+            {
+                return serviceRequest;
+            }
+
+            serviceRequest.Status = expectedStatus;
+
+            _serviceRequestService.Update(serviceRequest, serviceRequest.ServicesRequestId);
+            _serviceRequestService.Save();
+
             return serviceRequest;
-
-
         }
-
-     
-
     }
-
 }

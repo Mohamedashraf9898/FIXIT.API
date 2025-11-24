@@ -72,13 +72,6 @@ namespace FIXIT.BLL.Services.Service
             }
             var serviceRequest = _mapper.Map<ServicesRequest>(dto);
             serviceRequest.ServiceRequestImage = imagePath;
-            var isExist = await _serviceRequestRepository.GetByIntentId(serviceRequest.PaymentIntentId!);
-            if (isExist is not null)
-            {
-                _serviceRequestRepository.Delete(isExist.ServicesRequestId);
-              await paymentService.CreateOrUpdatePaymentIntent(serviceRequest.ServicesRequestId);
-            }
-
             await EnsureServiceRequestLocationAsync(serviceRequest);
 
             await _serviceRequestRepository.AddAsync(serviceRequest);
@@ -91,8 +84,15 @@ namespace FIXIT.BLL.Services.Service
             if (serviceRequest.ServiceStartTime <= DateTime.UtcNow)
                 throw new ValidationException("ServiceAt must be in the future.");
             _serviceRequestRepository.Save();
+            var paymentResult = await paymentService.CreateOrUpdatePaymentIntent(serviceRequest.ServicesRequestId);
+
+       
+            _serviceRequestRepository.Update(serviceRequest, serviceRequest.ServicesRequestId);
+            _serviceRequestRepository.Save();
 
             return true;
+
+          
         }
 
         public async Task<bool> DeleteServiceRequest(int id)

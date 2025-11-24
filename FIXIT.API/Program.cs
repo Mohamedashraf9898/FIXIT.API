@@ -207,8 +207,8 @@ namespace FIXIT.API
             {
                 logger.LogError(ex, "An error occurred while migrating the database.");
             }
-            app.UseMiddleware<ExceptionHandlerMiddlewares>();
-           
+              app.UseMiddleware<ExceptionHandlerMiddlewares>();
+
             // iform
             //builder.Services.Configure<FormOptions>(options =>
             //{
@@ -223,7 +223,7 @@ namespace FIXIT.API
                 }
                 await next();
             });
-            //
+
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -231,7 +231,12 @@ namespace FIXIT.API
             }
             app.UseStaticFiles();
             app.UseCors("FixItPolicy");
+
             app.UseHttpsRedirection();
+            if (!app.Environment.IsDevelopment())
+            {
+                app.UseHttpsRedirection();
+            }
             app.UseAuthentication();
             app.UseAuthorization();
             

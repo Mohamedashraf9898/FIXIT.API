@@ -8,9 +8,9 @@ namespace FIXIT.BLL.DTOs.ServicsDTOs
 {
     public class CreateServiceDto
     {
+
         public string ServiceName { get; set; }
-        public string? Description { get; set; }
         public decimal InitialPrice { get; set; }
-        public bool IsActive { get; set; } = true;
+        public int DisplayDurationMinutes { get; set; }
     }
 }

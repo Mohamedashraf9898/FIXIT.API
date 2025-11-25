@@ -14,7 +14,7 @@ namespace FIXIT.BLL.DTOs.ServiceRequestDTOs
         public string Description { get; set; }
         public string? Location { get; set; } // Optional, Service layer handles default
         public IFormFile? ServiceRequestImage { get; set; }
-        public DateTime ServiceStartTime { get; set; }
+       // public DateTime ServiceStartTime { get; set; }
         public decimal? SuggestedPrice { get; set; }
     }
 }

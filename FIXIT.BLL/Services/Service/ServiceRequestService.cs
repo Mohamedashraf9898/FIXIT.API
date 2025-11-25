@@ -81,14 +81,14 @@ namespace FIXIT.BLL.Services.Service
             if (string.IsNullOrEmpty(serviceRequest.Description))
                 throw new ValidationException("Description cannot be empty.");
 
-            if (serviceRequest.ServiceStartTime <= DateTime.UtcNow)
-                throw new ValidationException("ServiceAt must be in the future.");
-            _serviceRequestRepository.Save();
-            var paymentResult = await paymentService.CreateOrUpdatePaymentIntent(serviceRequest.ServicesRequestId);
+            //if (serviceRequest.ServiceStartTime <= DateTime.UtcNow)
+            //    throw new ValidationException("ServiceAt must be in the future.");
 
-       
-            _serviceRequestRepository.Update(serviceRequest, serviceRequest.ServicesRequestId);
             _serviceRequestRepository.Save();
+
+            //var paymentResult = await paymentService.CreateOrUpdatePaymentIntent(serviceRequest.ServicesRequestId);
+            //_serviceRequestRepository.Update(serviceRequest, serviceRequest.ServicesRequestId);
+            //_serviceRequestRepository.Save();
 
             return true;
 

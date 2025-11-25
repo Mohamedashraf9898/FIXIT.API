@@ -42,7 +42,6 @@ public class ServicesRequest
     public DateTime? CompletedAt { get; set; }
 
         //Abdallah
-        [Required]
         public DateTime ServiceStartTime { get; set; } 
 
         [Range(15, 480, ErrorMessage = "Duration must be between 15 minutes and 8 hours")]

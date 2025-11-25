@@ -31,6 +31,8 @@ namespace FIXIT.BLL.DTOs.ServiceRequestDTOs
         public string Status { get; set; }
         public decimal SuggestedPrice { get; set; }
         public decimal TotalAmount { get; set; }
-      
+
+        public string? ClientSecret { get; set; }
+
     }
 }

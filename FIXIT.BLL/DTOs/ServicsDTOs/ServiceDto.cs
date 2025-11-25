@@ -8,6 +8,8 @@ namespace FIXIT.BLL.DTOs.ServicsDTOs
 {
     public class ServiceDto
     {
+        public int ServiceId { get; set; }
+
         public string ServiceName { get; set; }
         public decimal InitialPrice { get; set; }
         public int DisplayDurationMinutes { get; set; }

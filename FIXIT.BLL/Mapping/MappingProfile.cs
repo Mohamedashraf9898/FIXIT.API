@@ -49,7 +49,7 @@ namespace FIXIT.BLL.Mapping
             CreateMap<Review, CreateReviewDTO>().ReverseMap();
 			CreateMap<Review, UpdateReviewDTO>().ReverseMap();
 			CreateMap<Review, GetAllReviewsDTO>().ReverseMap();
-
+            
 
             //========================
             //ServiceRequestMapping

@@ -73,11 +73,11 @@ namespace FIXIT.BLL.Services.Service
             var serviceRequest = _mapper.Map<ServicesRequest>(dto);
             serviceRequest.ServiceRequestImage = imagePath;
             var isExist = await _serviceRequestRepository.GetByIntentId(serviceRequest.PaymentIntentId!);
-            if (isExist is not null)
-            {
-                _serviceRequestRepository.Delete(isExist.ServicesRequestId);
-              await paymentService.CreateOrUpdatePaymentIntent(serviceRequest.ServicesRequestId);
-            }
+            //if (isExist is not null)
+            //{
+            //    _serviceRequestRepository.Delete(isExist.ServicesRequestId);
+            //  await paymentService.CreateOrUpdatePaymentIntent(serviceRequest.ServicesRequestId);
+            //}
 
             await EnsureServiceRequestLocationAsync(serviceRequest);
 

@@ -149,7 +149,9 @@ namespace FIXIT.BLL.Services.Service.Auth
                 Gender = dto.Gender,
                 NationalId = dto.NationalId,
                 DateOfBirth = dto.DateOfBirth,
-                NormalizedEmail = user.NormalizedEmail!
+                NormalizedEmail = user.NormalizedEmail!,
+                ServiceId = dto.ServiceId
+
             });
 
             return new UserDto

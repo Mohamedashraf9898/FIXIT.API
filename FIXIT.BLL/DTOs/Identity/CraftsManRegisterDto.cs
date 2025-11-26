@@ -39,5 +39,6 @@ namespace FIXIT.BLL.DTOs.Identity
         public required Gender Gender { get; set; }
         [Required]
         public required DateTime DateOfBirth { get; set; }
+        public int ServiceId { get; set; }
     }
 }

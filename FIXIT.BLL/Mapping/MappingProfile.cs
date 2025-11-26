@@ -19,15 +19,16 @@ namespace FIXIT.BLL.Mapping
 		{
 			//CraftsMan mapping
 			CreateMap<CraftsMan, CraftsManDto>()
-				.ForMember(dest => dest.ProfileImage,
+                .ForMember(dest => dest.ServiceName,
+                    opt => opt.MapFrom(src => src.Service != null ? src.Service.ServiceName : null))
+                .ForMember(dest => dest.ProfileImage,
 					opt => opt.MapFrom<PictureUrlResolver<CraftsMan, CraftsManDto>>())
 				.ReverseMap();
-			CreateMap<CraftsMan,CreateCraftsManDto>().ForMember(dest => dest.ServiceNames,
-        opt => opt.MapFrom(src => src.CraftsManServices.Select(cs => cs.Service.ServiceName).ToList())).ReverseMap();
+			CreateMap<CraftsMan,CreateCraftsManDto>().ReverseMap();
             CreateMap<CraftsMan, UpdateCraftsManDto>().ReverseMap()
     .ForMember(dest => dest.ProfileImage, opt => opt.Condition(src => src.ProfileImage != null));
 
-            CreateMap<CraftsManService,CreateCraftsManServiceDto>().ReverseMap();
+     
             //CLient Maping 
             // CLient Maping 
             CreateMap<Client, GetAllClientsDTO>().ForMember(dest => dest.ProfileImage,

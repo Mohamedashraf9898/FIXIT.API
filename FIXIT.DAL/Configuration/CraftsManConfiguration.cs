@@ -43,9 +43,11 @@ namespace FIXIT.DAL.Configuration
                    .HasForeignKey(r => r.CraftsManId)
                    .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasMany(c => c.CraftsManServices)
-                   .WithOne(cs => cs.CraftsMan)
-                   .HasForeignKey(cs => cs.CraftsManId);
+           builder.HasOne(c => c.Service)
+                   .WithMany(s => s.CraftsMan)
+                   .HasForeignKey(c => c.ServiceId)
+                   .IsRequired()
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(c => c.Wallet)
                    .WithOne(w => w.CraftsMan)

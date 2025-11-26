@@ -14,7 +14,7 @@ namespace FIXIT.BLL.DTOs.CraftsmanDTOs
 		public string Location { get; set; }
 		public bool IsVerified { get; set; }
 		public string NormalizedEmail { get; set; }
-
+        public string ServiceName { get; set; }
         public int ExperienceOfYears { get; set; }
         public decimal HourlyRate { get; set; }
         public string PhoneNumber { get; set; }

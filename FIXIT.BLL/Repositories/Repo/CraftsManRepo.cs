@@ -43,9 +43,8 @@ namespace FIXIT.BLL.Repositories.Repo
 			}
 			if (!string.IsNullOrWhiteSpace(location))
 			{
-				
-			//	query = query.Where(c => c.Service.ServiceName
-			//.Any(cs => EF.Functions.Like(cs.Service.ServiceName, $"%{servicename}%")));
+
+				query = query.Where(c => EF.Functions.Like(c.Service.ServiceName, $"%{servicename}%"));
 
 			}
 

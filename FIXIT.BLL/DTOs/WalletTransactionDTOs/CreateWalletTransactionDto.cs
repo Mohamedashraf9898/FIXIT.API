@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FIXIT.DAL.Models;
 
 namespace FIXIT.BLL.DTOs.WalletTransactionDTOs
 {
@@ -12,8 +13,9 @@ namespace FIXIT.BLL.DTOs.WalletTransactionDTOs
         public int CraftsManId { get; set; }
         public int WalletId { get; set; }
         public decimal? Amount { get; set; }
-        // public string TransactionType { get; set; }
-        //public string Description { get; set; }
+        public Transactionmethod? Transactionmethod { get; set; }
+        public TransactionType? Transactiontype { get; set; }
+        public string? TransationInfo { get; set; }
         public DateTime CreatedAt { get; set; }
         public int? ServiceRequestId { get; set; }
     }

@@ -1,5 +1,6 @@
 ﻿using FIXIT.BLL.DTOs.WalletTransactionDTOs;
 using FIXIT.BLL.Services.IService;
+using FIXIT.DAL.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FIXIT.API.Controllers
@@ -44,8 +45,11 @@ namespace FIXIT.API.Controllers
                 message = "Withdrawal successful.",
                 craftsManId = dto.CraftsManId,
                 amountWithdrawn = dto.Amount,
-                date = DateTime.Now
-            });
+                date = DateTime.Now,
+                withdrawmethod=dto.Transactiontype,
+                withdrawmethodinfo=dto.TransationInfo,
+                TransactionMethod=Transactionmethod.Withdraw
+             });
         }
 
         [HttpGet("{craftsManId}/transactions")]

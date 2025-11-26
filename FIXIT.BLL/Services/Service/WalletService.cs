@@ -50,8 +50,8 @@ namespace FIXIT.BLL.Services.Service
 			transaction.WalletId = wallet.Id;
 			transaction.Amount = netAmount;
 			transaction.CreatedAt = DateTime.Now;
-
-			await _transactionRepo.AddAsync(transaction);
+            transaction.Transactionmethod = Transactionmethod.Deposits;
+            await _transactionRepo.AddAsync(transaction);
 			_walletRepo.Save();
 			return true;
 		}
@@ -62,6 +62,8 @@ namespace FIXIT.BLL.Services.Service
 				throw new ValidationException("Transaction data cannot be null.");
 			if (dto.Amount <= 0)
 				throw new ValidationException("Amount must be greater than zero.");
+			if(dto.Transactiontype==null)
+				throw new ValidationException("Choose Your Transaction Method.");
 
 			var wallet = await _walletRepo.GetWalletByCraftsManIdAsync(dto.CraftsManId);
 			if (wallet == null)
@@ -75,7 +77,9 @@ namespace FIXIT.BLL.Services.Service
 			transaction.WalletId = wallet.Id;
 			transaction.Amount = dto.Amount;
 			transaction.CreatedAt = DateTime.Now;
-
+			transaction.Transactionmethod = Transactionmethod.Withdraw;
+			transaction.Transactiontype = dto.Transactiontype;
+			transaction.TransationInfo = dto.TransationInfo;
 			await _transactionRepo.AddAsync(transaction);
 			_walletRepo.Save();
 			return true;

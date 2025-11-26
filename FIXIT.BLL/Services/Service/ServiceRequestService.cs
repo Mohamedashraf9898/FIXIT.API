@@ -247,8 +247,9 @@ namespace FIXIT.BLL.Services.Service
                 WalletId = wallet.Id,
                 ServiceRequestId = serviceRequest.ServicesRequestId,
                 Amount = netAmount,
-
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.Now,
+                Transactionmethod=Transactionmethod.Deposits
+                
             };
 
             var transaction = _mapper.Map<WalletTransaction>(transactionDto);

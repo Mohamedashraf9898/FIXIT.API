@@ -295,6 +295,26 @@ namespace FIXIT.BLL.Services.Service
             return start1 < end2 && start2 < end1;
         }
 
+        public async Task<bool> UpdateServiceRequestStartAtTime(int id, ConfirmStartatTimeDto dto)
+        {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            var existing = await _serviceRequestRepository.GetAsync(id);
+            if (existing == null)
+                throw new KeyNotFoundException($"Service Request with ID {id} not found");
+
+      
+
+            _mapper.Map(dto, existing);
+           
+            
+
+            var updated = _serviceRequestRepository.Update(existing, id);
+            if (updated) _serviceRequestRepository.Save();
+
+            return updated;
+        }
     }
 }
   

@@ -153,7 +153,27 @@ namespace FIXIT.API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
-
+        [HttpPut("StartAtTime/{id}")]
+        public async Task<IActionResult> UpdateServiceRequestStartAtTime(int id, ConfirmStartatTimeDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            try
+            {
+                var result = await _serviceRequestService.UpdateServiceRequestStartAtTime(id, dto);
+                if (!result)
+                    return NotFound($"Service request with ID {id} not found.");
+                return Ok("Service request start time updated successfully.");
+            }
+            catch (InvalidOperationException ex) 
+            {
+                return BadRequest(new { message = ex.Message }); 
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal server error", details = ex.Message });
+            }
+        }
 
         #region ForPaymentService
         [HttpPost("complete/{requestId}")]

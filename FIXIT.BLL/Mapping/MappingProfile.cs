@@ -92,6 +92,13 @@ namespace FIXIT.BLL.Mapping
             CreateMap<UpdateServiceRequestDto, ServicesRequest>()
                 .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null)); // update only non-null fields
 
+
+            //
+
+            CreateMap<ServicesRequest,ConfirmStartatTimeDto>().ReverseMap();
+
+
+
             // ============================
             // Offer Mappings
             // ============================

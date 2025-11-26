@@ -28,9 +28,11 @@ namespace FIXIT.DAL.Configuration
                    .IsRequired()
                    .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasMany(s => s.CraftsManServices)
-                   .WithOne(cs => cs.Service)
-                   .HasForeignKey(cs => cs.ServiceId);
+            builder.HasMany(s => s.CraftsMan)
+                .WithOne(c => c.Service)
+                .HasForeignKey(c => c.ServiceId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

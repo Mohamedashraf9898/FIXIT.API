@@ -9,5 +9,6 @@
 
         public virtual CraftsMan CraftsMan { get; set; }
         public virtual ICollection<WalletTransaction> WalletTransactions { get; set; }
+
     }
 }

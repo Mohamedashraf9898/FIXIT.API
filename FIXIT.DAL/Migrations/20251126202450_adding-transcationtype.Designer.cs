@@ -4,6 +4,7 @@ using FIXIT.DAL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FIXIT.DAL.Migrations
 {
     [DbContext(typeof(FixItDbContext))]
-    partial class FixItDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251126202450_adding-transcationtype")]
+    partial class addingtranscationtype
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -124,12 +127,7 @@ namespace FIXIT.DAL.Migrations
                     b.Property<double>("Rating")
                         .HasColumnType("float");
 
-                    b.Property<int>("ServiceId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("ServiceId");
 
                     b.ToTable("CraftsMen", (string)null);
                 });
@@ -168,6 +166,24 @@ namespace FIXIT.DAL.Migrations
                     b.HasIndex("CraftsManId");
 
                     b.ToTable("CraftsManAvailabilities");
+                });
+
+            modelBuilder.Entity("FIXIT.DAL.Models.CraftsManService", b =>
+                {
+                    b.Property<int>("CraftsManId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ServiceId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("HourlyRate")
+                        .HasColumnType("money");
+
+                    b.HasKey("CraftsManId", "ServiceId");
+
+                    b.HasIndex("ServiceId");
+
+                    b.ToTable("CraftsMenServices", (string)null);
                 });
 
             modelBuilder.Entity("FIXIT.DAL.Models.CraftsManTimeOff", b =>
@@ -477,9 +493,6 @@ namespace FIXIT.DAL.Migrations
                     b.Property<int?>("ServiceRequestId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("Transactionmethod")
-                        .HasColumnType("int");
-
                     b.Property<int?>("Transactiontype")
                         .HasColumnType("int");
 
@@ -539,17 +552,6 @@ namespace FIXIT.DAL.Migrations
                     b.ToTable("Offers");
                 });
 
-            modelBuilder.Entity("FIXIT.DAL.Models.CraftsMan", b =>
-                {
-                    b.HasOne("FIXIT.DAL.Models.Service", "Service")
-                        .WithMany("CraftsMan")
-                        .HasForeignKey("ServiceId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Service");
-                });
-
             modelBuilder.Entity("FIXIT.DAL.Models.CraftsManAvailability", b =>
                 {
                     b.HasOne("FIXIT.DAL.Models.CraftsMan", "CraftsMan")
@@ -559,6 +561,25 @@ namespace FIXIT.DAL.Migrations
                         .IsRequired();
 
                     b.Navigation("CraftsMan");
+                });
+
+            modelBuilder.Entity("FIXIT.DAL.Models.CraftsManService", b =>
+                {
+                    b.HasOne("FIXIT.DAL.Models.CraftsMan", "CraftsMan")
+                        .WithMany("CraftsManServices")
+                        .HasForeignKey("CraftsManId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FIXIT.DAL.Models.Service", "Service")
+                        .WithMany("CraftsManServices")
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CraftsMan");
+
+                    b.Navigation("Service");
                 });
 
             modelBuilder.Entity("FIXIT.DAL.Models.CraftsManTimeOff", b =>
@@ -684,6 +705,8 @@ namespace FIXIT.DAL.Migrations
                 {
                     b.Navigation("Availability");
 
+                    b.Navigation("CraftsManServices");
+
                     b.Navigation("Reviews");
 
                     b.Navigation("ServicesRequests");
@@ -695,7 +718,7 @@ namespace FIXIT.DAL.Migrations
 
             modelBuilder.Entity("FIXIT.DAL.Models.Service", b =>
                 {
-                    b.Navigation("CraftsMan");
+                    b.Navigation("CraftsManServices");
 
                     b.Navigation("ServicesRequests");
                 });

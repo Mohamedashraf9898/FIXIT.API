@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FIXIT.DAL.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +9,7 @@ namespace FIXIT.BLL.Services.IService
 {
     public interface INotificationSenderService
     {
-        Task SendNotificationToUserAsync(int? clientId, int? craftsManId, string title, string message);
+        Task SendNotificationToUserAsync(int? clientId, int? craftsManId, string title, string message, NotificationSenderType senderType);
 
     }
 }

@@ -23,28 +23,71 @@ namespace FIXIT.BLL.Services.Service
             _mapper = mapper;
             _senderService = senderService;
         }
-
-        public async Task CreateNotificationAsync(CreateNotificationDto dto)
+        public async Task CreateFromClientAsync(CreateNotificationDto dto)
         {
             var notification = _mapper.Map<Notification>(dto);
+            notification.SenderType = NotificationSenderType.Client;
+
             await _repo.AddAsync(notification);
             await _repo.SaveAsync();
 
-            
-            await _senderService.SendNotificationToUserAsync(dto.ClientId, dto.CraftsManId, dto.Title, dto.Message);
+            // يبعت الإشعار للحرفي فقط
+            if (dto.CraftsManId.HasValue)
+            {
+                await _senderService.SendNotificationToUserAsync(
+                    clientId: null,
+                    craftsManId: dto.CraftsManId,
+                    title: dto.Title,
+                    message: dto.Message,
+                    senderType: NotificationSenderType.Client
+                );
+            }
+        }
+        public async Task CreateFromCraftsmanAsync(CreateNotificationDto dto)
+        {
+            var notification = _mapper.Map<Notification>(dto);
+            notification.SenderType = NotificationSenderType.Craftsman;
+
+            await _repo.AddAsync(notification);
+            await _repo.SaveAsync();
+
+            // يبعت الإشعار للعميل فقط
+            if (dto.ClientId.HasValue)
+            {
+                await _senderService.SendNotificationToUserAsync(
+                    clientId: dto.ClientId,
+                    craftsManId: null,
+                    title: dto.Title,
+                    message: dto.Message,
+                    senderType: NotificationSenderType.Craftsman
+                );
+            }
         }
 
         public async Task<List<ReadNotificationDto>> GetNotificationsForClientAsync(int clientId)
         {
             var notifications = await _repo.GetNotificationsForClientAsync(clientId);
-            return _mapper.Map<List<ReadNotificationDto>>(notifications);
+            return _mapper.Map<List<ReadNotificationDto>>(notifications
+                .Where(n => n.SenderType == NotificationSenderType.Craftsman)); // بس اللي بعتها الحرفي
         }
-
         public async Task<List<ReadNotificationDto>> GetNotificationsForCraftsmanAsync(int craftsManId)
         {
             var notifications = await _repo.GetNotificationsForCraftsManAsync(craftsManId);
-            return _mapper.Map<List<ReadNotificationDto>>(notifications);
+            return _mapper.Map<List<ReadNotificationDto>>(notifications
+                .Where(n => n.SenderType == NotificationSenderType.Client)); // بس اللي بعتها العميل
         }
+
+        //public async Task<List<ReadNotificationDto>> GetNotificationsForClientAsync(int clientId)
+        //{
+        //    var notifications = await _repo.GetNotificationsForClientAsync(clientId);
+        //    return _mapper.Map<List<ReadNotificationDto>>(notifications);
+        //}
+
+        //public async Task<List<ReadNotificationDto>> GetNotificationsForCraftsmanAsync(int craftsManId)
+        //{
+        //    var notifications = await _repo.GetNotificationsForCraftsManAsync(craftsManId);
+        //    return _mapper.Map<List<ReadNotificationDto>>(notifications);
+        //}
 
         public async Task<ReadNotificationDto> MarkAsReadAsync(int id)
         {

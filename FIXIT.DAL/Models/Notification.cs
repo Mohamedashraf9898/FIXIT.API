@@ -6,6 +6,12 @@ using System.Threading.Tasks;
 
 namespace FIXIT.DAL.Models
 {
+    public enum NotificationSenderType
+    {
+        Client,
+        Craftsman
+    }
+
     public enum NotificationType
     {
         SelectCraftsman,
@@ -26,6 +32,8 @@ namespace FIXIT.DAL.Models
 
         public string Title { get; set; }
         public string Message { get; set; }
+        public NotificationSenderType SenderType { get; set; }
+        public NotificationType Type { get; set; }
 
         public bool IsRead { get; set; } = false;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

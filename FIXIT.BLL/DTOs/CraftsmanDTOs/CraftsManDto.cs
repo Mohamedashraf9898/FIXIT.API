@@ -19,6 +19,7 @@ namespace FIXIT.BLL.DTOs.CraftsmanDTOs
         public decimal HourlyRate { get; set; }
         public string PhoneNumber { get; set; }
 
+        public string NationalId { get; set; }
 
     }
 }

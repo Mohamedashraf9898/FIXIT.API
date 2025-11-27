@@ -30,15 +30,15 @@ namespace FIXIT.BLL.Repositories.Repo
 
         public  async Task<List<T>> GetAllAsync()
         {
-			if (typeof(T) == typeof(CraftsMan))
-			{
-				var craftsmen = await _dbContext.CraftsMan
-					.Where(e => e.IsVerified == true)
-					.AsNoTracking()
-					.ToListAsync();
+			//if (typeof(T) == typeof(CraftsMan))
+			//{
+			//	var craftsmen = await _dbContext.CraftsMan
+			//		.Where(e => e.IsVerified == true)
+			//		.AsNoTracking()
+			//		.ToListAsync();
 
-				return craftsmen.Cast<T>().ToList();
-			}
+			//	return craftsmen.Cast<T>().ToList();
+			//}
 			return await _dbContext.Set<T>().AsNoTracking().ToListAsync();
 
         }

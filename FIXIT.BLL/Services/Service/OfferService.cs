@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FIXIT.BLL.DTOs.NotificationDtos;
 using FIXIT.BLL.DTOs.OfferDto;
 using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.BLL.Services.IService;
@@ -14,15 +15,18 @@ namespace FIXIT.BLL.Services.Service
         private readonly IOfferRepository _offerRepository;
         private readonly IServiceRequestRepository _serviceRequestRepository;
         private readonly IMapper _mapper;
+        private readonly INotificationService _notificationService;
 
         public OfferService(
             IOfferRepository offerRepository,
             IServiceRequestRepository serviceRequestRepository,
-            IMapper mapper)
+            IMapper mapper,
+             INotificationService notificationService)
         {
             _offerRepository = offerRepository;
             _serviceRequestRepository = serviceRequestRepository;
             _mapper = mapper;
+            _notificationService = notificationService;
         }
 
 
@@ -55,6 +59,39 @@ namespace FIXIT.BLL.Services.Service
         }
 
 
+        //public async Task<bool> ClientRespondToOfferAsync(ClientRespondDto dto)
+        //{
+        //    var offer = await _offerRepository.GetAsync(dto.OfferId);
+        //    if (offer == null)
+        //        throw new KeyNotFoundException("Offer not found");
+
+        //    var request = await _serviceRequestRepository.GetAsync(offer.ServiceRequestId);
+        //    if (request == null)
+        //        throw new KeyNotFoundException("Service request not found");
+        //    switch (dto.Decision)
+        //    {
+        //        case ClientDecision.Accept:
+        //            offer.Status = OfferStatus.AcceptedByClient;
+        //            request.TotalAmount = offer.Amount;
+        //            request.Status = ServiceRequestStatus.WaitingForClientPayment;
+        //            break;
+
+        //        case ClientDecision.Reject:
+        //            offer.Status = OfferStatus.RejectedByClient;
+        //            request.Status = ServiceRequestStatus.RejectedByClient;
+        //            break;
+        //    }
+
+
+        //    _offerRepository.Update(offer, offer.Id);
+        //    _serviceRequestRepository.Update(request, request.ServicesRequestId);
+
+
+        //    _offerRepository.Save();
+        //    _serviceRequestRepository.Save();
+
+        //    return true;
+        //}
         public async Task<bool> ClientRespondToOfferAsync(ClientRespondDto dto)
         {
             var offer = await _offerRepository.GetAsync(dto.OfferId);
@@ -64,30 +101,60 @@ namespace FIXIT.BLL.Services.Service
             var request = await _serviceRequestRepository.GetAsync(offer.ServiceRequestId);
             if (request == null)
                 throw new KeyNotFoundException("Service request not found");
+
+            NotificationType notificationType;
+            string notificationTitle;
+            string notificationMessage;
+
             switch (dto.Decision)
             {
                 case ClientDecision.Accept:
                     offer.Status = OfferStatus.AcceptedByClient;
                     request.TotalAmount = offer.Amount;
                     request.Status = ServiceRequestStatus.WaitingForClientPayment;
+
+                    notificationType = NotificationType.ClientAcceptedOffer;
+                    notificationTitle = "Client Accepted Your Offer";
+                    notificationMessage = $"Client has accepted your offer of {offer.Amount} EGP.";
                     break;
 
                 case ClientDecision.Reject:
                     offer.Status = OfferStatus.RejectedByClient;
                     request.Status = ServiceRequestStatus.RejectedByClient;
-                    break;
-            }
 
+                    notificationType = NotificationType.ClientRejectedOffer;
+                    notificationTitle = "Client Rejected Your Offer";
+                    notificationMessage = $"Client has rejected your offer of {offer.Amount} EGP.";
+                    break;
+
+                default:
+                    throw new InvalidOperationException("Invalid client decision.");
+            }
 
             _offerRepository.Update(offer, offer.Id);
             _serviceRequestRepository.Update(request, request.ServicesRequestId);
 
-           
             _offerRepository.Save();
             _serviceRequestRepository.Save();
 
+            // 🔥 Create Notification (FROM CLIENT → TO CRAFTSMAN)
+            var notificationDto = new CreateNotificationDto
+            {
+                ServiceRequestId = request.ServicesRequestId,
+                CraftsManId = request.CraftsManId,
+                ClientId = request.ClientId,
+                Title = notificationTitle,
+                Message = notificationMessage,
+                SenderType = NotificationSenderType.Client,
+                Type = notificationType,
+                IsRead = false // الحرفي لسه ما شافهاش
+            };
+
+            await _notificationService.CreateFromClientAsync(notificationDto);
+
             return true;
         }
+
         public async Task<bool> CraftsmanAcceptRequestAsync(CraftsmanAcceptDto dto)
         {
             var offer = (await _offerRepository.GetAllAsync())
@@ -100,12 +167,12 @@ namespace FIXIT.BLL.Services.Service
             if (request == null)
                 throw new KeyNotFoundException("Service request not found");
 
-            if (!request.SuggestedPrice.HasValue)
-            {
-                throw new InvalidOperationException(
-                    "Client did not specify a suggested price. Craftsman cannot accept. A new offer must be created."
-                );
-            }
+            //if (!request.SuggestedPrice.HasValue)
+            //{
+            //    throw new InvalidOperationException(
+            //        "Client did not specify a suggested price. Craftsman cannot accept. A new offer must be created."
+            //    );
+            //}
 
             offer.Status = OfferStatus.AcceptedByCraftsman;
             offer.UpdatedAt = DateTime.UtcNow;
@@ -118,6 +185,22 @@ namespace FIXIT.BLL.Services.Service
             _offerRepository.Update(offer, offer.Id);
             _offerRepository.Save();
             if (request != null) _serviceRequestRepository.Save();
+            // 🔥🔥 Create Notification (FROM CRAFTSMAN → TO CLIENT)
+            var notificationDto = new CreateNotificationDto
+            {
+                ServiceRequestId = request.ServicesRequestId,
+                CraftsManId = request.CraftsManId,
+                ClientId = request.ClientId,
+                Title = "Craftsman Accepted Your Offer",
+                Message = $"Craftsman has accepted your suggested price ({request.SuggestedPrice} EGP). Please proceed with the payment.",
+                SenderType = NotificationSenderType.Craftsman,
+                Type = NotificationType.CraftsmanAccepted, // استخدم النوع اللي يناسبك
+                 IsRead = false // مهم: العميل لسه ما شافهاش
+
+            };
+
+            await _notificationService.CreateFromCraftsmanAsync(notificationDto);
+
 
             return true;
         }
@@ -145,6 +228,22 @@ namespace FIXIT.BLL.Services.Service
             request.Status = ServiceRequestStatus.RejectedByCraftsman;
             _serviceRequestRepository.Update(request, request.ServicesRequestId);
             _serviceRequestRepository.Save();
+
+
+            // 🔥 Create Notification (FROM CRAFTSMAN → TO CLIENT)
+            var notificationDto = new CreateNotificationDto
+            {
+                ServiceRequestId = request.ServicesRequestId,
+                CraftsManId = request.CraftsManId,
+                ClientId = request.ClientId,
+                Title = "Craftsman Rejected Your Offer",
+                Message = $"Craftsman has rejected your service request.",
+                SenderType = NotificationSenderType.Craftsman,
+                Type = NotificationType.CraftsmanRejected, // تأكد من إضافته في Enum
+                 IsRead= false // مهم: العميل لسه ما شافهاش
+            };
+
+            await _notificationService.CreateFromCraftsmanAsync(notificationDto);
             return true;
         }
 
@@ -175,6 +274,20 @@ namespace FIXIT.BLL.Services.Service
 
             _offerRepository.Save();
             _serviceRequestRepository.Save();
+            // 🔥 Create Notification (FROM CRAFTSMAN → TO CLIENT)
+            var notificationDto = new CreateNotificationDto
+            {
+                ServiceRequestId = request.ServicesRequestId,
+                CraftsManId = request.CraftsManId,
+                ClientId = request.ClientId,
+                Title = "Craftsman Submitted a New Offer",
+                Message = $"Craftsman has submitted a new offer: {dto.FinalAmount} EGP. Please review and decide.",
+                SenderType = NotificationSenderType.Craftsman,
+                Type = NotificationType.NewOfferFromCraftsman, // تأكد من إضافته في Enum
+                IsRead = false // العميل لسه ما شافهاش
+            };
+            await _notificationService.CreateFromCraftsmanAsync(notificationDto);
+
 
             return true;
 

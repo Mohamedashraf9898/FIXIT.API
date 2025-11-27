@@ -65,7 +65,7 @@ namespace FIXIT.BLL.Services.Service
             _timeOffService = timeOffService;
             _notificationService = notificationService;
         }
-        public async Task<bool> CreateServiceRequestAsync(CreateServiceRequestDto dto)
+        public async Task<ReturnedServiceRequestDto> CreateServiceRequestAsync(CreateServiceRequestDto dto)
         {
             string? imagePath = null;
             if (dto == null)
@@ -78,7 +78,7 @@ namespace FIXIT.BLL.Services.Service
             serviceRequest.ServiceRequestImage = imagePath;
             await EnsureServiceRequestLocationAsync(serviceRequest);
 
-            await _serviceRequestRepository.AddAsync(serviceRequest);
+             await _serviceRequestRepository.AddAsync(serviceRequest);
             if (serviceRequest.ClientId <= 0 || serviceRequest.ServiceId <= 0)
                 throw new ValidationException("ClientId or ServiceId is invalid.");
 
@@ -89,16 +89,57 @@ namespace FIXIT.BLL.Services.Service
             //    throw new ValidationException("ServiceAt must be in the future.");
 
             _serviceRequestRepository.Save();
+            //var returnedDto = _mapper.Map<ReturnedServiceRequestDto>(serviceRequest);
+            var returnedDto = new ReturnedServiceRequestDto
+            {
+                ServicesRequestId = serviceRequest.ServicesRequestId
+            };
 
             //var paymentResult = await paymentService.CreateOrUpdatePaymentIntent(serviceRequest.ServicesRequestId);
             //_serviceRequestRepository.Update(serviceRequest, serviceRequest.ServicesRequestId);
             //_serviceRequestRepository.Save();
-         
 
-            return true;
+
+            return returnedDto;
 
           
         }
+        //public async Task<bool> CreateServiceRequestAsync(CreateServiceRequestDto dto)
+        //{
+        //    string? imagePath = null;
+        //    if (dto == null)
+        //        throw new ArgumentNullException(nameof(dto), "Service Request Data Can not be null");
+        //    if(dto.ServiceRequestImage != null)
+        //    {
+        //        imagePath = _uploadHandler.Upload(dto.ServiceRequestImage, "ServiceRequest");
+        //    }
+        //    var serviceRequest = _mapper.Map<ServicesRequest>(dto);
+        //    serviceRequest.ServiceRequestImage = imagePath;
+        //    await EnsureServiceRequestLocationAsync(serviceRequest);
+
+        //     await _serviceRequestRepository.AddAsync(serviceRequest);
+        //    if (serviceRequest.ClientId <= 0 || serviceRequest.ServiceId <= 0)
+        //        throw new ValidationException("ClientId or ServiceId is invalid.");
+
+        //    if (string.IsNullOrEmpty(serviceRequest.Description))
+        //        throw new ValidationException("Description cannot be empty.");
+
+        //    //if (serviceRequest.ServiceStartTime <= DateTime.UtcNow)
+        //    //    throw new ValidationException("ServiceAt must be in the future.");
+
+        //    _serviceRequestRepository.Save();
+        //    //var returnedDto = _mapper.Map<ReturnedServiceRequestDto>(serviceRequest);
+
+
+        //    //var paymentResult = await paymentService.CreateOrUpdatePaymentIntent(serviceRequest.ServicesRequestId);
+        //    //_serviceRequestRepository.Update(serviceRequest, serviceRequest.ServicesRequestId);
+        //    //_serviceRequestRepository.Save();
+
+
+        //    return true;
+
+          
+        //}
 
         public async Task<bool> DeleteServiceRequest(int id)
         {

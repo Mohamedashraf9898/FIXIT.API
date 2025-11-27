@@ -14,7 +14,8 @@ namespace FIXIT.BLL.Services.IService
     {
         Task<IEnumerable<ReadServiceRequestDto>> GetAllServiceRequestAsync();
         Task<ReadServiceRequestDto> GetServiceRequestByIdAsync(int id);
-        Task<bool> CreateServiceRequestAsync(CreateServiceRequestDto dto);
+        //Task<bool> CreateServiceRequestAsync(CreateServiceRequestDto dto);
+        Task<ReturnedServiceRequestDto> CreateServiceRequestAsync(CreateServiceRequestDto dto);
         Task<bool> UpdateServiceRequest(int id, UpdateServiceRequestDto dto);
         Task<bool> UpdateServiceRequestStartAtTime(int id, ConfirmStartatTimeDto dto);
         Task<bool> DeleteServiceRequest(int id);

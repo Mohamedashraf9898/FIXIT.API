@@ -53,8 +53,8 @@ namespace FIXIT.API.Controllers
          
             if (ModelState.IsValid)
             {
-                await _serviceRequestService.CreateServiceRequestAsync(serviceRequestDto);
-                return Ok("Service request created successfully.");
+                  var result =   await _serviceRequestService.CreateServiceRequestAsync(serviceRequestDto);
+                return Ok(result);
             }
             else
                 return BadRequest(ModelState);

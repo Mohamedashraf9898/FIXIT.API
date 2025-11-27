@@ -69,5 +69,6 @@ public class ServicesRequest
 
     public virtual Review? Review { get; set; }
     public virtual WalletTransaction? WalletTransaction { get; set; }
-}
+        public virtual ICollection<Notification> Notifications { get; set; } = new HashSet<Notification>();
+    }
 }

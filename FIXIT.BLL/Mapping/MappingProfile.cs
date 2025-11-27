@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FIXIT.BLL.DTOs.ClientDTOs;
 using FIXIT.BLL.DTOs.CraftsmanDTOs;
+using FIXIT.BLL.DTOs.NotificationDtos;
 using FIXIT.BLL.DTOs.OfferDto;
 using FIXIT.BLL.DTOs.ReviewDTOs;
 using FIXIT.BLL.DTOs.SchedulingDTOs;
@@ -96,6 +97,18 @@ namespace FIXIT.BLL.Mapping
             //
 
             CreateMap<ServicesRequest,ConfirmStartatTimeDto>().ReverseMap();
+
+            //
+            CreateMap<Notification, CreateNotificationDto>()
+           .ForMember(dest => dest.ClientId, opt => opt.MapFrom(src => src.ServiceRequest.ClientId))
+           .ForMember(dest => dest.CraftsManId, opt => opt.MapFrom(src => src.ServiceRequest.CraftsManId));
+
+            //
+            CreateMap<Notification, ReadNotificationDto>()
+               .ForMember(dest => dest.ClientName, opt => opt.MapFrom(src => src.ServiceRequest.Client.FName + " " + src.ServiceRequest.Client.LName))
+               .ForMember(dest => dest.CraftsManName, opt => opt.MapFrom(src => src.ServiceRequest.CraftsMan.FName + " " + src.ServiceRequest.Client.LName));
+               
+
 
 
 

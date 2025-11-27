@@ -1,4 +1,5 @@
 ﻿using FIXIT.BLL.Services.IService;
+using FIXIT.DAL.Models;
 using Microsoft.AspNetCore.SignalR;
 
 namespace FIXIT.API.Hubs
@@ -12,15 +13,20 @@ namespace FIXIT.API.Hubs
             _hubContext = hubContext;
         }
 
-        public async Task SendNotificationToUserAsync(int? clientId, int? craftsManId, string title, string message)
+        public async Task SendNotificationToUserAsync(int? clientId, int? craftsManId, string title, string message , NotificationSenderType senderType)
         {
-            if (clientId.HasValue)
-                await _hubContext.Clients.User(clientId.Value.ToString())
-                    .SendAsync("ReceiveNotification", title, message);
-
-            if (craftsManId.HasValue)
+            if (senderType == NotificationSenderType.Client && craftsManId.HasValue)
+            {
+                // لو العميل أرسل → الإشعار يروح للحرفي
                 await _hubContext.Clients.User(craftsManId.Value.ToString())
                     .SendAsync("ReceiveNotification", title, message);
+            }
+            else if (senderType == NotificationSenderType.Craftsman && clientId.HasValue)
+            {
+                // لو الحرفي أرسل → الإشعار يروح للعميل
+                await _hubContext.Clients.User(clientId.Value.ToString())
+                    .SendAsync("ReceiveNotification", title, message);
+            }
         }
     }
 }

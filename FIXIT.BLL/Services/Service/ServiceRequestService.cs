@@ -332,9 +332,10 @@ namespace FIXIT.BLL.Services.Service
                 ClientId = existing.ClientId,
                 Title = "Service Request Scheduled",
                 Message = $"Client has confirmed the time slot: {existing.ServiceStartTime}",
-                Type=NotificationType.SelectCraftsman
+               SenderType = NotificationSenderType.Client ,
+               Type=NotificationType.SelectCraftsman
             };
-            await _notificationService.CreateNotificationAsync(notificationDto);
+            await _notificationService.CreateFromClientAsync(notificationDto);
 
             return updated;
         }

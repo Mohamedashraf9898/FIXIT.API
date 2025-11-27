@@ -100,13 +100,20 @@ namespace FIXIT.BLL.Mapping
 
             //
             CreateMap<Notification, CreateNotificationDto>()
-           .ForMember(dest => dest.ClientId, opt => opt.MapFrom(src => src.ServiceRequest.ClientId))
-           .ForMember(dest => dest.CraftsManId, opt => opt.MapFrom(src => src.ServiceRequest.CraftsManId));
+                .ForMember(dest => dest.ClientId, opt => opt.MapFrom(src => src.ServiceRequest.ClientId))
+                .ForMember(dest => dest.CraftsManId, opt => opt.MapFrom(src => src.ServiceRequest.CraftsManId));
+
+
+            //
+            CreateMap<CreateNotificationDto, Notification>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.ServiceRequest, opt => opt.Ignore()) // لأنها navigation property
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow));
 
             //
             CreateMap<Notification, ReadNotificationDto>()
-               .ForMember(dest => dest.ClientName, opt => opt.MapFrom(src => src.ServiceRequest.Client.FName + " " + src.ServiceRequest.Client.LName))
-               .ForMember(dest => dest.CraftsManName, opt => opt.MapFrom(src => src.ServiceRequest.CraftsMan.FName + " " + src.ServiceRequest.Client.LName));
+                 .ForMember(dest => dest.ClientName, opt => opt.MapFrom(src => src.ServiceRequest.Client.FName + " " + src.ServiceRequest.Client.LName))
+                 .ForMember(dest => dest.CraftsManName, opt => opt.MapFrom(src => src.ServiceRequest.CraftsMan.FName + " " + src.ServiceRequest.Client.LName));
                
 
 

@@ -6,13 +6,23 @@ using System.Threading.Tasks;
 
 namespace FIXIT.DAL.Models
 {
+    public enum NotificationType
+    {
+        SelectCraftsman,
+        CraftsmanAccepted,
+        CraftsmanRejected,
+        NewOfferFromCraftsman,
+        ClientAcceptedOffer,
+        ClientRejectedOffer,
+        PaymentRequested
+    }
     public class Notification
     {
 
         public int Id { get; set; }
 
         public int ServiceRequestId { get; set; }
-        public ServicesRequest ServiceRequest { get; set; }
+        public virtual ServicesRequest ServiceRequest { get; set; }
 
         public string Title { get; set; }
         public string Message { get; set; }

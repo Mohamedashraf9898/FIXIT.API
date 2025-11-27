@@ -1,10 +1,8 @@
 using AutoMapper;
-using System.Text;
-
-using System.Threading.Tasks;
-using FIXIT.BLL;
 using FIXIT.API.Erorrs;
+using FIXIT.API.Hubs;
 using FIXIT.API.Midelwaers;
+using FIXIT.BLL;
 using FIXIT.BLL.DTOs.ClientDTOs;
 using FIXIT.BLL.DTOs.CraftsmanDTOs;
 using FIXIT.BLL.Helper.PictureUrlResolver;
@@ -22,16 +20,18 @@ using FIXIT.BLL.Services.Service.Auth;
 using FIXIT.BLL.Services.Service.Payment;
 using FIXIT.DAL;
 using FIXIT.DAL.DbContexts.FixitIdentityDbContext;
+using FIXIT.DAL.Models;
 using FIXIT.DAL.Models.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading.Tasks;
 using CraftsManService = FIXIT.BLL.Services.Service.CraftsManService;
-using Microsoft.AspNetCore.Http.Features;
-using FIXIT.DAL.Models;
 
 namespace FIXIT.API
 {
@@ -91,6 +91,7 @@ namespace FIXIT.API
             });
 
             #region injection
+            builder.Services.AddSignalR();
 
             builder.Services.AddAutoMapper(op => op.AddProfile<MappingProfile>()); // Mapping Registration
             builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
@@ -112,6 +113,13 @@ namespace FIXIT.API
             builder.Services.AddScoped<IReviewService, ReviewService>();
             //service
             builder.Services.AddScoped<IServiceService, ServiceServices>();
+            //notification
+            // Repositories
+            builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+
+            // Services
+            builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<INotificationSenderService, NotificationSenderService>();
 
 
             //wallet
@@ -243,6 +251,7 @@ namespace FIXIT.API
 
 
             app.MapControllers();
+            app.MapHub<NotificationHub>("/notificationHub");
 
             app.Run();
         }

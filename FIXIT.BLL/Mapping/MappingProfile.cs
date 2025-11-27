@@ -70,6 +70,10 @@ namespace FIXIT.BLL.Mapping
                 .ForMember(dest => dest.Review, opt => opt.Ignore())
                 .ForMember(dest => dest.CraftsManId, opt => opt.Ignore());
 
+
+            //
+            CreateMap<ServicesRequest , ReturnedServiceRequestDto>().ReverseMap();
+
             // ServicesRequest -> ReadServiceRequestDto
             CreateMap<ServicesRequest, ReadServiceRequestDto>()
                 .ForMember(dest => dest.CraftsManName, opt => opt.MapFrom(src =>src.CraftsMan != null

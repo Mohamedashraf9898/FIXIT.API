@@ -34,6 +34,8 @@ namespace FIXIT.DAL
         public DbSet<Review> Reviews { get; set; }
         public DbSet<CraftsManAvailability> CraftsManAvailabilities { get; set; }
         public DbSet<CraftsManTimeOff> CraftsManTimeOffs { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
+
 
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FIXIT.DAL.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,5 +16,6 @@ namespace FIXIT.BLL.DTOs.NotificationDtos
         public string Message { get; set; }
         public int? ClientId { get; set; }     
         public int? CraftsManId { get; set; }
+        public NotificationType Type { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FIXIT.BLL.DTOs.CraftsmanDTOs;
+using FIXIT.BLL.DTOs.NotificationDtos;
 using FIXIT.BLL.DTOs.OfferDto;
 using FIXIT.BLL.DTOs.ServiceRequestDTOs;
 using FIXIT.BLL.DTOs.WalletTransactionDTOs;
@@ -30,6 +31,7 @@ namespace FIXIT.BLL.Services.Service
         private readonly IOfferRepository _offerRepository;
         private readonly IAvailabilityService _availabilityService;
         private readonly ITimeOffService _timeOffService;
+        private readonly INotificationService _notificationService;
         private readonly IWalletRepository _walletRepo;
         private readonly IWalletTransactionRepository _transactionRepo;
         private readonly IMapper _mapper;
@@ -47,7 +49,8 @@ namespace FIXIT.BLL.Services.Service
             IOfferRepository offerRepository,
             IAvailabilityService availabilityService,
             UploadHandler uploadHandler,
-        ITimeOffService timeOffService)
+        ITimeOffService timeOffService,
+        INotificationService notificationService)
         {
             _serviceRequestRepository = serviceRequestRepository;
             _craftsmanRepository = craftsmanRepository;
@@ -60,6 +63,7 @@ namespace FIXIT.BLL.Services.Service
             _availabilityService = availabilityService;
             _uploadHandler = uploadHandler;
             _timeOffService = timeOffService;
+            _notificationService = notificationService;
         }
         public async Task<bool> CreateServiceRequestAsync(CreateServiceRequestDto dto)
         {
@@ -89,6 +93,7 @@ namespace FIXIT.BLL.Services.Service
             //var paymentResult = await paymentService.CreateOrUpdatePaymentIntent(serviceRequest.ServicesRequestId);
             //_serviceRequestRepository.Update(serviceRequest, serviceRequest.ServicesRequestId);
             //_serviceRequestRepository.Save();
+         
 
             return true;
 
@@ -313,6 +318,23 @@ namespace FIXIT.BLL.Services.Service
 
             var updated = _serviceRequestRepository.Update(existing, id);
             if (updated) _serviceRequestRepository.Save();
+            //await _notificationService.CreateNotificationAsync(new CreateNotificationDto
+            //{
+            //    ServiceRequestId = serviceRequest.ServicesRequestId,
+            //    CraftsManId = serviceRequest.CraftsManId,  // الجواب من الـ ServiceRequest
+            //    Title = "New Service Request",
+            //    Message = $"You have a new service request from client {serviceRequest.ClientId}"
+            //});
+            var notificationDto = new CreateNotificationDto
+            {
+                ServiceRequestId = existing.ServicesRequestId,
+                CraftsManId = existing.CraftsManId,
+                ClientId = existing.ClientId,
+                Title = "Service Request Scheduled",
+                Message = $"Client has confirmed the time slot: {existing.ServiceStartTime}",
+                Type=NotificationType.SelectCraftsman
+            };
+            await _notificationService.CreateNotificationAsync(notificationDto);
 
             return updated;
         }

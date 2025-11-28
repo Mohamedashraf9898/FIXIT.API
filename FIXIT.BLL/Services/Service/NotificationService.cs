@@ -67,14 +67,48 @@ namespace FIXIT.BLL.Services.Service
         public async Task<List<ReadNotificationDto>> GetNotificationsForClientAsync(int clientId)
         {
             var notifications = await _repo.GetNotificationsForClientAsync(clientId);
-            return _mapper.Map<List<ReadNotificationDto>>(notifications
-                .Where(n => n.SenderType == NotificationSenderType.Craftsman)); // بس اللي بعتها الحرفي
+
+            
+            var filtered = notifications
+                .Where(n => n.SenderType == NotificationSenderType.Craftsman)
+                .ToList();
+
+            
+            //foreach (var noti in filtered)
+            //{
+            //    await MarkAsReadAsync(noti.Id);
+            //}
+
+            return _mapper.Map<List<ReadNotificationDto>>(filtered);
         }
+        //public async Task<List<ReadNotificationDto>> GetNotificationsForClientAsync(int clientId)
+        //{
+        //    var notifications = await _repo.GetNotificationsForClientAsync(clientId);
+        //    return _mapper.Map<List<ReadNotificationDto>>(notifications
+        //        .Where(n => n.SenderType == NotificationSenderType.Craftsman)); // بس اللي بعتها الحرفي
+        //}
+        //public async Task<List<ReadNotificationDto>> GetNotificationsForCraftsmanAsync(int craftsManId)
+        //{
+        //    var notifications = await _repo.GetNotificationsForCraftsManAsync(craftsManId);
+        //    return _mapper.Map<List<ReadNotificationDto>>(notifications
+        //        .Where(n => n.SenderType == NotificationSenderType.Client)); // بس اللي بعتها العميل
+        //}
         public async Task<List<ReadNotificationDto>> GetNotificationsForCraftsmanAsync(int craftsManId)
         {
             var notifications = await _repo.GetNotificationsForCraftsManAsync(craftsManId);
-            return _mapper.Map<List<ReadNotificationDto>>(notifications
-                .Where(n => n.SenderType == NotificationSenderType.Client)); // بس اللي بعتها العميل
+
+            
+            var filtered = notifications
+                .Where(n => n.SenderType == NotificationSenderType.Client)
+                .ToList();
+
+          
+            //foreach (var noti in filtered)
+            //{
+            //    await MarkAsReadAsync(noti.Id);
+            //}
+
+            return _mapper.Map<List<ReadNotificationDto>>(filtered);
         }
 
         //public async Task<List<ReadNotificationDto>> GetNotificationsForClientAsync(int clientId)
@@ -94,11 +128,13 @@ namespace FIXIT.BLL.Services.Service
             var notification = await _repo.GetByIdAsync(id);
             if (notification == null)
                 return null;
-
-            notification.IsRead = true;
-            _repo.Update(notification, id);
-
-            await _repo.SaveAsync();
+            
+            if (!notification.IsRead)
+            {
+                notification.IsRead = true;
+                _repo.Update(notification, id);
+                await _repo.SaveAsync();
+            }
 
             return _mapper.Map<ReadNotificationDto>(notification);
         }

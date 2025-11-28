@@ -57,7 +57,7 @@ namespace FIXIT.BLL.Mapping
             //ServiceRequestMapping
             //==========================
             // CreateServiceRequestDto -> ServicesRequest
-            CreateMap<CreateServiceRequestDto, ServicesRequest>().ForMember(dest => dest.ServiceRequestImage,
+            CreateMap<CreateServiceRequestDto, ServicesRequest>()
                     opt => opt.MapFrom<PictureUrlResolver<CreateServiceRequestDto, ServicesRequest>>());
             CreateMap<CreateServiceRequestDto, ServicesRequest>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => ServiceRequestStatus.Pending))

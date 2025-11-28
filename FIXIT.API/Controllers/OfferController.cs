@@ -57,5 +57,11 @@ namespace FIXIT.API.Controllers
             await _offerService.UpdateTotalAmountAsync(serviceRequestId, finalAmount);
             return Ok();
         }
+        [HttpGet("GetById/{id}")]
+        public async Task<ActionResult> GetOfferById(int id)
+        {
+            var offer = await _offerService.GetOfferById(id);
+            return Ok(offer);
+        }
     }
 }

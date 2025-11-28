@@ -337,5 +337,14 @@ namespace FIXIT.BLL.Services.Service
 
             return updated;
         }
+
+        public async Task<ReadOfferId> GetOfferById(int id)
+        {
+            var offer = await _offerRepository.GetAsync(id);
+            if (offer == null)
+                throw new KeyNotFoundException("Offer Not found");
+            var readOffer =  _mapper.Map<ReadOfferId>(offer);
+            return readOffer;
+        }
     }
 }

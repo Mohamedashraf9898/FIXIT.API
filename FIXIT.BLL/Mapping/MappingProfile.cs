@@ -79,6 +79,8 @@ namespace FIXIT.BLL.Mapping
             CreateMap<ServicesRequest , ReturnedServiceRequestDto>().ReverseMap();
             //
             CreateMap<Offer , ReturnedOfferDto>().ReverseMap();
+            //
+                CreateMap<Offer , ReadOfferId>().ReverseMap();
 
             // ServicesRequest -> ReadServiceRequestDto
             CreateMap<ServicesRequest, ReadServiceRequestDto>()

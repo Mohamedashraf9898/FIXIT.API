@@ -291,8 +291,8 @@ namespace FIXIT.BLL.Services.Service
             currentOffer.UpdatedAt = DateTime.UtcNow;
 
             _offerRepository.Update(currentOffer, currentOffer.Id);
-            if (!request.SuggestedPrice.HasValue)
-                throw new InvalidOperationException("SuggestedPrice is null!");
+            //if (!request.SuggestedPrice.HasValue)
+            //    throw new InvalidOperationException("SuggestedPrice is null!");
 
             request.Status = ServiceRequestStatus.WaitingForClientDecision;
             _serviceRequestRepository.Update(request, request.ServicesRequestId);

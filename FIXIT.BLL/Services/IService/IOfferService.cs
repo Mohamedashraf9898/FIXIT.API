@@ -9,10 +9,10 @@ namespace FIXIT.BLL.Services.IService
 {
     public interface IOfferService
     {
-        Task<bool> SelectCraftsmanAsync(ClientSelectCraftsmanDto dto);
-        Task<bool> ClientRespondToOfferAsync(ClientRespondDto dto);
-        Task<bool> CraftsmanAcceptRequestAsync(CraftsmanAcceptDto dto);
-        Task<bool> CraftsmanRejectRequestAsync(CraftsmanRejectDto dto);
+        Task<ReturnedOfferDto> SelectCraftsmanAsync(ClientSelectCraftsmanDto dto);
+        Task<ReturnedOfferDto> ClientRespondToOfferAsync(ClientRespondDto dto);
+        Task<ReturnedOfferDto> CraftsmanAcceptRequestAsync(CraftsmanAcceptDto dto);
+        Task<ReturnedOfferDto> CraftsmanRejectRequestAsync(CraftsmanRejectDto dto);
         Task<ReturnedOfferDto> CraftsmanNewOfferAsync(CraftsManNewOfferDto dto);
         Task<bool> UpdateTotalAmountAsync(int serviceRequestId, decimal finalAmount);
 

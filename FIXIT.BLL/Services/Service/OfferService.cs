@@ -279,7 +279,6 @@ namespace FIXIT.BLL.Services.Service
             if (request == null)
                 throw new KeyNotFoundException("Service request not found");
 
-            // جلب الـ Offer الحالي
             var currentOffer = (await _offerRepository.GetAllAsync())
                                .FirstOrDefault(o => o.ServiceRequestId == dto.ServiceRequestId);
 
@@ -311,8 +310,10 @@ namespace FIXIT.BLL.Services.Service
                 SenderType = NotificationSenderType.Craftsman,
                 Type = NotificationType.NewOfferFromCraftsman, // تأكد من إضافته في Enum
                 OfferId = currentOffer.Id,
+                Description = dto.Description,
                 IsRead = false // العميل لسه ما شافهاش
             };
+
             await _notificationService.CreateFromCraftsmanAsync(notificationDto);
             var returnedDto = new ReturnedOfferDto
             {

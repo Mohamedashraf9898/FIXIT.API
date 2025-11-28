@@ -29,12 +29,13 @@ namespace FIXIT.DAL.Models
 
         public int ServiceRequestId { get; set; }
         public virtual ServicesRequest ServiceRequest { get; set; }
-
+        public int? OfferId { get; set; }            
+        public virtual Offer? Offer { get; set; }     
         public string Title { get; set; }
         public string Message { get; set; }
         public NotificationSenderType SenderType { get; set; }
         public NotificationType Type { get; set; }
-
+        
         public bool IsRead { get; set; } = false;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }

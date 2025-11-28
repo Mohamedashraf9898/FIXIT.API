@@ -111,6 +111,7 @@ namespace FIXIT.BLL.Services.Service
             NotificationType notificationType;
             string notificationTitle;
             string notificationMessage;
+            int OfferId;
 
             switch (dto.Decision)
             {
@@ -151,6 +152,7 @@ namespace FIXIT.BLL.Services.Service
                 ClientId = request.ClientId,
                 Title = notificationTitle,
                 Message = notificationMessage,
+                OfferId=offer.Id,
                 SenderType = NotificationSenderType.Client,
                 Type = notificationType,
                 IsRead = false // الحرفي لسه ما شافهاش
@@ -206,6 +208,7 @@ namespace FIXIT.BLL.Services.Service
                 Message = $"Craftsman has accepted your suggested price ({request.SuggestedPrice} EGP). Please proceed with the payment.",
                 SenderType = NotificationSenderType.Craftsman,
                 Type = NotificationType.CraftsmanAccepted, // استخدم النوع اللي يناسبك
+                OfferId=offer.Id,
                  IsRead = false // مهم: العميل لسه ما شافهاش
 
             };
@@ -255,6 +258,7 @@ namespace FIXIT.BLL.Services.Service
                 Message = $"Craftsman has rejected your service request.",
                 SenderType = NotificationSenderType.Craftsman,
                 Type = NotificationType.CraftsmanRejected, // تأكد من إضافته في Enum
+                OfferId=offer.Id,
                  IsRead= false // مهم: العميل لسه ما شافهاش
             };
 
@@ -305,6 +309,7 @@ namespace FIXIT.BLL.Services.Service
                 Message = $"Craftsman has submitted a new offer: {dto.FinalAmount} EGP. Please review and decide.",
                 SenderType = NotificationSenderType.Craftsman,
                 Type = NotificationType.NewOfferFromCraftsman, // تأكد من إضافته في Enum
+                OfferId = currentOffer.Id,
                 IsRead = false // العميل لسه ما شافهاش
             };
             await _notificationService.CreateFromCraftsmanAsync(notificationDto);

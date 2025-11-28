@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FIXIT.BLL.DTOs.NotificationDtos;
 using FIXIT.BLL.DTOs.OfferDto;
+using FIXIT.BLL.DTOs.ServiceRequestDTOs;
 using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.BLL.Services.IService;
 using FIXIT.DAL.Models;
@@ -248,7 +249,7 @@ namespace FIXIT.BLL.Services.Service
         }
 
 
-        public async Task<bool> CraftsmanNewOfferAsync(CraftsManNewOfferDto dto)
+        public async Task<ReturnedOfferDto> CraftsmanNewOfferAsync(CraftsManNewOfferDto dto)
         {
             var request = await _serviceRequestRepository.GetAsync(dto.ServiceRequestId);
             if (request == null)
@@ -287,9 +288,14 @@ namespace FIXIT.BLL.Services.Service
                 IsRead = false // العميل لسه ما شافهاش
             };
             await _notificationService.CreateFromCraftsmanAsync(notificationDto);
+            var returnedDto = new ReturnedOfferDto
+            {
+                Id = currentOffer.Id
+            };
 
 
-            return true;
+
+            return returnedDto;
 
         }
 

@@ -31,7 +31,7 @@ namespace FIXIT.BLL.Services.Service
         }
 
 
-        public async Task<bool> SelectCraftsmanAsync(ClientSelectCraftsmanDto dto)
+        public async Task<ReturnedOfferDto> SelectCraftsmanAsync(ClientSelectCraftsmanDto dto)
         {
             var request = await _serviceRequestRepository.GetAsync(dto.ServiceRequestId);
             if (request == null)
@@ -55,8 +55,13 @@ namespace FIXIT.BLL.Services.Service
 
             await _offerRepository.AddAsync(offer);
             _offerRepository.Save();
+            var returnedDto = new ReturnedOfferDto
+            {
+                Id = offer.Id
+            };
 
-            return true;
+
+            return returnedDto;
         }
 
 
@@ -93,7 +98,7 @@ namespace FIXIT.BLL.Services.Service
 
         //    return true;
         //}
-        public async Task<bool> ClientRespondToOfferAsync(ClientRespondDto dto)
+        public async Task<ReturnedOfferDto> ClientRespondToOfferAsync(ClientRespondDto dto)
         {
             var offer = await _offerRepository.GetAsync(dto.OfferId);
             if (offer == null)
@@ -152,11 +157,16 @@ namespace FIXIT.BLL.Services.Service
             };
 
             await _notificationService.CreateFromClientAsync(notificationDto);
+            var returnedDto = new ReturnedOfferDto
+            {
+                Id = offer.Id
+            };
 
-            return true;
+
+            return returnedDto;
         }
 
-        public async Task<bool> CraftsmanAcceptRequestAsync(CraftsmanAcceptDto dto)
+        public async Task<ReturnedOfferDto> CraftsmanAcceptRequestAsync(CraftsmanAcceptDto dto)
         {
             var offer = (await _offerRepository.GetAllAsync())
                         .FirstOrDefault(o => o.ServiceRequestId == dto.ServiceRequestId);
@@ -201,12 +211,16 @@ namespace FIXIT.BLL.Services.Service
             };
 
             await _notificationService.CreateFromCraftsmanAsync(notificationDto);
+            var returnedDto = new ReturnedOfferDto
+            {
+                Id = offer.Id
+            };
 
 
-            return true;
+            return returnedDto;
         }
 
-        public async Task<bool> CraftsmanRejectRequestAsync(CraftsmanRejectDto dto)
+        public async Task<ReturnedOfferDto> CraftsmanRejectRequestAsync(CraftsmanRejectDto dto)
         {
             var offer = (await _offerRepository.GetAllAsync())
                         .FirstOrDefault(o => o.ServiceRequestId == dto.ServiceRequestId);
@@ -245,7 +259,13 @@ namespace FIXIT.BLL.Services.Service
             };
 
             await _notificationService.CreateFromCraftsmanAsync(notificationDto);
-            return true;
+            var returnedDto = new ReturnedOfferDto
+            {
+                Id = offer.Id
+            };
+
+
+            return returnedDto;
         }
 
 

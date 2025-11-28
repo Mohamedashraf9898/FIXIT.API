@@ -21,7 +21,7 @@ namespace FIXIT.BLL.DTOs.CraftsmanDTOs
 
         public string NationalId { get; set; }
 
-        public string? NationalIdPic { get; set; } // Should be string for URL
+        public string? NationalIdPic { get; set; } 
 
 
     }

@@ -133,8 +133,13 @@ builder.Services.AddScoped<INotificationSenderService, NotificationSenderService
                 return new UploadHandler(env.WebRootPath);
             });
             builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
-            builder.Services.AddScoped<PictureUrlResolver<CraftsMan, CraftsManDto>>();
-            builder.Services.AddScoped<PictureUrlResolver<Client, GetAllClientsDTO>>();
+            builder.Services.AddScoped<ClientProfileImageResolver>();
+            builder.Services.AddScoped<ProfileImageResolver>();
+            builder.Services.AddScoped<NationalIdPicResolver>();
+
+            // ??? ??? ?????? generic resolver ?? ServiceRequest
+            builder.Services.AddScoped(typeof(ServiceRequestImageResolver<,>));
+
 
 
 

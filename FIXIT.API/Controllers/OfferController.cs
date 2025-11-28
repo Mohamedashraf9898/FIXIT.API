@@ -47,8 +47,8 @@ namespace FIXIT.API.Controllers
         [HttpPost("craftsman-new-offer")]
         public async Task<ActionResult> CraftsmanNewOffer([FromBody] CraftsManNewOfferDto dto)
         {
-            await _offerService.CraftsmanNewOfferAsync(dto);
-            return Ok();
+            var result = await _offerService.CraftsmanNewOfferAsync(dto);
+            return Ok(result);
         }
 
         [HttpPut("{serviceRequestId}/update-total-amount")]

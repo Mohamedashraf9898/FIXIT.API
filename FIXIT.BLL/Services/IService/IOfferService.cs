@@ -13,7 +13,7 @@ namespace FIXIT.BLL.Services.IService
         Task<bool> ClientRespondToOfferAsync(ClientRespondDto dto);
         Task<bool> CraftsmanAcceptRequestAsync(CraftsmanAcceptDto dto);
         Task<bool> CraftsmanRejectRequestAsync(CraftsmanRejectDto dto);
-        Task<bool> CraftsmanNewOfferAsync(CraftsManNewOfferDto dto);
+        Task<ReturnedOfferDto> CraftsmanNewOfferAsync(CraftsManNewOfferDto dto);
         Task<bool> UpdateTotalAmountAsync(int serviceRequestId, decimal finalAmount);
 
     }

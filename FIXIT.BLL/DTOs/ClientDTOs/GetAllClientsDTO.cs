@@ -10,13 +10,12 @@ namespace FIXIT.BLL.DTOs.ClientDTOs
 {
     public class GetAllClientsDTO
     {
-
         public int Id { get; set; }
         public string FName { get; set; }
         public string LName { get; set; }
         public string Location { get; set; }
         public string PhoneNumber { get; set; }
-        public string? ProfileImage { get; set; }
+        public string? ProfileImage { get; set; } // Should be string for URL
         public Gender Gender { get; set; }
         public int TotalRequests { get; set; }
     }

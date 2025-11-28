@@ -75,7 +75,8 @@ namespace FIXIT.BLL.Services.Service
                 imagePath = _uploadHandler.Upload(dto.ServiceRequestImage, "ServiceRequest");
             }
             var serviceRequest = _mapper.Map<ServicesRequest>(dto);
-            serviceRequest.ServiceRequestImage = imagePath;
+            if (imagePath != null)
+                serviceRequest.ServiceRequestImage = imagePath;
             await EnsureServiceRequestLocationAsync(serviceRequest);
 
              await _serviceRequestRepository.AddAsync(serviceRequest);
@@ -87,7 +88,6 @@ namespace FIXIT.BLL.Services.Service
 
             //if (serviceRequest.ServiceStartTime <= DateTime.UtcNow)
             //    throw new ValidationException("ServiceAt must be in the future.");
-
             _serviceRequestRepository.Save();
             //var returnedDto = _mapper.Map<ReturnedServiceRequestDto>(serviceRequest);
             var returnedDto = new ReturnedServiceRequestDto

@@ -18,20 +18,22 @@ namespace FIXIT.BLL.Helper.PictureUrlResolver
             _config = config;
         }
 
-
+        // Accepts property name to resolve (default: ProfileImage)
         public string Resolve(TSource source, TDestination destination, string destMember, ResolutionContext context)
         {
-            
-            var prop = typeof(TSource).GetProperty("ProfileImage");
-            if (prop != null)
+            // Try ProfileImage, NationalIdPic, ServiceRequestImage
+            string[] propertyCandidates = new[] { "ProfileImage", "NationalIdPic", "ServiceRequestImage" };
+            foreach (var propName in propertyCandidates)
             {
-                var value = prop.GetValue(source)?.ToString();
-                if (!string.IsNullOrEmpty(value))
-                    return $"{_config["ApiUrl"]}{value}";
+                var prop = typeof(TSource).GetProperty(propName);
+                if (prop != null)
+                {
+                    var value = prop.GetValue(source)?.ToString();
+                    if (!string.IsNullOrEmpty(value))
+                        return $"{_config["ApiUrl"]}{value}";
+                }
             }
-
             return string.Empty;
         }
     }
-
 }

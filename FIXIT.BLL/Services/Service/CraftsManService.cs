@@ -1,5 +1,4 @@
-﻿
-using AutoMapper;
+﻿using AutoMapper;
 using FIXIT.API.Erorrs.Exceptions;
 using FIXIT.BLL.DTOs.CraftsmanDTOs;
 using FIXIT.BLL.Helper.UploadHandler;
@@ -134,6 +133,17 @@ namespace FIXIT.BLL.Services.Service
 
                 // Upload new image using your file service
                 existingCraftsMan.ProfileImage = uploadHandler.Upload(craftsManDto.ProfileImage);
+            }
+            // Handle NationalIdPic upload
+            if (craftsManDto.NationalIdPic != null)
+            {
+                if (!string.IsNullOrEmpty(existingCraftsMan.NationalIdPic))
+                {
+                    var oldPath = Path.Combine("wwwroot", existingCraftsMan.NationalIdPic);
+                    if (File.Exists(oldPath))
+                        File.Delete(oldPath);
+                }
+                existingCraftsMan.NationalIdPic = uploadHandler.Upload(craftsManDto.NationalIdPic, "NationalIdPics");
             }
 
             // 4️⃣ Update in repository

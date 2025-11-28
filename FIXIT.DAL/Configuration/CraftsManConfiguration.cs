@@ -32,6 +32,10 @@ namespace FIXIT.DAL.Configuration
             builder.Property(c => c.ExperienceOfYears)
                    .IsRequired(); 
 
+            builder.Property(c => c.NationalIdPic)
+                   .HasMaxLength(255)
+                   .IsRequired(false);
+
             builder.HasMany(c => c.ServicesRequests)
                    .WithOne(sr => sr.CraftsMan)
                    .HasForeignKey(sr => sr.CraftsManId)

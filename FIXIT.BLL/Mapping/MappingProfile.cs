@@ -23,12 +23,14 @@ namespace FIXIT.BLL.Mapping
                 .ForMember(dest => dest.ServiceName,
                     opt => opt.MapFrom(src => src.Service != null ? src.Service.ServiceName : null))
                 .ForMember(dest => dest.ProfileImage,
-					opt => opt.MapFrom<PictureUrlResolver<CraftsMan, CraftsManDto>>())
-				.ReverseMap();
+        opt => opt.MapFrom<PictureUrlResolver<CraftsMan, CraftsManDto>>())
+                .ForMember(dest => dest.NationalIdPic,
+        opt => opt.MapFrom<PictureUrlResolver<CraftsMan, CraftsManDto>>())
+                .ReverseMap();
 			CreateMap<CraftsMan,CreateCraftsManDto>().ReverseMap();
             CreateMap<CraftsMan, UpdateCraftsManDto>().ReverseMap()
     .ForMember(dest => dest.ProfileImage, opt => opt.Condition(src => src.ProfileImage != null));
-
+     
      
             //CLient Maping 
             // CLient Maping 
@@ -58,6 +60,7 @@ namespace FIXIT.BLL.Mapping
             //==========================
             // CreateServiceRequestDto -> ServicesRequest
             CreateMap<CreateServiceRequestDto, ServicesRequest>()
+                .ForMember(dest => dest.ServiceRequestImage,
                     opt => opt.MapFrom<PictureUrlResolver<CreateServiceRequestDto, ServicesRequest>>());
             CreateMap<CreateServiceRequestDto, ServicesRequest>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => ServiceRequestStatus.Pending))
@@ -76,6 +79,8 @@ namespace FIXIT.BLL.Mapping
 
             // ServicesRequest -> ReadServiceRequestDto
             CreateMap<ServicesRequest, ReadServiceRequestDto>()
+                .ForMember(dest => dest.ServiceRequestImage,
+                    opt => opt.MapFrom<PictureUrlResolver<ServicesRequest, ReadServiceRequestDto>>())
                 .ForMember(dest => dest.CraftsManName, opt => opt.MapFrom(src =>src.CraftsMan != null
                         ? $"{src.CraftsMan.FName} {src.CraftsMan.LName}": null))
                 .ForMember(dest => dest.ClientName, opt => opt.MapFrom(src =>src.Client != null
@@ -92,9 +97,9 @@ namespace FIXIT.BLL.Mapping
                                    : null ));
 
             // UpdateServiceRequestDto -> ServicesRequest
-            CreateMap<UpdateServiceRequestDto, ServicesRequest>().ForMember(dest => dest.ServiceRequestImage,
-                   opt => opt.MapFrom<PictureUrlResolver<UpdateServiceRequestDto, ServicesRequest>>());
             CreateMap<UpdateServiceRequestDto, ServicesRequest>()
+                .ForMember(dest => dest.ServiceRequestImage,
+                   opt => opt.MapFrom<PictureUrlResolver<UpdateServiceRequestDto, ServicesRequest>>())
                 .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null)); // update only non-null fields
 
 

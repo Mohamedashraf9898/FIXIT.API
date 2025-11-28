@@ -15,9 +15,9 @@ namespace FIXIT.BLL.DTOs.CraftsmanDTOs
 		public string Describtion { get; set; }
         public string PhoneNumber { get; set; }
         public IFormFile? ProfileImage { get; set; }
+        public IFormFile? NationalIdPic { get; set; } // For upload only
 		public int ExperienceOfYears { get; set; }
 		public decimal HourlyRate { get; set; }
-
         public bool IsVerified { get; set; }
     }
 }

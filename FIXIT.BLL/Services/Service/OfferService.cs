@@ -306,7 +306,8 @@ namespace FIXIT.BLL.Services.Service
                 CraftsManId = request.CraftsManId,
                 ClientId = request.ClientId,
                 Title = "Craftsman Submitted a New Offer",
-                Message = $"Craftsman has submitted a new offer: {dto.FinalAmount} EGP. Please review and decide.",
+                Message = $"Craftsman has submitted a new offer Please review and decide.",
+                FinalAmount=dto.FinalAmount,    
                 SenderType = NotificationSenderType.Craftsman,
                 Type = NotificationType.NewOfferFromCraftsman, // تأكد من إضافته في Enum
                 OfferId = currentOffer.Id,

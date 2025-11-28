@@ -8,6 +8,7 @@ namespace FIXIT.BLL.DTOs.OfferDto
 {
     public class CraftsManNewOfferDto
     {
+        
         public int ServiceRequestId { get; set; }
         public int CraftsmanId { get; set; }
         public decimal FinalAmount { get; set; }

@@ -11,7 +11,7 @@ namespace FIXIT.BLL.DTOs.NotificationDtos
     {
      
         public int ServiceRequestId { get; set; }
-
+        public int? OfferId { get; set; }
         public string Title { get; set; }
         public string Message { get; set; }
         public int? ClientId { get; set; }

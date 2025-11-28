@@ -20,7 +20,7 @@ namespace FIXIT.API.Controllers
         public async Task<ActionResult> SelectCraftsman([FromBody] ClientSelectCraftsmanDto dto)
         {
             await _offerService.SelectCraftsmanAsync(dto);
-            return Ok();
+            return Ok(dto);
         }
 
         [HttpPost("client-respond")]

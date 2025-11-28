@@ -107,7 +107,7 @@ namespace FIXIT.BLL.Services.Service
             TimeSpan workEnd = availability.EndTime;
 
             // »‰⁄„· Slot ﬂ· 30 œﬁÌﬁ… ⁄‘«‰ ‰œÌ „—Ê‰… ··⁄„Ì·
-            TimeSpan step = TimeSpan.FromMinutes(30);
+            TimeSpan step = TimeSpan.FromMinutes(durationMinutes);
 
             // «··Ê» »Ì„‘Ì „‰ »œ«Ì… «·ÌÊ„ ·Õœ ‰Â«Ì Â
             while (currentStart.Add(TimeSpan.FromMinutes(durationMinutes)) <= workEnd)
@@ -120,8 +120,9 @@ namespace FIXIT.BLL.Services.Service
                 if (!isPastTime)
                 {
                     // 2. «· √ﬂœ „‰ ⁄œ„ ÊÃÊœ  œ«Œ· „⁄ ÕÃ“  «‰Ì (Conflict Check)
-                    bool isConflict = bookedRequests.Any(req =>
-                        IsOverlapping(currentStart, slotEnd, req.ServiceStartTime.TimeOfDay, req.ServiceEndTime.Value.TimeOfDay));
+                    bool isConflict =
+                    bookedRequests.Any(req =>
+                    IsOverlapping(currentStart, slotEnd, req.ServiceStartTime.TimeOfDay, req.ServiceEndTime.Value.TimeOfDay));
 
                     // ·Ê «·Êﬁ  „‰«”» Ê„›Ì‘  œ«Œ·° ÷Ì›Â ··ﬁ«∆„…
                     if (!isConflict)

@@ -36,6 +36,7 @@ namespace FIXIT.BLL.Services.Service
             {
                 await _senderService.SendNotificationToUserAsync(
                     clientId: null,
+                    offerId: dto.OfferId,
                     craftsManId: dto.CraftsManId,
                     title: dto.Title,
                     message: dto.Message,
@@ -56,6 +57,7 @@ namespace FIXIT.BLL.Services.Service
             {
                 await _senderService.SendNotificationToUserAsync(
                     clientId: dto.ClientId,
+                    offerId: dto.OfferId,
                     craftsManId: null,
                     title: dto.Title,
                     message: dto.Message,

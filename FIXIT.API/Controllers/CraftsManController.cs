@@ -49,8 +49,15 @@ namespace FIXIT.API.Controllers
 			return Ok(craftsman);
 		}
 
+        [HttpGet("details/{id:int}")]
+        public async Task<IActionResult> GetCraftsManDetails(int id)
+        {
+            var details = await _craftsManService.GetCraftsManDetailsAsync(id);
+            return Ok(details);
+        }
 
-		[HttpPost]
+
+        [HttpPost]
 		public async Task<IActionResult> CreateCraftsMan([FromBody]	CreateCraftsManDto dto)
 		{
 			await _craftsManService.CreateCraftsManAsync(dto);

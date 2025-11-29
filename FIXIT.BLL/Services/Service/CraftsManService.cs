@@ -1,12 +1,16 @@
 ﻿using AutoMapper;
 using FIXIT.API.Erorrs.Exceptions;
 using FIXIT.BLL.DTOs.CraftsmanDTOs;
-using FIXIT.BLL.Helper.UploadHandler;
+using FIXIT.BLL.DTOs.ReviewDTOs;
 using FIXIT.BLL.Exceptions;
+using FIXIT.BLL.Helper.UploadHandler;
 using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.BLL.Repositories.Repo;
 using FIXIT.BLL.Services.Intrfaces;
 using FIXIT.DAL.Models;
+using MyReview = FIXIT.DAL.Models.Review;
+
+using Stripe;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,14 +26,17 @@ namespace FIXIT.BLL.Services.Service
         private readonly IGenericRepository<Wallet> wallet;
         private readonly IMapper mapper;
         private readonly UploadHandler uploadHandler;
+		public readonly IReviewRepository reviewRepository;
 
-        public CraftsManService(ICraftsManRepo craftsManRepo,IGenericRepository<CraftsManService> generic,IGenericRepository<Wallet> wallet, IMapper mapper, UploadHandler uploadHandler) 
+        public CraftsManService(ICraftsManRepo craftsManRepo,IGenericRepository<CraftsManService> generic,
+			IGenericRepository<Wallet> wallet, IMapper mapper, UploadHandler uploadHandler,IReviewRepository reviewRepository) 
 		{
 			this.craftsManRepo = craftsManRepo;
 			this.generic = generic;
             this.wallet = wallet;
             this.mapper = mapper;
             this.uploadHandler = uploadHandler;
+			this.reviewRepository = reviewRepository;
         }
 		public async Task<List<CraftsManDto>> GetAllCraftsMenAsync()
 		{
@@ -80,13 +87,21 @@ namespace FIXIT.BLL.Services.Service
 
 			return mapper.Map<List<CraftsManDto>>(craftsmen);
 		}
-		public async Task<CraftsManDto> GetCraftsManByEmailAsync(string Email)
+		public async Task<CraftsManDetailsDto> GetCraftsManByEmailAsync(string Email)
 		{
 			var normalizedEmail = Email.ToUpper();
 			var craftsMan = await craftsManRepo.GetCraftsManByEmailAsync(normalizedEmail);
-			if (craftsMan == null )
-                throw new NotFoundException(nameof(CraftsMan), "No CraftsMan was  Found");
-            return mapper.Map<CraftsManDto>(craftsMan);
+            var reviews = await reviewRepository.GetReviewsForCraftsmanAsync(craftsMan.Id);
+            if (reviews == null)
+                throw new NotFoundException(nameof(reviews), "No reviews was Found");
+
+            if (craftsMan == null )
+                throw new NotFoundException(nameof(craftsMan), "No CraftsMan were  Found");
+            return new CraftsManDetailsDto
+            {
+                CraftsMan = mapper.Map<CraftsManDto>(craftsMan),
+                Reviews = mapper.Map<IEnumerable<GetAllReviewsDTO>>(reviews)
+            };
 		}
 		//public async Task CreateCraftsManAsync(CreateCraftsManDto craftsManDto)
 		//{
@@ -127,8 +142,8 @@ namespace FIXIT.BLL.Services.Service
                 if (!string.IsNullOrEmpty(existingCraftsMan.ProfileImage))
                 {
                     var oldPath = Path.Combine("wwwroot", existingCraftsMan.ProfileImage);
-                    if (File.Exists(oldPath))
-                        File.Delete(oldPath);
+                    if (System.IO.File.Exists(oldPath))
+                        System.IO.File.Delete(oldPath);
                 }
 
                 // Upload new image using your file service
@@ -140,8 +155,8 @@ namespace FIXIT.BLL.Services.Service
                 if (!string.IsNullOrEmpty(existingCraftsMan.NationalIdPic))
                 {
                     var oldPath = Path.Combine("wwwroot", existingCraftsMan.NationalIdPic);
-                    if (File.Exists(oldPath))
-                        File.Delete(oldPath);
+                    if (System.IO.File.Exists(oldPath))
+                        System.IO.File.Delete(oldPath);
                 }
                 existingCraftsMan.NationalIdPic = uploadHandler.Upload(craftsManDto.NationalIdPic, "NationalIdPics");
             }
@@ -174,5 +189,20 @@ namespace FIXIT.BLL.Services.Service
 			generic.Delete(id);
 			generic.Save();
 		}
-	}
+
+        public async Task<CraftsManDetailsDto> GetCraftsManDetailsAsync(int id)
+        {
+            var craftsman = await craftsManRepo.GetAsync(id)?? throw new NotFoundException(nameof(CraftsMan), id);
+
+            var reviews = await reviewRepository.GetReviewsForCraftsmanAsync(id);
+
+            return new CraftsManDetailsDto
+            {
+                CraftsMan = mapper.Map<CraftsManDto>(craftsman),
+                Reviews = mapper.Map<IEnumerable<GetAllReviewsDTO>>(reviews)
+            };
+        }
+
+
+    }
 }

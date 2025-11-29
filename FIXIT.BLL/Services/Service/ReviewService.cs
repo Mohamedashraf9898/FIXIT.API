@@ -102,8 +102,10 @@ namespace FIXIT.BLL.Services.Service
 
 		public async Task<IEnumerable<GetAllReviewsDTO>> GetReviewsForCraftsmanAsync(int craftsmanId)
 		{
-			var reviews = await _reviewRepository.GetReviewsForCraftsmanAsync(craftsmanId);
-			return _mapper.Map<IEnumerable<GetAllReviewsDTO>>(reviews);
+            var reviews = await _reviewRepository.GetReviewsForCraftsmanAsync(craftsmanId);
+           
+
+            return _mapper.Map<IEnumerable<GetAllReviewsDTO>>(reviews);
 		}
 	}
 

@@ -24,5 +24,6 @@
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public virtual Wallet Wallet { get; set; }
         public virtual ServicesRequest ServicesRequest { get; set; }
+        public bool? ispayed { get; set; }=false;
     }
 }

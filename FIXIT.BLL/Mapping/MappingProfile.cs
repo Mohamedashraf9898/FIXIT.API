@@ -178,6 +178,7 @@ namespace FIXIT.BLL.Mapping
 
             CreateMap<WalletTransaction, WalletTransactionDto>().ReverseMap();
             CreateMap<CreateWalletTransactionDto, WalletTransaction>().ReverseMap();
+            CreateMap<UpdateWaletTransactionDto, WalletTransaction>().ReverseMap();
 
             // ============================
             // Availability Mapping

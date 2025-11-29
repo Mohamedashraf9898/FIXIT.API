@@ -99,6 +99,19 @@ namespace FIXIT.BLL.Services.Service
 
 			return _mapper.Map<IEnumerable<WalletTransactionDto>>(transactions);
 		}
-	}
+		public async Task<UpdateWaletTransactionDto> UpdateWaletTransaction(UpdateWaletTransactionDto dto)
+		{ 
+		
+			var transaction = await _transactionRepo.GetAsync(dto.Id);
+			if (transaction == null)
+                throw new NotFoundException(nameof(WalletTransaction), "No transaction was  found .");
+			transaction.ispayed = dto.ispayed;
+			_transactionRepo.Update(transaction,dto.Id);
+			_transactionRepo.Save();
+			return _mapper.Map<UpdateWaletTransactionDto>(transaction);
+
+        }
+
+    }
 
 }

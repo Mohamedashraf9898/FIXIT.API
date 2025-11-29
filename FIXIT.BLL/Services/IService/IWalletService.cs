@@ -15,7 +15,7 @@ namespace FIXIT.BLL.Services.IService
         Task<bool> AddFundsAsync(CreateWalletTransactionDto dto);
         Task<bool> WithdrawFundsAsync(CreateWalletTransactionDto dto);
         Task<IEnumerable<WalletTransactionDto>> GetWalletTransactionsAsync(int craftsManId);
-
+        Task<UpdateWaletTransactionDto> UpdateWaletTransaction(UpdateWaletTransactionDto dto);
 
         //Task<bool> DeductFundsAsync(int craftsManId, decimal amount, string description);
     }

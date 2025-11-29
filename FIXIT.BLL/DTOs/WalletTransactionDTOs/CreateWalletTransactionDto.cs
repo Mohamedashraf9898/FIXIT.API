@@ -18,5 +18,6 @@ namespace FIXIT.BLL.DTOs.WalletTransactionDTOs
         public string? TransationInfo { get; set; }
         public DateTime CreatedAt { get; set; }
         public int? ServiceRequestId { get; set; }
+        public bool? ispayed { get; set; }
     }
 }

@@ -58,5 +58,15 @@ namespace FIXIT.API.Controllers
             var transactions = await _walletService.GetWalletTransactionsAsync(craftsManId);
             return Ok(transactions);
         }
+        [HttpPut]
+        public async Task<IActionResult> UpdateWaletTransaction(UpdateWaletTransactionDto updateWaletTransactionDto)
+        {
+
+            var update = await _walletService.UpdateWaletTransaction(updateWaletTransactionDto);
+            return Ok(update);
+
+
+
+        }
     }
 }

@@ -8,8 +8,8 @@ namespace FIXIT.BLL.DTOs.OfferDto
 {
     public enum ClientDecision
     {
-        Accept,       // العميل وافق على السعر الحالي
-        Reject,       // العميل رفض نهائي بدون عرض جديد
+        Accept,       
+        Reject,          
     }
 
     public class ClientRespondDto

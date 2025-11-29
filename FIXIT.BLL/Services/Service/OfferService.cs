@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FIXIT.BLL.DTOs.NotificationDtos;
 using FIXIT.BLL.DTOs.OfferDto;
+using FIXIT.BLL.DTOs.ServiceRequestDTOs;
 using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.BLL.Services.IService;
 using FIXIT.DAL.Models;
@@ -30,7 +31,7 @@ namespace FIXIT.BLL.Services.Service
         }
 
 
-        public async Task<bool> SelectCraftsmanAsync(ClientSelectCraftsmanDto dto)
+        public async Task<ReturnedOfferDto> SelectCraftsmanAsync(ClientSelectCraftsmanDto dto)
         {
             var request = await _serviceRequestRepository.GetAsync(dto.ServiceRequestId);
             if (request == null)
@@ -54,8 +55,13 @@ namespace FIXIT.BLL.Services.Service
 
             await _offerRepository.AddAsync(offer);
             _offerRepository.Save();
+            var returnedDto = new ReturnedOfferDto
+            {
+                Id = offer.Id
+            };
 
-            return true;
+
+            return returnedDto;
         }
 
 
@@ -92,7 +98,7 @@ namespace FIXIT.BLL.Services.Service
 
         //    return true;
         //}
-        public async Task<bool> ClientRespondToOfferAsync(ClientRespondDto dto)
+        public async Task<ReturnedOfferDto> ClientRespondToOfferAsync(ClientRespondDto dto)
         {
             var offer = await _offerRepository.GetAsync(dto.OfferId);
             if (offer == null)
@@ -105,6 +111,7 @@ namespace FIXIT.BLL.Services.Service
             NotificationType notificationType;
             string notificationTitle;
             string notificationMessage;
+            int OfferId;
 
             switch (dto.Decision)
             {
@@ -145,17 +152,23 @@ namespace FIXIT.BLL.Services.Service
                 ClientId = request.ClientId,
                 Title = notificationTitle,
                 Message = notificationMessage,
+                OfferId=offer.Id,
                 SenderType = NotificationSenderType.Client,
                 Type = notificationType,
                 IsRead = false // الحرفي لسه ما شافهاش
             };
 
             await _notificationService.CreateFromClientAsync(notificationDto);
+            var returnedDto = new ReturnedOfferDto
+            {
+                Id = offer.Id
+            };
 
-            return true;
+
+            return returnedDto;
         }
 
-        public async Task<bool> CraftsmanAcceptRequestAsync(CraftsmanAcceptDto dto)
+        public async Task<ReturnedOfferDto> CraftsmanAcceptRequestAsync(CraftsmanAcceptDto dto)
         {
             var offer = (await _offerRepository.GetAllAsync())
                         .FirstOrDefault(o => o.ServiceRequestId == dto.ServiceRequestId);
@@ -195,17 +208,22 @@ namespace FIXIT.BLL.Services.Service
                 Message = $"Craftsman has accepted your suggested price ({request.SuggestedPrice} EGP). Please proceed with the payment.",
                 SenderType = NotificationSenderType.Craftsman,
                 Type = NotificationType.CraftsmanAccepted, // استخدم النوع اللي يناسبك
+                OfferId=offer.Id,
                  IsRead = false // مهم: العميل لسه ما شافهاش
 
             };
 
             await _notificationService.CreateFromCraftsmanAsync(notificationDto);
+            var returnedDto = new ReturnedOfferDto
+            {
+                Id = offer.Id
+            };
 
 
-            return true;
+            return returnedDto;
         }
 
-        public async Task<bool> CraftsmanRejectRequestAsync(CraftsmanRejectDto dto)
+        public async Task<ReturnedOfferDto> CraftsmanRejectRequestAsync(CraftsmanRejectDto dto)
         {
             var offer = (await _offerRepository.GetAllAsync())
                         .FirstOrDefault(o => o.ServiceRequestId == dto.ServiceRequestId);
@@ -240,21 +258,27 @@ namespace FIXIT.BLL.Services.Service
                 Message = $"Craftsman has rejected your service request.",
                 SenderType = NotificationSenderType.Craftsman,
                 Type = NotificationType.CraftsmanRejected, // تأكد من إضافته في Enum
+                OfferId=offer.Id,
                  IsRead= false // مهم: العميل لسه ما شافهاش
             };
 
             await _notificationService.CreateFromCraftsmanAsync(notificationDto);
-            return true;
+            var returnedDto = new ReturnedOfferDto
+            {
+                Id = offer.Id
+            };
+
+
+            return returnedDto;
         }
 
 
-        public async Task<bool> CraftsmanNewOfferAsync(CraftsManNewOfferDto dto)
+        public async Task<ReturnedOfferDto> CraftsmanNewOfferAsync(CraftsManNewOfferDto dto)
         {
             var request = await _serviceRequestRepository.GetAsync(dto.ServiceRequestId);
             if (request == null)
                 throw new KeyNotFoundException("Service request not found");
 
-            // جلب الـ Offer الحالي
             var currentOffer = (await _offerRepository.GetAllAsync())
                                .FirstOrDefault(o => o.ServiceRequestId == dto.ServiceRequestId);
 
@@ -266,8 +290,8 @@ namespace FIXIT.BLL.Services.Service
             currentOffer.UpdatedAt = DateTime.UtcNow;
 
             _offerRepository.Update(currentOffer, currentOffer.Id);
-            if (!request.SuggestedPrice.HasValue)
-                throw new InvalidOperationException("SuggestedPrice is null!");
+            //if (!request.SuggestedPrice.HasValue)
+            //    throw new InvalidOperationException("SuggestedPrice is null!");
 
             request.Status = ServiceRequestStatus.WaitingForClientDecision;
             _serviceRequestRepository.Update(request, request.ServicesRequestId);
@@ -281,15 +305,24 @@ namespace FIXIT.BLL.Services.Service
                 CraftsManId = request.CraftsManId,
                 ClientId = request.ClientId,
                 Title = "Craftsman Submitted a New Offer",
-                Message = $"Craftsman has submitted a new offer: {dto.FinalAmount} EGP. Please review and decide.",
+                Message = $"Craftsman has submitted a new offer Please review and decide.",
+                FinalAmount=dto.FinalAmount,    
                 SenderType = NotificationSenderType.Craftsman,
                 Type = NotificationType.NewOfferFromCraftsman, // تأكد من إضافته في Enum
+                OfferId = currentOffer.Id,
+                Description = dto.Description,
                 IsRead = false // العميل لسه ما شافهاش
             };
+
             await _notificationService.CreateFromCraftsmanAsync(notificationDto);
+            var returnedDto = new ReturnedOfferDto
+            {
+                Id = currentOffer.Id
+            };
 
 
-            return true;
+
+            return returnedDto;
 
         }
 
@@ -305,6 +338,15 @@ namespace FIXIT.BLL.Services.Service
             if (updated) _serviceRequestRepository.Save();
 
             return updated;
+        }
+
+        public async Task<ReadOfferId> GetOfferById(int id)
+        {
+            var offer = await _offerRepository.GetAsync(id);
+            if (offer == null)
+                throw new KeyNotFoundException("Offer Not found");
+            var readOffer =  _mapper.Map<ReadOfferId>(offer);
+            return readOffer;
         }
     }
 }

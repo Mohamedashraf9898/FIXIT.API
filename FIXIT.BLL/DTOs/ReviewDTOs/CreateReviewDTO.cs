@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FIXIT.DAL.Models;
 
 namespace FIXIT.BLL.DTOs.ReviewDTOs
 {
@@ -11,5 +12,16 @@ namespace FIXIT.BLL.DTOs.ReviewDTOs
         public int RatingValue { get; set; }
         public string Comment { get; set; }
         public int ServicesRequestId { get; set; }
+        public int? ClientId { get; set; }
+      
+
+        public int? CraftsManId { get; set; }
+
+
     }
 }
+
+
+
+
+

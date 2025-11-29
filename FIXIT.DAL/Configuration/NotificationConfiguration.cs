@@ -35,6 +35,7 @@ namespace FIXIT.DAL.Configuration
                    .WithMany() 
                    .HasForeignKey(n => n.ServiceRequestId)
                    .OnDelete(DeleteBehavior.Cascade); 
+            
         }
     }
 }

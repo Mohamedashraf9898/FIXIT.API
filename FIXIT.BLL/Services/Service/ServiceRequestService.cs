@@ -14,6 +14,7 @@ using FIXIT.DAL.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
@@ -95,9 +96,9 @@ namespace FIXIT.BLL.Services.Service
                 ServicesRequestId = serviceRequest.ServicesRequestId
             };
 
-            //var paymentResult = await paymentService.CreateOrUpdatePaymentIntent(serviceRequest.ServicesRequestId);
-            //_serviceRequestRepository.Update(serviceRequest, serviceRequest.ServicesRequestId);
-            //_serviceRequestRepository.Save();
+            var paymentResult = await paymentService.CreateOrUpdatePaymentIntent(serviceRequest.ServicesRequestId);
+            _serviceRequestRepository.Update(serviceRequest, serviceRequest.ServicesRequestId);
+            _serviceRequestRepository.Save();
 
 
             return returnedDto;

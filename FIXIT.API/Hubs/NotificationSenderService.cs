@@ -13,7 +13,7 @@ namespace FIXIT.API.Hubs
             _hubContext = hubContext;
         }
 
-        public async Task SendNotificationToUserAsync(int? clientId, int? craftsManId, string title, string message , NotificationSenderType senderType)
+        public async Task SendNotificationToUserAsync(int? clientId, int? craftsManId, string title,int? offerId, string message , NotificationSenderType senderType)
         {
             if (senderType == NotificationSenderType.Client && craftsManId.HasValue)
             {

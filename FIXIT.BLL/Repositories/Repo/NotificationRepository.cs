@@ -27,7 +27,7 @@ namespace FIXIT.BLL.Repositories.Repo
         public async Task<IEnumerable<Notification>> GetNotificationsForClientAsync(int clientId)
         {
             return await _dbContext.Notifications
-                .Where(n => n.ServiceRequest.ClientId == clientId)
+                .Where(n => n.ServiceRequest.ClientId == clientId )
                 .OrderByDescending(n => n.CreatedAt)
                 .ToListAsync();
         }
@@ -39,7 +39,7 @@ namespace FIXIT.BLL.Repositories.Repo
                 .OrderByDescending(n => n.CreatedAt)
                 .ToListAsync();
         }
-
+       
         public async Task<Notification?> GetByIdAsync(int id)
         {
             return await _dbContext.Notifications.FindAsync(id);

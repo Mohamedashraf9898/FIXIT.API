@@ -8,6 +8,7 @@ namespace FIXIT.BLL.DTOs.SchedulingDTOs
 {
     public class TimeSlotDto
     {
+        public int Id { get; set; }
         public string Time { get; set; }
         public bool IsAvailable { get; set; }
         public DateTime StartTime { get; set; }

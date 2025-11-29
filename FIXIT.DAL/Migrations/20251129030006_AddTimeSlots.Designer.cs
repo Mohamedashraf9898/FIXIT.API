@@ -4,6 +4,7 @@ using FIXIT.DAL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FIXIT.DAL.Migrations
 {
     [DbContext(typeof(FixItDbContext))]
-    partial class FixItDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251129030006_AddTimeSlots")]
+    partial class AddTimeSlots
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -593,9 +596,6 @@ namespace FIXIT.DAL.Migrations
 
                     b.Property<int>("WalletId")
                         .HasColumnType("int");
-
-                    b.Property<bool>("ispayed")
-                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 

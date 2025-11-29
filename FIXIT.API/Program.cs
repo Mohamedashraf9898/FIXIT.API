@@ -140,7 +140,10 @@ builder.Services.AddScoped<INotificationSenderService, NotificationSenderService
             // ??? ??? ?????? generic resolver ?? ServiceRequest
             builder.Services.AddScoped(typeof(ServiceRequestImageResolver<,>));
 
+            builder.Services.AddScoped<ITimeSlotRepository, TimeSlotRepository>();
 
+            // 2. Register the Service
+            builder.Services.AddScoped<ITimeSlotService, TimeSlotService>();
 
 
 

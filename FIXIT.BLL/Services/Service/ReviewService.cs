@@ -45,11 +45,15 @@ namespace FIXIT.BLL.Services.Service
 			var reviewExists = await _reviewRepository.DoesReviewExistForRequestAsync(reviewDto.ServicesRequestId);
 			if (reviewExists)
 				throw new ValidationException("This job has already been reviewed.");
-
-			var newReview = _mapper.Map<Review>(reviewDto, opts =>
+			var review = new CreateReviewDTO
 			{
-				opts.Items["ServiceRequest"] = serviceRequest;
-			});
+				Comment = reviewDto.Comment,
+				RatingValue = reviewDto.RatingValue,
+				ServicesRequestId=reviewDto.ServicesRequestId,
+				ClientId=serviceRequest.ClientId,
+				CraftsManId = serviceRequest.CraftsManId
+			};
+			var newReview = _mapper.Map<Review>(review);
 
 			await _reviewRepository.AddAsync(newReview);
 			_reviewRepository.Save();
@@ -98,8 +102,10 @@ namespace FIXIT.BLL.Services.Service
 
 		public async Task<IEnumerable<GetAllReviewsDTO>> GetReviewsForCraftsmanAsync(int craftsmanId)
 		{
-			var reviews = await _reviewRepository.GetReviewsForCraftsmanAsync(craftsmanId);
-			return _mapper.Map<IEnumerable<GetAllReviewsDTO>>(reviews);
+            var reviews = await _reviewRepository.GetReviewsForCraftsmanAsync(craftsmanId);
+           
+
+            return _mapper.Map<IEnumerable<GetAllReviewsDTO>>(reviews);
 		}
 	}
 

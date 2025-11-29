@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FIXIT.DAL.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace FIXIT.BLL.DTOs.ServiceRequestDTOs
 {
@@ -29,7 +30,7 @@ namespace FIXIT.BLL.DTOs.ServiceRequestDTOs
         public DateTime ServiceStartTime { get; set; }
         public DateTime? CompletedAt { get; set; }
 
-        public string Status { get; set; }
+        public ServiceRequestStatus Status { get; set; }
         public decimal? SuggestedPrice { get; set; }
         public decimal? TotalAmount { get; set; }
 

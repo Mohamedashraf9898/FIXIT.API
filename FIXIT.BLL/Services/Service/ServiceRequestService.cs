@@ -37,7 +37,7 @@ namespace FIXIT.BLL.Services.Service
         private readonly IWalletTransactionRepository _transactionRepo;
         private readonly IMapper _mapper;
         private readonly UploadHandler _uploadHandler;
-
+        private readonly ITimeSlotRepository _timeSlotRepo;
 
         public ServiceRequestService(
             IServiceRequestRepository serviceRequestRepository,
@@ -51,7 +51,8 @@ namespace FIXIT.BLL.Services.Service
             IAvailabilityService availabilityService,
             UploadHandler uploadHandler,
         ITimeOffService timeOffService,
-        INotificationService notificationService)
+        INotificationService notificationService,
+        ITimeSlotRepository timeSlotRepo)
         {
             _serviceRequestRepository = serviceRequestRepository;
             _craftsmanRepository = craftsmanRepository;
@@ -65,13 +66,14 @@ namespace FIXIT.BLL.Services.Service
             _uploadHandler = uploadHandler;
             _timeOffService = timeOffService;
             _notificationService = notificationService;
+            _timeSlotRepo = timeSlotRepo;
         }
         public async Task<ReturnedServiceRequestDto> CreateServiceRequestAsync(CreateServiceRequestDto dto)
         {
             string? imagePath = null;
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto), "Service Request Data Can not be null");
-            if(dto.ServiceRequestImage != null)
+            if (dto.ServiceRequestImage != null)
             {
                 imagePath = _uploadHandler.Upload(dto.ServiceRequestImage, "ServiceRequest");
             }
@@ -79,16 +81,15 @@ namespace FIXIT.BLL.Services.Service
             if (imagePath != null)
                 serviceRequest.ServiceRequestImage = imagePath;
             await EnsureServiceRequestLocationAsync(serviceRequest);
-
-             await _serviceRequestRepository.AddAsync(serviceRequest);
+            serviceRequest.ServiceEndTime = serviceRequest.ServiceStartTime.AddMinutes(60);
+            await _serviceRequestRepository.AddAsync(serviceRequest);
             if (serviceRequest.ClientId <= 0 || serviceRequest.ServiceId <= 0)
                 throw new ValidationException("ClientId or ServiceId is invalid.");
-
+                
             if (string.IsNullOrEmpty(serviceRequest.Description))
                 throw new ValidationException("Description cannot be empty.");
 
-            //if (serviceRequest.ServiceStartTime <= DateTime.UtcNow)
-            //    throw new ValidationException("ServiceAt must be in the future.");
+           
             _serviceRequestRepository.Save();
             //var returnedDto = _mapper.Map<ReturnedServiceRequestDto>(serviceRequest);
             var returnedDto = new ReturnedServiceRequestDto
@@ -103,44 +104,9 @@ namespace FIXIT.BLL.Services.Service
 
             return returnedDto;
 
-          
+
         }
-        //public async Task<bool> CreateServiceRequestAsync(CreateServiceRequestDto dto)
-        //{
-        //    string? imagePath = null;
-        //    if (dto == null)
-        //        throw new ArgumentNullException(nameof(dto), "Service Request Data Can not be null");
-        //    if(dto.ServiceRequestImage != null)
-        //    {
-        //        imagePath = _uploadHandler.Upload(dto.ServiceRequestImage, "ServiceRequest");
-        //    }
-        //    var serviceRequest = _mapper.Map<ServicesRequest>(dto);
-        //    serviceRequest.ServiceRequestImage = imagePath;
-        //    await EnsureServiceRequestLocationAsync(serviceRequest);
-
-        //     await _serviceRequestRepository.AddAsync(serviceRequest);
-        //    if (serviceRequest.ClientId <= 0 || serviceRequest.ServiceId <= 0)
-        //        throw new ValidationException("ClientId or ServiceId is invalid.");
-
-        //    if (string.IsNullOrEmpty(serviceRequest.Description))
-        //        throw new ValidationException("Description cannot be empty.");
-
-        //    //if (serviceRequest.ServiceStartTime <= DateTime.UtcNow)
-        //    //    throw new ValidationException("ServiceAt must be in the future.");
-
-        //    _serviceRequestRepository.Save();
-        //    //var returnedDto = _mapper.Map<ReturnedServiceRequestDto>(serviceRequest);
-
-
-        //    //var paymentResult = await paymentService.CreateOrUpdatePaymentIntent(serviceRequest.ServicesRequestId);
-        //    //_serviceRequestRepository.Update(serviceRequest, serviceRequest.ServicesRequestId);
-        //    //_serviceRequestRepository.Save();
-
-
-        //    return true;
-
-          
-        //}
+       
 
         public async Task<bool> DeleteServiceRequest(int id)
         {
@@ -312,37 +278,56 @@ namespace FIXIT.BLL.Services.Service
 
 
         #endregion
-        private async Task<bool> IsSlotAvailable(int craftsmanId, DateTime startTime, int durationMinutes)
-        {
-            if (await _timeOffService.HasTimeOffOnDateAsync(craftsmanId, startTime))
-                return false;
-
-            var dayOfWeek = startTime.DayOfWeek;
-            var availability = await _availabilityService.GetByDayAsync(craftsmanId, dayOfWeek);
-
-            if (availability == null || !availability.IsAvailable)
-                return false; 
-
-            var requestTime = startTime.TimeOfDay;
-            var requestEnd = requestTime.Add(TimeSpan.FromMinutes(durationMinutes));
-
-            if (requestTime < availability.StartTime || requestEnd > availability.EndTime)
-                return false;
 
 
-            var bookedRequests = await _serviceRequestRepository.GetByDateAsync(craftsmanId, startTime.Date);
 
-            bool isConflict = bookedRequests.Any(req =>
-                IsOverlapping(requestTime, requestEnd, req.ServiceStartTime.TimeOfDay, req.ServiceEndTime.Value.TimeOfDay));
 
-            return !isConflict;
+        //public async Task<bool> UpdateServiceRequestStartAtTime(int id, ConfirmStartatTimeDto dto)
+        //{
+        //    if (dto == null)
+        //        throw new ArgumentNullException(nameof(dto));
 
-        }
-        private bool IsOverlapping(TimeSpan start1, TimeSpan end1, TimeSpan start2, TimeSpan end2)
-        {
-            return start1 < end2 && start2 < end1;
-        }
+        //    var existing = await _serviceRequestRepository.GetAsync(id);
+        //    if (existing == null)
+        //        throw new KeyNotFoundException($"Service Request with ID {id} not found");
 
+        //    var targetSlot = await _timeSlotRepo.GetSlotByDateAndTimeAsync(
+        //             dto.CraftsManId,
+        //             dto.ServiceStartTime
+        //                                  );
+        //    if (targetSlot == null)
+        //        throw new ValidationException("This time slot does not exist in the craftsman's schedule.");
+
+        //    if (targetSlot.Status != SlotStatus.Available)
+        //        throw new ValidationException("Sorry, this time slot is already booked.");
+
+        //    targetSlot.Status = SlotStatus.Booked;
+        //    _timeSlotRepo.Update(targetSlot, targetSlot.Id);
+        //    _timeSlotRepo.Save();
+        //    _mapper.Map(dto, existing);
+
+
+
+        //    var updated = _serviceRequestRepository.Update(existing, id);
+        //    if (updated) _serviceRequestRepository.Save();
+
+        //    var notificationDto = new CreateNotificationDto
+        //    {
+        //        ServiceRequestId = existing.ServicesRequestId,
+        //        CraftsManId = existing.CraftsManId,
+        //        ClientId = existing.ClientId,
+        //        Title = "Service Request Scheduled",
+
+        //        Message = $"Client has confirmed the time slot: {existing.ServiceStartTime}",
+        //       SenderType = NotificationSenderType.Client ,
+        //       Type=NotificationType.SelectCraftsman,
+        //        IsRead = false 
+
+        //    };
+        //    await _notificationService.CreateFromClientAsync(notificationDto);
+
+        //    return updated;
+        //}
         public async Task<bool> UpdateServiceRequestStartAtTime(int id, ConfirmStartatTimeDto dto)
         {
             if (dto == null)
@@ -352,34 +337,46 @@ namespace FIXIT.BLL.Services.Service
             if (existing == null)
                 throw new KeyNotFoundException($"Service Request with ID {id} not found");
 
-      
+            var targetSlot = await _timeSlotRepo.GetSlotByDateAndTimeAsync(
+                    existing.CraftsManId ?? dto.CraftsManId,
+                    dto.ServiceStartTime
+            );
+
+            if (targetSlot == null)
+                throw new ValidationException("This time slot does not exist in the craftsman's schedule.");
+
+            if (targetSlot.Status != SlotStatus.Available)
+                throw new ValidationException("Sorry, this time slot is already booked.");
+
+            targetSlot.Status = SlotStatus.Booked;
+            targetSlot.ServiceRequestId = existing.ServicesRequestId; 
+
+            _timeSlotRepo.Update(targetSlot, targetSlot.Id);
 
             _mapper.Map(dto, existing);
-           
-            
+
+            int duration = existing.EstimatedDurationMinutes ?? 60;
+            existing.ServiceEndTime = existing.ServiceStartTime.AddMinutes(duration);
 
             var updated = _serviceRequestRepository.Update(existing, id);
-            if (updated) _serviceRequestRepository.Save();
-            //await _notificationService.CreateNotificationAsync(new CreateNotificationDto
-            //{
-            //    ServiceRequestId = serviceRequest.ServicesRequestId,
-            //    CraftsManId = serviceRequest.CraftsManId,  // الجواب من الـ ServiceRequest
-            //    Title = "New Service Request",
-            //    Message = $"You have a new service request from client {serviceRequest.ClientId}"
-            //});
-            var notificationDto = new CreateNotificationDto
-            {
-                ServiceRequestId = existing.ServicesRequestId,
-                CraftsManId = existing.CraftsManId,
-                ClientId = existing.ClientId,
-                Title = "Service Request Scheduled",
-                Message = $"Client has confirmed the time slot: {existing.ServiceStartTime}",
-               SenderType = NotificationSenderType.Client ,
-               Type=NotificationType.SelectCraftsman,
-                IsRead = false // مهم: العميل لسه ما شافهاش
 
-            };
-            await _notificationService.CreateFromClientAsync(notificationDto);
+            if (updated)
+            {
+                _serviceRequestRepository.Save();
+
+                var notificationDto = new CreateNotificationDto
+                {
+                    ServiceRequestId = existing.ServicesRequestId,
+                    CraftsManId = existing.CraftsManId,
+                    ClientId = existing.ClientId,
+                    Title = "Service Request Scheduled",
+                    Message = $"Client has confirmed the time slot: {existing.ServiceStartTime}",
+                    SenderType = NotificationSenderType.Client,
+                    Type = NotificationType.SelectCraftsman,
+                    IsRead = false
+                };
+                await _notificationService.CreateFromClientAsync(notificationDto);
+            }
 
             return updated;
         }

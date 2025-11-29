@@ -17,17 +17,20 @@ namespace FIXIT.BLL.Services.Service
         private readonly IServiceRequestRepository _serviceRequestRepository;
         private readonly IMapper _mapper;
         private readonly INotificationService _notificationService;
+        private readonly ITimeSlotRepository _timeSlotRepo;
 
         public OfferService(
             IOfferRepository offerRepository,
             IServiceRequestRepository serviceRequestRepository,
             IMapper mapper,
-             INotificationService notificationService)
+             INotificationService notificationService,
+             ITimeSlotRepository timeSlotRepo)
         {
             _offerRepository = offerRepository;
             _serviceRequestRepository = serviceRequestRepository;
             _mapper = mapper;
             _notificationService = notificationService;
+            _timeSlotRepo = timeSlotRepo;
         }
 
 
@@ -137,14 +140,18 @@ namespace FIXIT.BLL.Services.Service
                 default:
                     throw new InvalidOperationException("Invalid client decision.");
             }
-
+            //Abdallah: Release the slot if client rejected the offer
+            if (dto.Decision == ClientDecision.Reject)
+            {
+                await ReleaseSlotByRequestId(request.ServicesRequestId);
+            }
             _offerRepository.Update(offer, offer.Id);
             _serviceRequestRepository.Update(request, request.ServicesRequestId);
 
             _offerRepository.Save();
             _serviceRequestRepository.Save();
 
-            // 🔥 Create Notification (FROM CLIENT → TO CRAFTSMAN)
+            //  Create Notification (FROM CLIENT → TO CRAFTSMAN)
             var notificationDto = new CreateNotificationDto
             {
                 ServiceRequestId = request.ServicesRequestId,
@@ -261,7 +268,8 @@ namespace FIXIT.BLL.Services.Service
                 OfferId=offer.Id,
                  IsRead= false // مهم: العميل لسه ما شافهاش
             };
-
+            //Abdallah: Release the slot as the craftsman rejected the request
+            await ReleaseSlotByRequestId(dto.ServiceRequestId);
             await _notificationService.CreateFromCraftsmanAsync(notificationDto);
             var returnedDto = new ReturnedOfferDto
             {
@@ -298,7 +306,7 @@ namespace FIXIT.BLL.Services.Service
 
             _offerRepository.Save();
             _serviceRequestRepository.Save();
-            // 🔥 Create Notification (FROM CRAFTSMAN → TO CLIENT)
+         
             var notificationDto = new CreateNotificationDto
             {
                 ServiceRequestId = request.ServicesRequestId,
@@ -308,12 +316,11 @@ namespace FIXIT.BLL.Services.Service
                 Message = $"Craftsman has submitted a new offer Please review and decide.",
                 FinalAmount=dto.FinalAmount,    
                 SenderType = NotificationSenderType.Craftsman,
-                Type = NotificationType.NewOfferFromCraftsman, // تأكد من إضافته في Enum
+                Type = NotificationType.NewOfferFromCraftsman, 
                 OfferId = currentOffer.Id,
                 Description = dto.Description,
-                IsRead = false // العميل لسه ما شافهاش
+                IsRead = false 
             };
-
             await _notificationService.CreateFromCraftsmanAsync(notificationDto);
             var returnedDto = new ReturnedOfferDto
             {
@@ -347,6 +354,22 @@ namespace FIXIT.BLL.Services.Service
                 throw new KeyNotFoundException("Offer Not found");
             var readOffer =  _mapper.Map<ReadOfferId>(offer);
             return readOffer;
+        }
+
+
+
+        public async Task ReleaseSlotByRequestId(int requestId)
+        {
+            var slot = await _timeSlotRepo.GetSlotByRequestIdAsync(requestId);
+
+            if (slot != null)
+            {
+                slot.Status = SlotStatus.Available; 
+                slot.ServiceRequestId = null;      
+
+                _timeSlotRepo.Update(slot, slot.Id);
+                _timeSlotRepo.Save();
+            }
         }
     }
 }

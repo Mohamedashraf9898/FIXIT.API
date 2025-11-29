@@ -35,7 +35,7 @@ namespace FIXIT.DAL
         public DbSet<CraftsManAvailability> CraftsManAvailabilities { get; set; }
         public DbSet<CraftsManTimeOff> CraftsManTimeOffs { get; set; }
         public DbSet<Notification> Notifications { get; set; }
-
+        public  DbSet<TimeSlot> TimeSlots { get; set; }
 
     }
 }

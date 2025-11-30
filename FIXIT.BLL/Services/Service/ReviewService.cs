@@ -226,6 +226,19 @@ namespace FIXIT.BLL.Services.Service
 
             return _mapper.Map<IEnumerable<GetAllReviewsDTO>>(reviews);
 		}
+
+        public async Task<GetAllReviewsDTO> GetReviewByServiceRequestIdAsync(int serviceRequestId)
+        {
+            var review = await _reviewRepository.GetReviewByServiceRequestIdAsync(serviceRequestId);
+            if (review == null)
+                throw new NotFoundException(nameof(Review), serviceRequestId);
+            return _mapper.Map<GetAllReviewsDTO>(review);
+        }
+
+        public async Task<double> GetAverageRatingForCraftsmanAsync(int craftsmanId)
+        {
+            return await _reviewRepository.GetAverageRatingForCraftsmanAsync(craftsmanId);
+        }
 	}
 
 

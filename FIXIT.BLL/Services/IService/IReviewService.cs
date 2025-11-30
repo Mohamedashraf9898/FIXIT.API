@@ -18,6 +18,8 @@ namespace FIXIT.BLL.Services.IService
         Task<GetAllReviewsDTO> CreateReviewAsync(CreateReviewDTO reviewDto);
             Task<GetAllReviewsDTO> GetReviewByIdAsync(int reviewId);
         Task<IEnumerable<GetAllReviewsDTO>> GetReviewsForCraftsmanAsync(int craftsmanId);
+        Task<GetAllReviewsDTO> GetReviewByServiceRequestIdAsync(int serviceRequestId);
+        Task<double> GetAverageRatingForCraftsmanAsync(int craftsmanId);
     }
 }
 

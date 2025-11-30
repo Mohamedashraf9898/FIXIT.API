@@ -32,5 +32,19 @@ namespace FIXIT.BLL.Repositories.Repo
                 .Where(r => r.CraftsManId == craftsmanId)
                 .ToListAsync();
         }
+
+        public async Task<Review> GetReviewByServiceRequestIdAsync(int serviceRequestId)
+        {
+            return await _dbContext.Set<Review>()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.ServicesRequestId == serviceRequestId);
+        }
+
+        public async Task<double> GetAverageRatingForCraftsmanAsync(int craftsmanId)
+        {
+            return await _dbContext.Set<Review>()
+                .Where(r => r.CraftsManId == craftsmanId)
+                .AverageAsync(r => (double?)r.RatingValue) ?? 0.0;
+        }
     }
 }

@@ -88,6 +88,20 @@ namespace FIXIT.API.Controllers
 			return Ok(reviews);
 		}
 
+		[HttpGet("ServiceRequest/{serviceRequestId}")]
+		public async Task<IActionResult> GetReviewByServiceRequestId(int serviceRequestId)
+		{
+			var review = await _reviewService.GetReviewByServiceRequestIdAsync(serviceRequestId);
+			return Ok(review);
+		}
+
+		[HttpGet("craftsman/{craftsmanId}/average-rating")]
+        public async Task<IActionResult> GetAverageRatingForCraftsman(int craftsmanId)
+        {
+            var averageRating = await _reviewService.GetAverageRatingForCraftsmanAsync(craftsmanId);
+            return Ok(averageRating);
+        }
+
 
 
 	}

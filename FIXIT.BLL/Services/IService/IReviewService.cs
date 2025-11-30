@@ -11,11 +11,12 @@ namespace FIXIT.BLL.Services.IService
 {
     public interface IReviewService 
     {
-        Task<IEnumerable<GetAllReviewsDTO>> GetAllReviewsAsync();    
+        Task<IEnumerable<GetAllReviewsDTO>> GetAllReviewsAsync();
+        // Task<GetAllReviewsDTO> UpdateReviewAsync(int reviewId, UpdateReviewDTO reviewDto);
         Task<GetAllReviewsDTO> UpdateReviewAsync(int reviewId, UpdateReviewDTO reviewDto);
-        Task<bool> DeleteReviewAsync(int reviewId);
+            Task<bool> DeleteReviewAsync(int reviewId);
         Task<GetAllReviewsDTO> CreateReviewAsync(CreateReviewDTO reviewDto);
-        Task<GetAllReviewsDTO> GetReviewByIdAsync(int reviewId);
+            Task<GetAllReviewsDTO> GetReviewByIdAsync(int reviewId);
         Task<IEnumerable<GetAllReviewsDTO>> GetReviewsForCraftsmanAsync(int craftsmanId);
     }
 }

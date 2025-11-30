@@ -22,22 +22,52 @@ namespace FIXIT.API.Controllers
 			var reviews = await _reviewService.GetAllReviewsAsync();
 			return Ok(reviews);
 		}
+        [HttpPost]
+        //public async Task<IActionResult> CreateReview(CreateReviewDTO reviewDto)
+        //{
+        //    int? currentUserId = null;
 
-		[HttpPost]
-		public async Task<IActionResult> CreateReview(CreateReviewDTO reviewDto)
-		{
-			var createdReview = await _reviewService.CreateReviewAsync(reviewDto);
-			return StatusCode(StatusCodes.Status201Created, createdReview);
-		}
+        //    var userIdClaim = User.FindFirst("id");
+        //    if (userIdClaim != null)
+        //        currentUserId = int.Parse(userIdClaim.Value);
 
-		[HttpPut("{id}")]
-		public async Task<IActionResult> UpdateReview(int id, UpdateReviewDTO reviewDto)
-		{
-			var updatedReview = await _reviewService.UpdateReviewAsync(id, reviewDto);
-			return Ok(updatedReview);
-		}
+        //    var createdReview = await _reviewService.CreateReviewAsync(reviewDto, currentUserId);
+        //    return StatusCode(StatusCodes.Status201Created, createdReview);
+        //}
 
-		[HttpDelete("{id}")]
+
+        [HttpPost]
+        public async Task<IActionResult> CreateReview(CreateReviewDTO reviewDto)
+        {
+            var createdReview = await _reviewService.CreateReviewAsync(reviewDto);
+            return StatusCode(StatusCodes.Status201Created, createdReview);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateReview(int id, UpdateReviewDTO reviewDto)
+        {
+            var updatedReview = await _reviewService.UpdateReviewAsync(id, reviewDto);
+            return Ok(updatedReview);
+        }
+
+        //[HttpPut("{id}")]
+        //public async Task<IActionResult> UpdateReview(int id, UpdateReviewDTO reviewDto)
+        //{
+        //    // Only extract the userId, no validation here
+        //    int? currentUserId = null;
+
+        //    var userIdClaim = User.FindFirst("id");
+        //    if (userIdClaim != null)
+        //        currentUserId = int.Parse(userIdClaim.Value);
+
+        //    // Service does all validation
+        //    var updatedReview = await _reviewService.UpdateReviewAsync(id, reviewDto, currentUserId);
+
+        //    return Ok(updatedReview);
+        //}
+
+
+        [HttpDelete("{id}")]
 		public async Task<IActionResult> DeleteReview(int id)
 		{
 			await _reviewService.DeleteReviewAsync(id);

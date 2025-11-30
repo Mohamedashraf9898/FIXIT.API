@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace FIXIT.BLL.Helper.PictureUrlResolver
 {
-    public class NationalIdPicResolver : IValueResolver<CraftsMan, CraftsManDto, string?>
+    public class NationalIdPicResolver : IValueResolver<CraftsMan, CraftsManDto, string>
     {
         private readonly IConfiguration _config;
 
@@ -19,7 +19,7 @@ namespace FIXIT.BLL.Helper.PictureUrlResolver
             _config = config;
         }
 
-        public string? Resolve(CraftsMan source, CraftsManDto destination, string destMember, ResolutionContext context)
+        public string Resolve(CraftsMan source, CraftsManDto destination, string destMember, ResolutionContext context)
         {
             if (string.IsNullOrEmpty(source.NationalIdPic)) return string.Empty;
 

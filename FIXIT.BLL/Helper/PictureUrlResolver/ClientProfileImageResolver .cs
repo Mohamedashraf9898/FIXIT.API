@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace FIXIT.BLL.Helper.PictureUrlResolver
 {
     public class ClientProfileImageResolver
-        : IValueResolver<Client, GetAllClientsDTO, string?>
+        : IValueResolver<Client, GetAllClientsDTO, string>
     {
         private readonly IConfiguration _config;
 
@@ -20,7 +20,7 @@ namespace FIXIT.BLL.Helper.PictureUrlResolver
             _config = config;
         }
 
-        public string? Resolve(Client source, GetAllClientsDTO destination, string destMember, ResolutionContext context)
+        public string Resolve(Client source, GetAllClientsDTO destination, string destMember, ResolutionContext context)
         {
             if (string.IsNullOrEmpty(source.ProfileImage))
                 return string.Empty;

@@ -40,7 +40,7 @@ namespace FIXIT.BLL.Helper.UploadHandler
 
             using (var stream = new FileStream(fullPath, FileMode.Create))
             {
-                 file.CopyToAsync(stream);
+                 file.CopyTo(stream);
             }
 
             if (!string.IsNullOrEmpty(oldFilePath))

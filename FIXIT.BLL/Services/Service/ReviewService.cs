@@ -30,51 +30,170 @@ namespace FIXIT.BLL.Services.Service
             _serviceRequestRepository = serviceRequestRepository;
             _mapper = mapper;
         }
-		public async Task<GetAllReviewsDTO> CreateReviewAsync(CreateReviewDTO reviewDto)
-		{
-			if (reviewDto == null)
-				throw new ValidationException("Review data cannot be null.");
+        //public async Task<GetAllReviewsDTO> CreateReviewAsync(CreateReviewDTO reviewDto)
+        //{
+        //	if (reviewDto == null)
+        //		throw new ValidationException("Review data cannot be null.");
 
-			var serviceRequest = await _serviceRequestRepository.GetAsync(reviewDto.ServicesRequestId);
-			if (serviceRequest == null)
-				throw new NotFoundException(nameof(ServicesRequest), reviewDto.ServicesRequestId);
+        //	var serviceRequest = await _serviceRequestRepository.GetAsync(reviewDto.ServicesRequestId);
+        //	if (serviceRequest == null)
+        //		throw new NotFoundException(nameof(ServicesRequest), reviewDto.ServicesRequestId);
 
-			if (serviceRequest.Status != ServiceRequestStatus.Completed)
-				throw new ValidationException("You can only review completed jobs.");
+        //	if (serviceRequest.Status != ServiceRequestStatus.Completed)
+        //		throw new ValidationException("You can only review completed jobs.");
 
-			var reviewExists = await _reviewRepository.DoesReviewExistForRequestAsync(reviewDto.ServicesRequestId);
-			if (reviewExists)
-				throw new ValidationException("This job has already been reviewed.");
-			var review = new CreateReviewDTO
-			{
-				Comment = reviewDto.Comment,
-				RatingValue = reviewDto.RatingValue,
-				ServicesRequestId=reviewDto.ServicesRequestId,
-				ClientId=serviceRequest.ClientId,
-				CraftsManId = serviceRequest.CraftsManId
-			};
-			var newReview = _mapper.Map<Review>(review);
+        //	var reviewExists = await _reviewRepository.DoesReviewExistForRequestAsync(reviewDto.ServicesRequestId);
+        //	if (reviewExists)
+        //              //	throw new ValidationException("This job has already been reviewed.");
+        //              //var review = new CreateReviewDTO
+        //              //{
+        //              //	Comment = reviewDto.Comment,
+        //              //	RatingValue = reviewDto.RatingValue,
+        //              //	ServicesRequestId=reviewDto.ServicesRequestId,
+        //              //	ClientId=serviceRequest.ClientId,
+        //              //	CraftsManId = serviceRequest.CraftsManId
+        //              //};
+        //              reviewDto.ClientId = serviceRequest.ClientId;
+        //          reviewDto.CraftsManId = serviceRequest.CraftsManId;
 
-			await _reviewRepository.AddAsync(newReview);
-			_reviewRepository.Save();
+        //          var newReview = _mapper.Map<Review>(reviewDto);
 
-			return _mapper.Map<GetAllReviewsDTO>(newReview);
-		}
+        //	await _reviewRepository.AddAsync(newReview);
+        //	_reviewRepository.Save();
 
-		public async Task<GetAllReviewsDTO> UpdateReviewAsync(int reviewId, UpdateReviewDTO reviewDto)
-		{
-			var reviewToUpdate = await _reviewRepository.GetAsync(reviewId);
-			if (reviewToUpdate == null)
-				throw new NotFoundException(nameof(Review), reviewId);
+        //	return _mapper.Map<GetAllReviewsDTO>(newReview);
+        //}
 
-			_mapper.Map(reviewDto, reviewToUpdate);
-			_reviewRepository.Update(reviewToUpdate, reviewId);
-			_reviewRepository.Save();
+        //public async Task<GetAllReviewsDTO> UpdateReviewAsync(int reviewId, UpdateReviewDTO reviewDto)
+        //{
+        //	var reviewToUpdate = await _reviewRepository.GetAsync(reviewId);
+        //	if (reviewToUpdate == null)
+        //		throw new NotFoundException(nameof(Review), reviewId);
 
-			return _mapper.Map<GetAllReviewsDTO>(reviewToUpdate);
-		}
+        //	_mapper.Map(reviewDto, reviewToUpdate);
+        //	_reviewRepository.Update(reviewToUpdate, reviewId);
+        //	_reviewRepository.Save();
 
-		public async Task<bool> DeleteReviewAsync(int reviewId)
+        //	return _mapper.Map<GetAllReviewsDTO>(reviewToUpdate);
+        //}
+
+        //public async Task<GetAllReviewsDTO> CreateReviewAsync(CreateReviewDTO reviewDto, int? currentUserId)
+        //{
+        //    //// لو عايز تمنع أي حد غير صاحب الطلب يعمل Review
+        //    //if (currentUserId == null)
+        //    //    throw new ValidationException("You must be logged in.");
+
+        //    // هات طلب الخدمة
+        //    var serviceRequest = await _serviceRequestRepository.GetAsync(reviewDto.ServicesRequestId);
+        //    if (serviceRequest == null)
+        //        throw new NotFoundException(nameof(ServicesRequest), reviewDto.ServicesRequestId);
+
+        //    // تأكد إن العميل صاحب الطلب
+        //    if (serviceRequest.ClientId != currentUserId)
+        //        throw new ValidationException("You cannot review a job you did not request.");
+        //    if (reviewDto == null)
+        //        throw new ValidationException("Review data cannot be null.");
+
+        //    //// 1) هات الطلب
+        //    //var serviceRequest = await _serviceRequestRepository.GetAsync(reviewDto.ServicesRequestId);
+        //    //if (serviceRequest == null)
+        //    //    throw new NotFoundException(nameof(ServicesRequest), reviewDto.ServicesRequestId);
+
+        //    // 2) الطلب لازم يكون Completed
+        //    if (serviceRequest.Status != ServiceRequestStatus.Completed)
+        //        throw new ValidationException("You can only review completed jobs.");
+
+        //    // 3) الطلب ده له ريفيو قبل كده؟
+        //    var reviewExists = await _reviewRepository.DoesReviewExistForRequestAsync(reviewDto.ServicesRequestId);
+        //    if (reviewExists)
+        //        throw new ValidationException("This job has already been reviewed.");
+
+        //    // 4) حط ClientId و CraftsManId من الـ ServiceRequest
+        //    reviewDto.ClientId = serviceRequest.ClientId;
+        //    reviewDto.CraftsManId = serviceRequest.CraftsManId;
+
+        //    // 5) خزّن الريفيو
+        //    var newReview = _mapper.Map<Review>(reviewDto);
+        //    await _reviewRepository.AddAsync(newReview);
+        //    _reviewRepository.Save();
+
+        //    // ❌ ماتلمس الـ ServiceRequest في أي حاجة هنا
+
+        //    return _mapper.Map<GetAllReviewsDTO>(newReview);
+        //}
+        //// Create Review بدون Authorization check
+        public async Task<GetAllReviewsDTO> CreateReviewAsync(CreateReviewDTO reviewDto)
+        {
+            if (reviewDto == null)
+                throw new ValidationException("Review data cannot be null.");
+
+            var serviceRequest = await _serviceRequestRepository.GetAsync(reviewDto.ServicesRequestId);
+            if (serviceRequest == null)
+                throw new NotFoundException(nameof(ServicesRequest), reviewDto.ServicesRequestId);
+
+            if (serviceRequest.Status != ServiceRequestStatus.Completed)
+                throw new ValidationException("You can only review completed jobs.");
+
+            var reviewExists = await _reviewRepository.DoesReviewExistForRequestAsync(reviewDto.ServicesRequestId);
+            if (reviewExists)
+                throw new ValidationException("This job has already been reviewed.");
+
+            // ضع ClientId و CraftsManId من ServiceRequest
+            reviewDto.ClientId = serviceRequest.ClientId;
+            reviewDto.CraftsManId = serviceRequest.CraftsManId;
+
+            var newReview = _mapper.Map<Review>(reviewDto);
+            await _reviewRepository.AddAsync(newReview);
+            _reviewRepository.Save();
+
+            return _mapper.Map<GetAllReviewsDTO>(newReview);
+        }
+
+        // Update Review بدون Authorization check
+        public async Task<GetAllReviewsDTO> UpdateReviewAsync(int reviewId, UpdateReviewDTO reviewDto)
+        {
+            var reviewToUpdate = await _reviewRepository.GetAsync(reviewId);
+            if (reviewToUpdate == null)
+                throw new NotFoundException(nameof(Review), reviewId);
+
+            if (reviewDto.RatingValue < 1 || reviewDto.RatingValue > 5)
+                throw new ValidationException("Rating must be between 1 and 5.");
+
+            _mapper.Map(reviewDto, reviewToUpdate);
+            _reviewRepository.Update(reviewToUpdate, reviewId);
+            _reviewRepository.Save();
+
+            return _mapper.Map<GetAllReviewsDTO>(reviewToUpdate);
+        }
+
+
+        //public async Task<GetAllReviewsDTO> UpdateReviewAsync(
+        //         int reviewId,
+        //         UpdateReviewDTO reviewDto,
+        //          int? currentUserId)
+        //{
+        //    var reviewToUpdate = await _reviewRepository.GetAsync(reviewId);
+        //    if (reviewToUpdate == null)
+        //        throw new NotFoundException(nameof(Review), reviewId);
+
+        //    //// 🔐 Security moved here (not in controller)
+        //    //if (currentUserId == null || reviewToUpdate.ClientId != currentUserId)
+        //    //    throw new ValidationException("You are not allowed to update this review.");
+
+        //    if (reviewDto.RatingValue < 1 || reviewDto.RatingValue > 5)
+        //        throw new ValidationException("Rating must be between 1 and 5.");
+
+        //    _mapper.Map(reviewDto, reviewToUpdate);
+
+        //    _reviewRepository.Update(reviewToUpdate, reviewId);
+        //    _reviewRepository.Save();
+
+        //    return _mapper.Map<GetAllReviewsDTO>(reviewToUpdate);
+        //}
+
+
+
+        public async Task<bool> DeleteReviewAsync(int reviewId)
 		{
 			var reviewToDelete = await _reviewRepository.GetAsync(reviewId);
 			if (reviewToDelete == null)

@@ -26,6 +26,8 @@ namespace FIXIT.BLL.Mapping
         opt => opt.MapFrom<ProfileImageResolver>())
                 .ForMember(dest => dest.NationalIdPic,
         opt => opt.MapFrom<NationalIdPicResolver>())
+                .ForMember(dest => dest.AverageRating,
+        opt => opt.MapFrom(src => src.Reviews != null && src.Reviews.Any() ? src.Reviews.Average(r => (double)r.RatingValue) : 0.0))
                 .ReverseMap();
 			CreateMap<CraftsMan,CreateCraftsManDto>().ReverseMap();
             CreateMap<CraftsMan, UpdateCraftsManDto>().ReverseMap()

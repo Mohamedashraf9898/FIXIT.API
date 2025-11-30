@@ -23,6 +23,8 @@ namespace FIXIT.BLL.DTOs.CraftsmanDTOs
 
         public string? NationalIdPic { get; set; } 
 
+        public double AverageRating { get; set; }
+
 
     }
 }

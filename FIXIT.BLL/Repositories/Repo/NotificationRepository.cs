@@ -24,27 +24,11 @@ namespace FIXIT.BLL.Repositories.Repo
             await _dbContext.Notifications.AddAsync(notification);
         }
 
-        public async Task<IEnumerable<Notification>> GetNotificationsForClientAsync(int clientId)
-        {
-            return await _dbContext.Notifications
-                .Where(n => n.ServiceRequest.ClientId == clientId )
-                .OrderByDescending(n => n.CreatedAt)
-                .ToListAsync();
-        }
+        
 
-        public async Task<IEnumerable<Notification>> GetNotificationsForCraftsManAsync(int craftsManId)
-        {
-            return await _dbContext.Notifications
-                .Where(n => n.ServiceRequest.CraftsManId == craftsManId)
-                .OrderByDescending(n => n.CreatedAt)
-                .ToListAsync();
-        }
        
-        public async Task<Notification?> GetByIdAsync(int id)
-        {
-            return await _dbContext.Notifications.FindAsync(id);
-        }
-
+       
+        
         public void Update(Notification notification, int id)
         {
             _dbContext.Notifications.Update(notification);
@@ -53,6 +37,36 @@ namespace FIXIT.BLL.Repositories.Repo
         public async Task SaveAsync()
         {
             await _dbContext.SaveChangesAsync();
+        }
+        public async Task<IEnumerable<Notification>> GetNotificationsForClientAsync(int clientId)
+        {
+            return await _dbContext.Notifications
+                .Include(n => n.ServiceRequest)
+                    .ThenInclude(sr => sr.CraftsMan)
+                .Include(n => n.Offer)
+                .Where(n => n.ServiceRequest.ClientId == clientId)
+                .OrderByDescending(n => n.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Notification>> GetNotificationsForCraftsManAsync(int craftsManId)
+        {
+            return await _dbContext.Notifications
+                .Include(n => n.ServiceRequest)
+                    .ThenInclude(sr => sr.CraftsMan)
+                .Include(n => n.Offer)
+                .Where(n => n.ServiceRequest.CraftsManId == craftsManId)
+                .OrderByDescending(n => n.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<Notification?> GetByIdAsync(int id)
+        {
+            return await _dbContext.Notifications
+                .Include(n => n.ServiceRequest)
+                    .ThenInclude(sr => sr.CraftsMan)
+                .Include(n => n.Offer)
+                .FirstOrDefaultAsync(n => n.Id == id);
         }
     }
 }

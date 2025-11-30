@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FIXIT.DAL.Models;
 
 namespace FIXIT.BLL.DTOs.NotificationDtos
 {
     public class ReadNotificationDto
     {
+        public int Id { get; set; }
+        public NotificationType Type { get; set; }
         public int? OfferId { get; set; }
         public int ServiceRequestId { get; set; }
         public string Title { get; set; }

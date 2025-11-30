@@ -18,6 +18,6 @@ namespace FIXIT.BLL.DTOs.CraftsmanDTOs
         public IFormFile? NationalIdPic { get; set; } // For upload only
 		public int ExperienceOfYears { get; set; }
 		public decimal HourlyRate { get; set; }
-        public bool IsVerified { get; set; }
-    }
+  
+	}
 }

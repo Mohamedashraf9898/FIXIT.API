@@ -23,6 +23,7 @@
   <ItemGroup>
     <Folder Include="wwwroot\Images\NationalIdPics\" />
     <Folder Include="wwwroot\Images\ProfilePics\" />
+    <Folder Include="wwwroot\Images\ServiceRequest\" />
   </ItemGroup>
 
 </Project>

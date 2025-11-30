@@ -19,6 +19,8 @@ namespace FIXIT.BLL.Services.Intrfaces
 		Task<CraftsManDetailsDto> GetCraftsManByEmailAsync(string normalizedEmail);
         Task<CraftsManDetailsDto> GetCraftsManDetailsAsync(int id);
 		void DeleteCraftsMan(int id);
+		Task<bool> UpdateCraftsmanVerfication(VerficationOfCraftsmanDto dto,int Id);
 
-	}
+
+    }
 }

@@ -124,7 +124,23 @@ namespace FIXIT.BLL.Services.Service
 			craftsManRepo.Save();
 		}
 
+        public async Task<bool> UpdateCraftsmanVerfication(VerficationOfCraftsmanDto dto,int Id)
+        {
 
+            var existingCraftsMan = await craftsManRepo.GetAsync(Id);
+            if (existingCraftsMan == null)
+                return false;
+            existingCraftsMan.IsVerified = dto.IsVerified;
+           
+            var updated = craftsManRepo.Update(existingCraftsMan, Id);
+            if (updated)
+            {
+                craftsManRepo.Save();
+                return true;
+            }
+
+            return false;
+        }
         public async Task<bool>  UpdateCraftsManAsync(int id, UpdateCraftsManDto craftsManDto)
         {
             // 1️⃣ Get the existing craftsman from DB

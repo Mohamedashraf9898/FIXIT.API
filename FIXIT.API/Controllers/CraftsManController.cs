@@ -76,8 +76,20 @@ namespace FIXIT.API.Controllers
 
 			return NoContent();
 		}
+		[HttpPut("verfication/{id:int}")]
+        public async Task<IActionResult> UpdateCraftsmanVerfication(VerficationOfCraftsmanDto dto,int id )
+		{
+            if (dto == null )
+                return BadRequest();
+            bool updated = await _craftsManService.UpdateCraftsmanVerfication(dto,id);
+            if (!updated)
+                return NotFound();
 
-		[HttpDelete("{id:int}")]
+            return NoContent();
+
+        }
+
+        [HttpDelete("{id:int}")]
 		public IActionResult DeleteCraftsMan(int id)
 		{
 			_craftsManService.DeleteCraftsMan(id);

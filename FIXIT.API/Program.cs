@@ -1,3 +1,6 @@
+﻿using System.Text;
+using System.Threading.Tasks;
+using System.Threading.Tasks;
 using AutoMapper;
 using FIXIT.API.Erorrs;
 using FIXIT.API.Hubs;
@@ -26,11 +29,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using System.Threading.Tasks;
-using System.Threading.Tasks;
+using static FIXIT.API.Hubs.NotificationHub;
 using CraftsManService = FIXIT.BLL.Services.Service.CraftsManService;
 
 namespace FIXIT.API
@@ -82,16 +84,21 @@ namespace FIXIT.API
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("FixItPolicy",
-                    builder =>
+                    policyBuilder =>  // Changed variable name to avoid conflict
                     {
-                        builder.AllowAnyOrigin()
-                               .AllowAnyMethod()
-                               .AllowAnyHeader();
+                        policyBuilder.WithOrigins(
+                                "http://localhost:4200",   // ✅ Specific origin
+                                "https://localhost:4200"    // ✅ For HTTPS
+                            )
+                            .AllowAnyMethod()
+                            .AllowAnyHeader()
+                            .AllowCredentials();  // ✅ Required for SignalR with JWT
                     });
             });
 
             #region injection
             builder.Services.AddSignalR();
+            builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
 
             builder.Services.AddAutoMapper(op => op.AddProfile<MappingProfile>()); // Mapping Registration
             builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
@@ -201,6 +208,23 @@ builder.Services.AddScoped<INotificationSenderService, NotificationSenderService
                         ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
                         ValidAudience = builder.Configuration["JwtSettings:Audience"],
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]!))
+                    };
+
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+                            var path = context.HttpContext.Request.Path;
+
+                            if (!string.IsNullOrEmpty(accessToken) &&
+                                path.StartsWithSegments("/notificationHub"))
+                            {
+                                context.Token = accessToken;
+                            }
+
+                            return Task.CompletedTask;
+                        }
                     };
                 });
             var app = builder.Build();

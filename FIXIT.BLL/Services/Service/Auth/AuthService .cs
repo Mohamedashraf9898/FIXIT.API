@@ -66,7 +66,7 @@ namespace FIXIT.BLL.Services.Service.Auth
                 LName = user.LName,
                 Email = user.Email,
                 Role = role,
-                Token = GenerateJwtToken(user, role)
+                Token = await GenerateJwtTokenAsync(user, role)
             };
         }
         public async Task<UserDto> RegisterClientAsync(ClientRegisterDto dto)
@@ -110,7 +110,7 @@ namespace FIXIT.BLL.Services.Service.Auth
                 LName = user.LName,
                 Email = user.Email,
                 Role = "Client",
-                Token = GenerateJwtToken(user, "Client")
+                Token = await GenerateJwtTokenAsync(user, "Client")
             };
         }
 
@@ -161,18 +161,36 @@ namespace FIXIT.BLL.Services.Service.Auth
                 LName = user.LName,
                 Email = user.Email,
                 Role = "CraftsMan",
-                Token = GenerateJwtToken(user, "CraftsMan")
+                Token =await GenerateJwtTokenAsync(user, "CraftsMan")
             };
         }
 
-        private string GenerateJwtToken(ApplicationUser user, string role)
+        private async Task<string> GenerateJwtTokenAsync(ApplicationUser user, string role)
         {
-            var claims = new[]
+            var claims = new List<Claim>
+    {
+        new Claim(JwtRegisteredClaimNames.Sub, user.Email),
+        new Claim("id", user.Id.ToString()),
+        new Claim(ClaimTypes.Role, role)
+    };
+
+            // ✅ ADD Client/Craftsman ID to JWT
+            if (role == "Client")
             {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Email),
-            new Claim("id", user.Id.ToString()),
-            new Claim(ClaimTypes.Role, role)
-        };
+                var client = await _clientService.GetClientByEmail(user.Email);
+                if (client != null)
+                {
+                    claims.Add(new Claim("clientId", client.Id.ToString()));
+                }
+            }
+            else if (role == "CraftsMan")
+            {
+                var craftsman = await _craftsManService.GetCraftsManByEmailAsync(user.Email);
+                if (craftsman?.CraftsMan != null)
+                {
+                    claims.Add(new Claim("craftsmanId", craftsman.CraftsMan.Id.ToString()));
+                }
+            }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Key"]!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

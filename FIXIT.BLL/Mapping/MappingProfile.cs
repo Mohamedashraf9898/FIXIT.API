@@ -125,11 +125,19 @@ namespace FIXIT.BLL.Mapping
                 .ForMember(dest => dest.ServiceRequest, opt => opt.Ignore()) // لأنها navigation property
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow));
 
-            //
             CreateMap<Notification, ReadNotificationDto>()
-                 .ForMember(dest => dest.ClientName, opt => opt.MapFrom(src => src.ServiceRequest.Client.FName + " " + src.ServiceRequest.Client.LName))
-                 .ForMember(dest => dest.CraftsManName, opt => opt.MapFrom(src => src.ServiceRequest.CraftsMan.FName + " " + src.ServiceRequest.Client.LName));
-               
+              .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))  // ✅ Map Id
+              .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type))  // ✅ Map Type
+              .ForMember(dest => dest.ServiceRequestId, opt => opt.MapFrom(src => src.ServiceRequestId))
+              .ForMember(dest => dest.Message, opt => opt.MapFrom(src => src.Message))
+              .ForMember(dest => dest.IsRead, opt => opt.MapFrom(src => src.IsRead))
+              .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
+              .ForMember(dest => dest.OfferId, opt => opt.MapFrom(src => src.OfferId))
+              .ForMember(dest => dest.FinalAmount, opt => opt.MapFrom(src => src.FinalAmount))
+              .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description));
+
+            
+
 
 
 

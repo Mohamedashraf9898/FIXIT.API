@@ -233,48 +233,59 @@ namespace FIXIT.BLL.Services.Service
         #region ForPaymentService
         //osama added a payment method
         public async Task<bool> CompleteServiceRequestAsync(int serviceRequestId)
-        {
-            var serviceRequest = await _serviceRequestRepository.GetAsync(serviceRequestId);
-            if (serviceRequest == null)
-                throw new KeyNotFoundException("Service request not found.");
+ {
+     var serviceRequest = await _serviceRequestRepository.GetAsync(serviceRequestId);
+     if (serviceRequest == null)
+         throw new KeyNotFoundException("Service request not found.");
 
-            if (serviceRequest.Status == ServiceRequestStatus.Completed)
-                throw new InvalidOperationException("This service request is already completed.");
+     if (serviceRequest.Status == ServiceRequestStatus.Completed)
+         throw new InvalidOperationException("This service request is already completed.");
 
-            if (serviceRequest.TotalAmount <= 0)
-                throw new InvalidOperationException("Invalid service amount.");
+     if (serviceRequest.TotalAmount <= 0)
+         throw new InvalidOperationException("Invalid service amount.");
 
-            serviceRequest.Status = ServiceRequestStatus.Completed;
+     serviceRequest.Status = ServiceRequestStatus.Completed;
+         decimal commissionRate = 0.25m;
+     if (serviceRequest.TotalAmount <= 500)
+     {
+         commissionRate = 0.25m;
+     }
+     else if (serviceRequest.TotalAmount> 500 && serviceRequest.TotalAmount <= 2000)
+     {
+         commissionRate = 0.20m;
+     }
+     else if (serviceRequest.TotalAmount > 2000)
+     {
+         commissionRate = 0.15m;
+     }
+     decimal? netAmount = serviceRequest.TotalAmount * (1 - commissionRate);
 
-            decimal commissionRate = 0.25m;
-            decimal? netAmount = serviceRequest.TotalAmount * (1 - commissionRate);
+     var wallet = await _walletRepo.GetWalletByCraftsManIdAsync(serviceRequest.CraftsManId ??0);
+     if (wallet == null)
+         throw new Exception("Wallet not found for this craftsman.");
 
-            var wallet = await _walletRepo.GetWalletByCraftsManIdAsync(serviceRequest.CraftsManId ??0);
-            if (wallet == null)
-                throw new Exception("Wallet not found for this craftsman.");
+     wallet.Balance += netAmount ?? 0;
 
-            wallet.Balance += netAmount ?? 0;
+     var transactionDto = new CreateWalletTransactionDto
+     {
+         WalletId = wallet.Id,
+         ServiceRequestId = serviceRequest.ServicesRequestId,
+         Amount = netAmount,
+         CreatedAt = DateTime.Now,
+         Transactionmethod=Transactionmethod.Deposits
+         
+     };
 
-            var transactionDto = new CreateWalletTransactionDto
-            {
-                WalletId = wallet.Id,
-                ServiceRequestId = serviceRequest.ServicesRequestId,
-                Amount = netAmount,
-                CreatedAt = DateTime.Now,
-                Transactionmethod=Transactionmethod.Deposits
-                
-            };
-
-            var transaction = _mapper.Map<WalletTransaction>(transactionDto);
-            await _transactionRepo.AddAsync(transaction);
+     var transaction = _mapper.Map<WalletTransaction>(transactionDto);
+     await _transactionRepo.AddAsync(transaction);
 
 
-            _walletRepo.Save();
-            _transactionRepo.Save();
-            _serviceRequestRepository.Save();
+     _walletRepo.Save();
+     _transactionRepo.Save();
+     _serviceRequestRepository.Save();
 
-            return true;
-        }
+     return true;
+ }
 
 
         #endregion

@@ -13,7 +13,7 @@ namespace FIXIT.BLL.Repositories.IRepo
         Task<bool> DoesReviewExistForRequestAsync(int serviceRequestId);
         Task<IEnumerable<Review>> GetReviewsForCraftsmanAsync(int craftsmanId);
         Task<Review> GetReviewByServiceRequestIdAsync(int serviceRequestId);
-        Task<double> GetAverageRatingForCraftsmanAsync(int craftsmanId);
+        Task<double> GetAverageRatingForCraftsmanAsync(int? craftsmanId);
     }
 
 }

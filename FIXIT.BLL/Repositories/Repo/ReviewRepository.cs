@@ -40,7 +40,7 @@ namespace FIXIT.BLL.Repositories.Repo
                 .FirstOrDefaultAsync(r => r.ServicesRequestId == serviceRequestId);
         }
 
-        public async Task<double> GetAverageRatingForCraftsmanAsync(int craftsmanId)
+        public async Task<double> GetAverageRatingForCraftsmanAsync(int? craftsmanId)
         {
             return await _dbContext.Set<Review>()
                 .Where(r => r.CraftsManId == craftsmanId)

@@ -18,16 +18,19 @@ namespace FIXIT.BLL.Services.Service
     {
         private readonly IReviewRepository _reviewRepository;
         private readonly IGenericRepository<ServicesRequest> _serviceRequestRepository;
+        private readonly ICraftsManRepo cmsManRepo;
         private readonly IMapper _mapper;
 
         
         public ReviewService(
             IReviewRepository reviewRepository,
             IGenericRepository<ServicesRequest> serviceRequestRepository,
+            ICraftsManRepo cmsManRepo,
             IMapper mapper)
         {
             _reviewRepository = reviewRepository;
             _serviceRequestRepository = serviceRequestRepository;
+            this.cmsManRepo = cmsManRepo;
             _mapper = mapper;
         }
         //public async Task<GetAllReviewsDTO> CreateReviewAsync(CreateReviewDTO reviewDto)
@@ -145,8 +148,12 @@ namespace FIXIT.BLL.Services.Service
             var newReview = _mapper.Map<Review>(reviewDto);
             await _reviewRepository.AddAsync(newReview);
             _reviewRepository.Save();
-
+           
+            var averageRating = await GetAverageRatingForCraftsmanAsync(newReview.CraftsManId);
+            cmsManRepo.GetAsync(newReview.CraftsManId).Result.Rating = averageRating;
+            cmsManRepo.Save();
             return _mapper.Map<GetAllReviewsDTO>(newReview);
+
         }
 
         // Update Review بدون Authorization check
@@ -162,7 +169,9 @@ namespace FIXIT.BLL.Services.Service
             _mapper.Map(reviewDto, reviewToUpdate);
             _reviewRepository.Update(reviewToUpdate, reviewId);
             _reviewRepository.Save();
-
+            var averageRating = await GetAverageRatingForCraftsmanAsync(reviewToUpdate.CraftsManId);
+            cmsManRepo.GetAsync(reviewToUpdate.CraftsManId).Result.Rating = averageRating;
+            cmsManRepo.Save();
             return _mapper.Map<GetAllReviewsDTO>(reviewToUpdate);
         }
 
@@ -235,7 +244,7 @@ namespace FIXIT.BLL.Services.Service
             return _mapper.Map<GetAllReviewsDTO>(review);
         }
 
-        public async Task<double> GetAverageRatingForCraftsmanAsync(int craftsmanId)
+        public async Task<double> GetAverageRatingForCraftsmanAsync(int? craftsmanId)
         {
             return await _reviewRepository.GetAverageRatingForCraftsmanAsync(craftsmanId);
         }

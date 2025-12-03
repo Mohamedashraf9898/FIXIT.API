@@ -97,6 +97,13 @@ namespace FIXIT.API
             });
 
             #region injection
+            // Register HttpClient for OpenAI
+            builder.Services.AddHttpClient("OpenAI");
+
+            // Register OpenAI Service
+            builder.Services.AddScoped<IOpenAIService, OpenAIService>();
+
+            // signal R
             builder.Services.AddSignalR();
             builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
 

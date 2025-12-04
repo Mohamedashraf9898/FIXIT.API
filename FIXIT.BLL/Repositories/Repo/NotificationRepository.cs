@@ -68,5 +68,16 @@ namespace FIXIT.BLL.Repositories.Repo
                 .Include(n => n.Offer)
                 .FirstOrDefaultAsync(n => n.Id == id);
         }
+        public async Task<IEnumerable<Notification>> GetNotificationsForAdminAsync()
+        {
+           
+            return await _dbContext.Notifications
+                .Where(n => n.SenderType == NotificationSenderType.Craftsman &&
+                            n.Type == NotificationType.WithdrawalRequested)
+                .Include(n => n.ServiceRequest)
+                .Include(n => n.Offer)
+                .OrderByDescending(n => n.CreatedAt)
+                .ToListAsync();
+        }
     }
 }

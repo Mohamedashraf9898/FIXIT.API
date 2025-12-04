@@ -10,7 +10,7 @@ namespace FIXIT.BLL.DTOs.NotificationDtos
     public class CreateNotificationDto
     {
      
-        public int ServiceRequestId { get; set; }
+        public int? ServiceRequestId { get; set; }
         public int? OfferId { get; set; }
         public string Title { get; set; }
         public string Message { get; set; }

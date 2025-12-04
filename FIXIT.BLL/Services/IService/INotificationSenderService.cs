@@ -1,21 +1,19 @@
 ﻿using FIXIT.DAL.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FIXIT.BLL.Services.IService
 {
     public interface INotificationSenderService
     {
-
         Task SendNotificationToUserAsync(
-             int? clientId,
-             int? offerId,
-             int? craftsManId,
-             string title,
-             string message,
-             NotificationSenderType senderType);
+            int? clientId,
+            int? offerId,
+            int? craftsManId,
+            string title,
+            string message,
+            NotificationSenderType senderType);
+
+        Task SendNotificationToAdminAsync(Notification notification);
+
+        Task SendNotificationToCraftsmanFromAdminAsync(Notification notification, int craftsManId);
     }
 }

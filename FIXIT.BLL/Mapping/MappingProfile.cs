@@ -187,8 +187,11 @@ namespace FIXIT.BLL.Mapping
             CreateMap<CreateWalletDto, Wallet>().ReverseMap();
 
             CreateMap<WalletTransaction, WalletTransactionDto>().ReverseMap();
-            CreateMap<CreateWalletTransactionDto, WalletTransaction>().ReverseMap();
+           
             CreateMap<UpdateWaletTransactionDto, WalletTransaction>().ReverseMap();
+
+            CreateMap<CreateWalletTransactionDto, WalletTransaction>()
+            .ForMember(dest => dest.CraftsManId, opt => opt.MapFrom(src => src.CraftsManId)).ReverseMap();
 
             // ============================
             // Availability Mapping
@@ -208,12 +211,20 @@ namespace FIXIT.BLL.Mapping
                 .ForMember(dest => dest.DurationDays, opt => opt.MapFrom(src => (src.EndDate - src.StartDate).Days + 1));
             CreateMap<CreateTimeOffDto, CraftsManTimeOff>();
 
-			//identity 
 
-			//CreateMap<ApplicationUser, UserDto>().ReverseMap();
-			//CreateMap<ClientRegisterDto, ApplicationUser>().ReverseMap();
-			//CreateMap<CraftsManRegisterDto, ApplicationUser>().ReverseMap();
-			//CreateMap<LoginDto, ApplicationUser>().ReverseMap();
+            //////
+            ///
+            CreateMap<CreateNotificationDto, Notification>()
+       .ForMember(dest => dest.Id, opt => opt.Ignore())
+      .ForMember(dest => dest.IsRead, opt => opt.Ignore())
+        .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+       .ForMember(dest => dest.SenderType, opt => opt.Ignore());
+            //identity 
+
+            //CreateMap<ApplicationUser, UserDto>().ReverseMap();
+            //CreateMap<ClientRegisterDto, ApplicationUser>().ReverseMap();
+            //CreateMap<CraftsManRegisterDto, ApplicationUser>().ReverseMap();
+            //CreateMap<LoginDto, ApplicationUser>().ReverseMap();
 
         }
 	}

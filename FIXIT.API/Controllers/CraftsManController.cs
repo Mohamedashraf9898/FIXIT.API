@@ -98,6 +98,9 @@ namespace FIXIT.API.Controllers
 			_craftsManService.DeleteCraftsMan(id);
 			return NoContent();
 		}
+
+
+
         [HttpPost("verify-national-id")]
         [Authorize] // Add if you have authentication
         public async Task<IActionResult> VerifyNationalId([FromForm] IdVerificationRequestDto request)

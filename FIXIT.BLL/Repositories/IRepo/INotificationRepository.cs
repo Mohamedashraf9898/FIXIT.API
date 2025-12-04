@@ -15,5 +15,6 @@ namespace FIXIT.BLL.Repositories.IRepo
         Task SaveAsync();
         Task<Notification?> GetByIdAsync(int id);
         void Update(Notification notification, int id);
+        Task<IEnumerable<Notification>> GetNotificationsForAdminAsync();
     }
 }

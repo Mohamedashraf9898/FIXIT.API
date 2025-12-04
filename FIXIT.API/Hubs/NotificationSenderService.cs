@@ -45,14 +45,14 @@ namespace FIXIT.BLL.Services.Service
 
                 if (senderType == NotificationSenderType.Client && craftsManId.HasValue)
                 {
-                    // Client → Craftsman: Add "craftsman_" prefix
-                    recipientId = $"craftsman_{craftsManId.Value}";  // ✅ Prefix
+                    
+                    recipientId = $"craftsman_{craftsManId.Value}";  
                     Console.WriteLine($"📤 Client → Craftsman (SignalR ID: {recipientId})");
                 }
                 else if (senderType == NotificationSenderType.Craftsman && clientId.HasValue)
                 {
-                    // Craftsman → Client: Add "client_" prefix
-                    recipientId = $"client_{clientId.Value}";  // ✅ Prefix
+              
+                    recipientId = $"client_{clientId.Value}";  
                     Console.WriteLine($"📤 Craftsman → Client (SignalR ID: {recipientId})");
                 }
 
@@ -103,6 +103,43 @@ namespace FIXIT.BLL.Services.Service
             {
                 Console.WriteLine($"❌ Error: {ex.Message}");
                 Console.WriteLine($"   Stack: {ex.StackTrace}");
+            }
+        }
+      
+        public async Task SendNotificationToAdminAsync(Notification notification)
+        {
+            try
+            {
+                var notificationDto = _mapper.Map<ReadNotificationDto>(notification);
+
+                
+                await _hubContext.Clients.Group("Admin").SendAsync("NotificationReceived", notificationDto);
+
+                Console.WriteLine($"✅ Notification sent to Admin group only!");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error: {ex.Message}");
+            }
+        }
+        public async Task SendNotificationToCraftsmanFromAdminAsync(Notification notification, int craftsManId)
+        {
+            try
+            {
+                string recipientId = $"craftsman_{craftsManId}";
+
+                Console.WriteLine($"📤 Admin → Craftsman (SignalR ID: {recipientId})");
+
+                var notificationDto = _mapper.Map<ReadNotificationDto>(notification);
+
+                await _hubContext.Clients.User(recipientId)
+                    .SendAsync("NotificationReceived", notificationDto);
+
+                Console.WriteLine($"✅ Notification sent to craftsman {recipientId}!");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error: {ex.Message}");
             }
         }
     }

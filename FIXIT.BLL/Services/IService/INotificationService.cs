@@ -16,5 +16,8 @@ namespace FIXIT.BLL.Services.IService
         Task<List<ReadNotificationDto>> GetNotificationsForClientAsync(int clientId);
         Task<List<ReadNotificationDto>> GetNotificationsForCraftsmanAsync(int craftsManId);
         Task<ReadNotificationDto> MarkAsReadAsync(int id);
+        Task<ReadNotificationDto> CreateForAdminAsync(CreateNotificationDto dto);
+        Task CreateFromAdminToCraftsmanAsync(CreateNotificationDto dto);
+        Task<List<ReadNotificationDto>> GetNotificationsForAdminAsync();
     }
 }

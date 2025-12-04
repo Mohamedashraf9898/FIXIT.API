@@ -16,6 +16,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using FIXIT.BLL.Settings;
+using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.WebUtilities;
+
 
 namespace FIXIT.BLL.Services.Service.Auth
 {
@@ -27,19 +31,25 @@ namespace FIXIT.BLL.Services.Service.Auth
             private readonly IClientService _clientService;
             private readonly ICraftsManService _craftsManService;
             private readonly IConfiguration _configuration;
+            private readonly IEmailService _emailService;
+            private readonly EmailSettings _emailSettings;
 
             public AuthService(
                 UserManager<ApplicationUser> userManager,
                 SignInManager<ApplicationUser> signInManager,
                 IClientService clientService,
                 ICraftsManService craftsManService,
-                IConfiguration configuration)
+                IConfiguration configuration,
+                IEmailService emailService,
+                IOptions<EmailSettings> emailSettings)
             {
                 _userManager = userManager;
                 _signInManager = signInManager;
                 _clientService = clientService;
                 _craftsManService = craftsManService;
                 _configuration = configuration;
+                _emailService = emailService;
+                _emailSettings = emailSettings.Value;
             }
             public async Task<UserDto> LoginAsync(LoginDto dto)
         {
@@ -163,6 +173,38 @@ namespace FIXIT.BLL.Services.Service.Auth
                 Role = "CraftsMan",
                 Token =await GenerateJwtTokenAsync(user, "CraftsMan")
             };
+        }
+
+        public async Task<bool> ForgotPasswordRequestAsync(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null) return true; // Prevent enumeration
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+            var resetLink = $"{_emailSettings.FrontendResetPasswordUrl}?email={email}&token={encodedToken}";
+
+            var body = $"<p>Please reset your password by clicking <a href='{resetLink}'>here</a>.</p>";
+            await _emailService.SendEmailAsync(email, "Reset Password", body);
+
+            return true;
+        }
+
+        public async Task<bool> ResetPasswordAsync(ResetPasswordDto dto)
+        {
+            var user = await _userManager.FindByEmailAsync(dto.Email);
+            if (user == null) return false;
+
+            var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(dto.Token));
+            var result = await _userManager.ResetPasswordAsync(user, decodedToken, dto.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new ValidationException($"Password reset failed: {errors}");
+            }
+
+            return true;
         }
 
         private async Task<string> GenerateJwtTokenAsync(ApplicationUser user, string role)

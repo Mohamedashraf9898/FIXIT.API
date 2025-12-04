@@ -46,6 +46,21 @@ namespace FIXIT.API.Controllers
             
         }
 
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
+        {
+            await _authService.ForgotPasswordRequestAsync(dto.Email);
+            return Ok(new { Message = "If an account exists with this email, a password reset link has been sent." });
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+        {
+            var result = await _authService.ResetPasswordAsync(dto);
+            if (!result) return BadRequest("Invalid request.");
+            return Ok(new { Message = "Password has been reset successfully." });
+        }
+
         [Authorize]
         [HttpPost("logout")]
         public  IActionResult Logout()

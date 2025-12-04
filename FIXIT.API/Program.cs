@@ -34,6 +34,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using static FIXIT.API.Hubs.NotificationHub;
 using CraftsManService = FIXIT.BLL.Services.Service.CraftsManService;
+using FIXIT.BLL.Settings;
 
 namespace FIXIT.API
 {
@@ -170,6 +171,10 @@ builder.Services.AddScoped<INotificationSenderService, NotificationSenderService
             builder.Services.AddScoped<ITimeOffRepository, TimeOffRepository>();
             builder.Services.AddScoped<IAvailabilityService, AvailabilityService>();
             builder.Services.AddScoped<ITimeOffService, TimeOffService>();
+
+            // Email
+            builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+            builder.Services.AddScoped<IEmailService, EmailService>();
             
             #endregion
 

@@ -99,7 +99,7 @@ namespace FIXIT.BLL.Services.Service.Auth
                 ProfileImage = $"Images\\default.png",
                 Gender = dto.Gender,
                 DateOfBirth=dto.DateOfBirth,
-                NormalizedEmail = user.NormalizedEmail!
+                NormalizedEmail = dto.Email
                 
             });
             
@@ -149,7 +149,7 @@ namespace FIXIT.BLL.Services.Service.Auth
                 Gender = dto.Gender,
                 NationalId = dto.NationalId,
                 DateOfBirth = dto.DateOfBirth,
-                NormalizedEmail = user.NormalizedEmail!,
+                NormalizedEmail = dto.Email,
                 ServiceId = dto.ServiceId
 
             });
@@ -161,23 +161,23 @@ namespace FIXIT.BLL.Services.Service.Auth
                 LName = user.LName,
                 Email = user.Email,
                 Role = "CraftsMan",
-                Token =await GenerateJwtTokenAsync(user, "CraftsMan")
+                Token = await GenerateJwtTokenAsync(user, "CraftsMan")
             };
         }
 
         private async Task<string> GenerateJwtTokenAsync(ApplicationUser user, string role)
         {
             var claims = new List<Claim>
-    {
-        new Claim(JwtRegisteredClaimNames.Sub, user.Email),
-        new Claim("id", user.Id.ToString()),
-        new Claim(ClaimTypes.Role, role)
-    };
+          {
+             new Claim(JwtRegisteredClaimNames.Sub, user.Email!),
+             new Claim("id", user.Id.ToString()),
+             new Claim(ClaimTypes.Role, role)
+           };
 
             // ✅ ADD Client/Craftsman ID to JWT
             if (role == "Client")
             {
-                var client = await _clientService.GetClientByEmail(user.Email);
+                var client = await _clientService.GetClientByEmail(user.Email!);
                 if (client != null)
                 {
                     claims.Add(new Claim("clientId", client.Id.ToString()));
@@ -185,7 +185,7 @@ namespace FIXIT.BLL.Services.Service.Auth
             }
             else if (role == "CraftsMan")
             {
-                var craftsman = await _craftsManService.GetCraftsManByEmailAsync(user.Email);
+                var craftsman = await _craftsManService.GetCraftsManByEmailAsync(user.Email!);
                 if (craftsman?.CraftsMan != null)
                 {
                     claims.Add(new Claim("craftsmanId", craftsman.CraftsMan.Id.ToString()));

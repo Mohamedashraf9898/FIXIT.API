@@ -97,7 +97,7 @@ namespace FIXIT.BLL.Services.Service
                 ServicesRequestId = serviceRequest.ServicesRequestId
             };
 
-            var paymentResult = await paymentService.CreateOrUpdatePaymentIntent(serviceRequest.ServicesRequestId);
+           /// var paymentResult = await paymentService.CreateOrUpdatePaymentIntent(serviceRequest.ServicesRequestId);
             _serviceRequestRepository.Update(serviceRequest, serviceRequest.ServicesRequestId);
             _serviceRequestRepository.Save();
 

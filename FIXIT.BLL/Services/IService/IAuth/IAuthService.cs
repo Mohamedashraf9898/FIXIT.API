@@ -13,5 +13,8 @@ namespace FIXIT.BLL.Services.IService.IAuth
         Task<UserDto> RegisterClientAsync(ClientRegisterDto dto);
         Task<UserDto> RegisterCraftsManAsync(CraftsManRegisterDto dto);
         Task<UserDto> LoginAsync(LoginDto dto);
+        Task<bool> ForgotPasswordRequestAsync(string email);
+        Task<bool> ResetPasswordAsync(ResetPasswordDto dto);
+
     }
 }

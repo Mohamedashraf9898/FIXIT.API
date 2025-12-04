@@ -79,6 +79,7 @@ namespace FIXIT.API
             {
                 options.UseLazyLoadingProxies().UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnectionString"));
             });
+            builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 
             builder.Services.AddCors(options =>
@@ -133,7 +134,9 @@ namespace FIXIT.API
 
             // Services
             builder.Services.AddScoped<INotificationService, NotificationService>();
-builder.Services.AddScoped<INotificationSenderService, NotificationSenderService>();
+            builder.Services.AddScoped<INotificationSenderService, NotificationSenderService>();
+            //email
+            builder.Services.AddScoped<IEmailService, EmailService>();
 
 
             //wallet

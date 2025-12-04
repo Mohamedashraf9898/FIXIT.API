@@ -1,47 +1,54 @@
-﻿using System;
+﻿using FIXIT.API.Erorrs.Exceptions;
+using FIXIT.BLL.DTOs.ClientDTOs;
+using FIXIT.BLL.DTOs.CraftsmanDTOs;
+using FIXIT.BLL.DTOs.Identity;
+using FIXIT.BLL.Exceptions;
+using FIXIT.BLL.Services.Intrfaces;
+using FIXIT.BLL.Services.IService;
+using FIXIT.BLL.Services.IService.IAuth;
+using FIXIT.DAL.Models.Identity;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using FIXIT.BLL.DTOs.ClientDTOs;
-using FIXIT.BLL.DTOs.CraftsmanDTOs;
-using FIXIT.BLL.DTOs.Identity;
-using FIXIT.BLL.Exceptions;
-using FIXIT.BLL.Services.Intrfaces;
-using FIXIT.BLL.Services.IService.IAuth;
-using FIXIT.DAL.Models.Identity;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace FIXIT.BLL.Services.Service.Auth
 {
     public class AuthService : IAuthService
     {
-        
-            private readonly UserManager<ApplicationUser> _userManager;
-            private readonly SignInManager<ApplicationUser> _signInManager;
-            private readonly IClientService _clientService;
-            private readonly ICraftsManService _craftsManService;
-            private readonly IConfiguration _configuration;
 
-            public AuthService(
-                UserManager<ApplicationUser> userManager,
-                SignInManager<ApplicationUser> signInManager,
-                IClientService clientService,
-                ICraftsManService craftsManService,
-                IConfiguration configuration)
-            {
-                _userManager = userManager;
-                _signInManager = signInManager;
-                _clientService = clientService;
-                _craftsManService = craftsManService;
-                _configuration = configuration;
-            }
-            public async Task<UserDto> LoginAsync(LoginDto dto)
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IClientService _clientService;
+        private readonly ICraftsManService _craftsManService;
+        private readonly IEmailService _emailService;
+        private readonly IConfiguration _configuration;
+
+        public AuthService(
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
+            IClientService clientService,
+            ICraftsManService craftsManService,
+            IConfiguration configuration,
+            IEmailService emailService) 
+        {
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _clientService = clientService;
+            _craftsManService = craftsManService;
+            _configuration = configuration;
+            _emailService = emailService; 
+        }
+
+        public async Task<UserDto> LoginAsync(LoginDto dto)
         {
           
             var user = await _userManager.FindByEmailAsync(dto.Email);
@@ -205,6 +212,36 @@ namespace FIXIT.BLL.Services.Service.Auth
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+        public async Task<bool> ForgotPasswordRequestAsync(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null) return true;
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+            var resetLink = $"{_configuration["ApiUrl"]}/auth/reset-password?email={user.Email}&token={encodedToken}";
+
+            await _emailService.SendEmailAsync(user.Email, "Reset Password", $"Click here: {resetLink}");
+            return true;
+        }
+        public async Task<bool> ResetPasswordAsync(ResetPasswordDto dto)
+        {
+            var user = await _userManager.FindByEmailAsync(dto.Email);
+            if (user == null) throw new NotFoundException("User", dto.Email);
+
+            var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(dto.Token));
+            var result = await _userManager.ResetPasswordAsync(user, decodedToken, dto.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                throw new ValidationException(string.Join(", ", result.Errors.Select(e => e.Description)));
+            }
+
+            return true;
+        }
+
+
     }
 
 }

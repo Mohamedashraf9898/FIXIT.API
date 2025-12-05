@@ -15,6 +15,7 @@ namespace FIXIT.BLL.DTOs.ServiceRequestDTOs
         public int? CraftsManId { get; set; }
         public string? CraftsManName { get; set; } // Optional, might not be assigned yet
         public string ClientName { get; set; }
+        public int ServiceId { get; set; }
         public string ServiceName { get; set; }
 
         public string Description { get; set; }

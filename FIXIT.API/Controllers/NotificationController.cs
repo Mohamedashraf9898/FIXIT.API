@@ -1,4 +1,5 @@
 ﻿using FIXIT.BLL.Services.IService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -33,6 +34,14 @@ namespace FIXIT.API.Controllers
         {
             var result = await _service.MarkAsReadAsync(id);
             if (result == null) return NotFound();
+            return Ok(result);
+        }
+
+        [HttpGet("admin")]
+        [Authorize(Roles = "Admin")]  // ✅ Make sure only admin can access
+        public async Task<IActionResult> GetAdminNotifications()
+        {
+            var result = await _service.GetNotificationsForAdminAsync();
             return Ok(result);
         }
     }

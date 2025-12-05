@@ -18,5 +18,7 @@ namespace FIXIT.BLL.DTOs.ClientDTOs
         public string? ProfileImage { get; set; } // Should be string for URL
         public Gender Gender { get; set; }
         public int TotalRequests { get; set; }
+
+        public string NormalizedEmail { get; set; }
     }
 }

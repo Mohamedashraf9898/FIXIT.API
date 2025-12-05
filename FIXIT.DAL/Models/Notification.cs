@@ -9,7 +9,8 @@ namespace FIXIT.DAL.Models
     public enum NotificationSenderType
     {
         Client,
-        Craftsman
+        Craftsman,
+        Admin
     }
 
     public enum NotificationType
@@ -20,15 +21,18 @@ namespace FIXIT.DAL.Models
         NewOfferFromCraftsman,
         ClientAcceptedOffer,
         ClientRejectedOffer,
-        PaymentRequested
+        PaymentRequested,
+        WithdrawalRequested,     
+        WithdrawalApproved
     }
     public class Notification
     {
 
         public int Id { get; set; }
-
-        public int ServiceRequestId { get; set; }
-        public virtual ServicesRequest ServiceRequest { get; set; }
+        public int? CraftsManId { get; set; }  
+        public int? ClientId { get; set; }
+        public int? ServiceRequestId { get; set; }
+        public virtual ServicesRequest? ServiceRequest { get; set; }
         public int? OfferId { get; set; }            
         public virtual Offer? Offer { get; set; }     
         public string Title { get; set; }

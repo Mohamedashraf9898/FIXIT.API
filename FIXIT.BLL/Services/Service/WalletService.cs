@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FIXIT.API.Erorrs.Exceptions;
+using FIXIT.BLL.DTOs.NotificationDtos;
 using FIXIT.BLL.DTOs.WalletDTos;
 using FIXIT.BLL.DTOs.WalletTransactionDTOs;
 using FIXIT.BLL.Exceptions;
@@ -9,109 +10,139 @@ using FIXIT.DAL.Models;
 
 namespace FIXIT.BLL.Services.Service
 {
-	public class WalletService : IWalletService
-	{
-		private readonly IWalletRepository _walletRepo;
-		private readonly IWalletTransactionRepository _transactionRepo;
-		private readonly IMapper _mapper;
+    public class WalletService : IWalletService
+    {
+        private readonly IWalletRepository _walletRepo;
+        private readonly IWalletTransactionRepository _transactionRepo;
+        private readonly INotificationService _notificationService;
+        private readonly IMapper _mapper;
 
-		public WalletService(IWalletRepository walletRepo, IWalletTransactionRepository transactionRepo, IMapper mapper)
-		{
-			_walletRepo = walletRepo;
-			_transactionRepo = transactionRepo;
-			_mapper = mapper;
-		}
-
-
-		public async Task<WalletDto> GetWalletAsync(int craftsManId)
-		{
-			var wallet = await _walletRepo.GetWalletByCraftsManIdAsync(craftsManId);
-			if (wallet == null)
-				throw new NotFoundException(nameof(Wallet), $"Wallet not found for craftsman with ID {craftsManId}");
-			return _mapper.Map<WalletDto>(wallet);
-		}
-
-		public async Task<bool> AddFundsAsync(CreateWalletTransactionDto dto)
-		{
-			if (dto == null)
-				throw new ValidationException("Transaction data cannot be null.");
-			if (dto.Amount <= 0)
-				throw new ValidationException("Amount must be greater than zero.");
-
-			var wallet = await _walletRepo.GetWalletByCraftsManIdAsync(dto.CraftsManId);
-			if (wallet == null)
-				return false;
-
-			decimal commissionRate = 0.25m;
-			decimal? netAmount = dto.Amount * (1 - commissionRate);
-			wallet.Balance += netAmount ?? 0;
-
-			var transaction = _mapper.Map<WalletTransaction>(dto);
-			transaction.WalletId = wallet.Id;
-			transaction.Amount = netAmount;
-			transaction.CreatedAt = DateTime.Now;
-            transaction.Transactionmethod = Transactionmethod.Deposits;
-            await _transactionRepo.AddAsync(transaction);
-			_walletRepo.Save();
-			return true;
-		}
-
-		public async Task<bool> WithdrawFundsAsync(CreateWalletTransactionDto dto)
-		{
-			if (dto == null)
-				throw new ValidationException("Transaction data cannot be null.");
-			if (dto.Amount <= 0)
-				throw new ValidationException("Amount must be greater than zero.");
-			if(dto.Transactiontype==null)
-				throw new ValidationException("Choose Your Transaction Method.");
-
-			var wallet = await _walletRepo.GetWalletByCraftsManIdAsync(dto.CraftsManId);
-			if (wallet == null)
-				return false;
-			if (wallet.Balance < dto.Amount)
-				return false;
-
-			wallet.Balance -= dto.Amount ?? 0;
-
-			var transaction = _mapper.Map<WalletTransaction>(dto);
-			transaction.WalletId = wallet.Id;
-			transaction.Amount = dto.Amount;
-			transaction.CreatedAt = DateTime.Now;
-			transaction.Transactionmethod = Transactionmethod.Withdraw;
-			transaction.Transactiontype = dto.Transactiontype;
-			transaction.TransationInfo = dto.TransationInfo;
-			await _transactionRepo.AddAsync(transaction);
-			_walletRepo.Save();
-			return true;
-		}
-
-		public async Task<IEnumerable<WalletTransactionDto>> GetWalletTransactionsAsync(int craftsManId)
-		{
-			var wallet = await _walletRepo.GetWalletByCraftsManIdAsync(craftsManId);
-
-			if (wallet == null)
-				throw new NotFoundException(nameof(Wallet), $"Wallet not found for craftsman with ID {craftsManId}");
-
-			var transactions = await _transactionRepo.GetAllByWalletIdAsync(wallet.Id);
-
-			if (transactions == null || !transactions.Any())
-				throw new NotFoundException(nameof(WalletTransaction), "No transactions found for this wallet.");
-
-			return _mapper.Map<IEnumerable<WalletTransactionDto>>(transactions);
-		}
-		public async Task<UpdateWaletTransactionDto> UpdateWaletTransaction(UpdateWaletTransactionDto dto)
-		{ 
-		
-			var transaction = await _transactionRepo.GetAsync(dto.Id);
-			if (transaction == null)
-                throw new NotFoundException(nameof(WalletTransaction), "No transaction was  found .");
-			transaction.ispayed = dto.ispayed;
-			_transactionRepo.Update(transaction,dto.Id);
-			_transactionRepo.Save();
-			return _mapper.Map<UpdateWaletTransactionDto>(transaction);
-
+        public WalletService(
+            IWalletRepository walletRepo,
+            IWalletTransactionRepository transactionRepo,
+            INotificationService notificationService,
+            IMapper mapper)
+        {
+            _walletRepo = walletRepo;
+            _transactionRepo = transactionRepo;
+            _notificationService = notificationService;
+            _mapper = mapper;
         }
 
-    }
+        public async Task<WalletDto> GetWalletAsync(int craftsManId)
+        {
+            var wallet = await _walletRepo.GetWalletByCraftsManIdAsync(craftsManId);
+            if (wallet == null)
+                throw new NotFoundException(nameof(Wallet), $"Wallet not found for craftsman with ID {craftsManId}");
+            return _mapper.Map<WalletDto>(wallet);
+        }
 
+        public async Task<bool> AddFundsAsync(CreateWalletTransactionDto dto)
+        {
+            if (dto == null)
+                throw new ValidationException("Transaction data cannot be null.");
+            if (dto.Amount <= 0)
+                throw new ValidationException("Amount must be greater than zero.");
+
+            var wallet = await _walletRepo.GetWalletByCraftsManIdAsync(dto.CraftsManId);
+            if (wallet == null)
+                return false;
+
+            decimal commissionRate = 0.25m;
+            decimal? netAmount = dto.Amount * (1 - commissionRate);
+            wallet.Balance += netAmount ?? 0;
+
+            var transaction = _mapper.Map<WalletTransaction>(dto);
+            transaction.WalletId = wallet.Id;
+            transaction.CraftsManId = dto.CraftsManId;
+            transaction.Amount = netAmount;
+            transaction.CreatedAt = DateTime.Now;
+            transaction.Transactionmethod = Transactionmethod.Deposits;
+
+            await _transactionRepo.AddAsync(transaction);
+            _walletRepo.Save();
+            return true;
+        }
+
+        public async Task<bool> WithdrawFundsAsync(CreateWalletTransactionDto dto)
+        {
+            if (dto == null)
+                throw new ValidationException("Transaction data cannot be null.");
+            if (dto.Amount <= 0)
+                throw new ValidationException("Amount must be greater than zero.");
+            if (dto.Transactiontype == null)
+                throw new ValidationException("Choose Your Transaction Method.");
+
+            var wallet = await _walletRepo.GetWalletByCraftsManIdAsync(dto.CraftsManId);
+            if (wallet == null)
+                return false;
+            if (wallet.Balance < dto.Amount)
+                return false;
+
+            wallet.Balance -= dto.Amount ?? 0;
+
+            var transaction = _mapper.Map<WalletTransaction>(dto);
+            transaction.WalletId = wallet.Id;
+            transaction.CraftsManId = dto.CraftsManId;
+            transaction.Amount = dto.Amount;
+            transaction.CreatedAt = DateTime.Now;
+            transaction.Transactionmethod = Transactionmethod.Withdraw;
+            transaction.Transactiontype = dto.Transactiontype;
+            transaction.TransationInfo = dto.TransationInfo;
+
+            await _transactionRepo.AddAsync(transaction);
+            _walletRepo.Save();
+            return true;
+        }
+
+        public async Task<IEnumerable<WalletTransactionDto>> GetWalletTransactionsAsync(int craftsManId)
+        {
+            var wallet = await _walletRepo.GetWalletByCraftsManIdAsync(craftsManId);
+
+            if (wallet == null)
+                throw new NotFoundException(nameof(Wallet), $"Wallet not found for craftsman with ID {craftsManId}");
+
+            var transactions = await _transactionRepo.GetAllByWalletIdAsync(wallet.Id);
+
+            if (transactions == null || !transactions.Any())
+                throw new NotFoundException(nameof(WalletTransaction), "No transactions found for this wallet.");
+
+            return _mapper.Map<IEnumerable<WalletTransactionDto>>(transactions);
+        }
+
+        public async Task<UpdateWaletTransactionDto> UpdateWaletTransaction(UpdateWaletTransactionDto dto)
+        {
+            var transaction = await _transactionRepo.GetAsync(dto.Id);
+
+            if (transaction == null)
+            {
+                throw new Exception("Transaction not found");
+            }
+
+            transaction.ispayed = dto.ispayed;
+            _transactionRepo.Update(transaction, dto.Id);
+            _transactionRepo.Save();
+
+            // ✅ Send notification to CRAFTSMAN when admin approves
+            if (dto.ispayed == true && transaction.CraftsManId.HasValue)
+            {
+                var notificationDto = new CreateNotificationDto
+                {
+                    ServiceRequestId = null,  // ✅ No service request for withdrawals
+                    CraftsManId = transaction.CraftsManId.Value,
+                    Title = "Withdrawal Approved",
+                    Message = $"Your withdrawal request of {transaction.Amount} EGP has been approved and will be processed soon!",
+                    FinalAmount = transaction.Amount,
+                    Type = NotificationType.WithdrawalApproved,
+
+                    //RecipientType = "Craftsman"  // ✅ This goes to CRAFTSMAN, not admin
+                };
+
+                // ✅ Use the method that sends to craftsman
+                await _notificationService.CreateFromAdminToCraftsmanAsync(notificationDto);
+            }
+
+            return _mapper.Map<UpdateWaletTransactionDto>(transaction);
+        }
+    }
 }

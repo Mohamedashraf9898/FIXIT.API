@@ -16,7 +16,7 @@ namespace FIXIT.BLL.DTOs.NotificationDtos
         public string Title { get; set; }
         public decimal? FinalAmount { get; set; }
         public string? Description { get; set; }
-         
+        public int? CraftsManId { get; set; }
         public string Message { get; set; }
         public bool IsRead { get; set; }
         public DateTime CreatedAt { get; set; }

@@ -3,11 +3,8 @@ using FIXIT.BLL.DTOs.NotificationDtos;
 using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.BLL.Services.IService;
 using FIXIT.DAL.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+
 
 namespace FIXIT.BLL.Services.Service
 {
@@ -23,6 +20,7 @@ namespace FIXIT.BLL.Services.Service
             _mapper = mapper;
             _senderService = senderService;
         }
+
         public async Task CreateFromClientAsync(CreateNotificationDto dto)
         {
             var notification = _mapper.Map<Notification>(dto);
@@ -31,7 +29,6 @@ namespace FIXIT.BLL.Services.Service
             await _repo.AddAsync(notification);
             await _repo.SaveAsync();
 
-            // يبعت الإشعار للحرفي فقط
             if (dto.CraftsManId.HasValue)
             {
                 await _senderService.SendNotificationToUserAsync(
@@ -44,6 +41,7 @@ namespace FIXIT.BLL.Services.Service
                 );
             }
         }
+
         public async Task CreateFromCraftsmanAsync(CreateNotificationDto dto)
         {
             var notification = _mapper.Map<Notification>(dto);
@@ -52,7 +50,6 @@ namespace FIXIT.BLL.Services.Service
             await _repo.AddAsync(notification);
             await _repo.SaveAsync();
 
-            // يبعت الإشعار للعميل فقط
             if (dto.ClientId.HasValue)
             {
                 await _senderService.SendNotificationToUserAsync(
@@ -69,68 +66,30 @@ namespace FIXIT.BLL.Services.Service
         public async Task<List<ReadNotificationDto>> GetNotificationsForClientAsync(int clientId)
         {
             var notifications = await _repo.GetNotificationsForClientAsync(clientId);
-
-            
             var filtered = notifications
                 .Where(n => n.SenderType == NotificationSenderType.Craftsman)
                 .ToList();
 
-            
-            //foreach (var noti in filtered)
-            //{
-            //    await MarkAsReadAsync(noti.Id);
-            //}
-
             return _mapper.Map<List<ReadNotificationDto>>(filtered);
         }
-        //public async Task<List<ReadNotificationDto>> GetNotificationsForClientAsync(int clientId)
-        //{
-        //    var notifications = await _repo.GetNotificationsForClientAsync(clientId);
-        //    return _mapper.Map<List<ReadNotificationDto>>(notifications
-        //        .Where(n => n.SenderType == NotificationSenderType.Craftsman)); // بس اللي بعتها الحرفي
-        //}
-        //public async Task<List<ReadNotificationDto>> GetNotificationsForCraftsmanAsync(int craftsManId)
-        //{
-        //    var notifications = await _repo.GetNotificationsForCraftsManAsync(craftsManId);
-        //    return _mapper.Map<List<ReadNotificationDto>>(notifications
-        //        .Where(n => n.SenderType == NotificationSenderType.Client)); // بس اللي بعتها العميل
-        //}
+
         public async Task<List<ReadNotificationDto>> GetNotificationsForCraftsmanAsync(int craftsManId)
         {
             var notifications = await _repo.GetNotificationsForCraftsManAsync(craftsManId);
-
-            
             var filtered = notifications
-                .Where(n => n.SenderType == NotificationSenderType.Client)
+                .Where(n => n.SenderType == NotificationSenderType.Client ||
+                           n.SenderType == NotificationSenderType.Admin)  // ✅ Craftsman can receive from Admin too
                 .ToList();
-
-          
-            //foreach (var noti in filtered)
-            //{
-            //    await MarkAsReadAsync(noti.Id);
-            //}
 
             return _mapper.Map<List<ReadNotificationDto>>(filtered);
         }
-
-        //public async Task<List<ReadNotificationDto>> GetNotificationsForClientAsync(int clientId)
-        //{
-        //    var notifications = await _repo.GetNotificationsForClientAsync(clientId);
-        //    return _mapper.Map<List<ReadNotificationDto>>(notifications);
-        //}
-
-        //public async Task<List<ReadNotificationDto>> GetNotificationsForCraftsmanAsync(int craftsManId)
-        //{
-        //    var notifications = await _repo.GetNotificationsForCraftsManAsync(craftsManId);
-        //    return _mapper.Map<List<ReadNotificationDto>>(notifications);
-        //}
 
         public async Task<ReadNotificationDto> MarkAsReadAsync(int id)
         {
             var notification = await _repo.GetByIdAsync(id);
             if (notification == null)
                 return null;
-            
+
             if (!notification.IsRead)
             {
                 notification.IsRead = true;
@@ -139,6 +98,49 @@ namespace FIXIT.BLL.Services.Service
             }
 
             return _mapper.Map<ReadNotificationDto>(notification);
+        }
+
+        public async Task<ReadNotificationDto> CreateForAdminAsync(CreateNotificationDto dto)
+        {
+            var notification = _mapper.Map<Notification>(dto);
+            
+            notification.CreatedAt = DateTime.Now;
+            notification.IsRead = false;
+
+            await _repo.AddAsync(notification);
+            await _repo.SaveAsync();
+
+            // ✅ Send via SignalR to Admin
+            await _senderService.SendNotificationToAdminAsync(notification);
+
+            var result = _mapper.Map<ReadNotificationDto>(notification);
+            return result;
+        }
+
+        public async Task CreateFromAdminToCraftsmanAsync(CreateNotificationDto dto)
+        {
+            var notification = _mapper.Map<Notification>(dto);
+            notification.SenderType = NotificationSenderType.Admin;
+            notification.IsRead = false;
+            notification.CreatedAt = DateTime.UtcNow;
+
+            await _repo.AddAsync(notification);
+            await _repo.SaveAsync();
+
+            if (dto.CraftsManId.HasValue)
+            {
+                await _senderService.SendNotificationToCraftsmanFromAdminAsync(
+                    notification,
+                    dto.CraftsManId.Value
+                );
+            }
+        }
+
+        // ✅ ADD THIS METHOD - It was missing!
+        public async Task<List<ReadNotificationDto>> GetNotificationsForAdminAsync()
+        {
+            var notifications = await _repo.GetNotificationsForAdminAsync();
+            return _mapper.Map<List<ReadNotificationDto>>(notifications);
         }
     }
 }

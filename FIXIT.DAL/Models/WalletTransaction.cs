@@ -1,21 +1,23 @@
 ﻿namespace FIXIT.DAL.Models
 {
-     public enum TransactionType { 
-    
+    public enum TransactionType
+    {
         instapay,
         ewallet,
         credit
+    }
 
+    public enum Transactionmethod
+    {
+        Withdraw,
+        Deposits
     }
-    public enum Transactionmethod { 
-    
-    Withdraw,
-    Deposits
-    }
+
     public class WalletTransaction
     {
         public int Id { get; set; }
         public int WalletId { get; set; }
+        public int? CraftsManId { get; set; }  
         public int? ServiceRequestId { get; set; }
         public decimal? Amount { get; set; }
         public Transactionmethod? Transactionmethod { get; set; }
@@ -24,6 +26,6 @@
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public virtual Wallet Wallet { get; set; }
         public virtual ServicesRequest ServicesRequest { get; set; }
-        public bool? ispayed { get; set; }=false;
+        public bool? ispayed { get; set; } = false;
     }
 }

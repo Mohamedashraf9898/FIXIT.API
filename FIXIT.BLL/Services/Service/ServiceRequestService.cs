@@ -50,9 +50,9 @@ namespace FIXIT.BLL.Services.Service
             IOfferRepository offerRepository,
             IAvailabilityService availabilityService,
             UploadHandler uploadHandler,
-        ITimeOffService timeOffService,
-        INotificationService notificationService,
-        ITimeSlotRepository timeSlotRepo)
+            ITimeOffService timeOffService,
+            INotificationService notificationService,
+            ITimeSlotRepository timeSlotRepo)
         {
             _serviceRequestRepository = serviceRequestRepository;
             _craftsmanRepository = craftsmanRepository;
@@ -181,7 +181,7 @@ namespace FIXIT.BLL.Services.Service
             var serviceRequests = await _serviceRequestRepository.GetAllAsync();
 
             var existed = serviceRequests
-                .Where(sr => sr.CraftsManId == craftsManId)
+                .Where(sr => sr.CraftsManId == craftsManId).OrderByDescending(sr => sr.RequestAt)
                 .ToList();
 
             if (!existed.Any())
@@ -198,7 +198,7 @@ namespace FIXIT.BLL.Services.Service
             var serviceRequests = await _serviceRequestRepository.GetAllAsync();
 
             var existed = serviceRequests
-                .Where(sr => sr.ClientId == clientId)
+                .Where(sr => sr.ClientId == clientId).OrderByDescending(sr => sr.RequestAt)
                 .ToList();
 
             if (!existed.Any())

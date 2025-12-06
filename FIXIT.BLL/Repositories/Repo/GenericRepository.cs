@@ -39,6 +39,7 @@ namespace FIXIT.BLL.Repositories.Repo
 
 			//	return craftsmen.Cast<T>().ToList();
 			//}
+           
 			return await _dbContext.Set<T>().AsNoTracking().ToListAsync();
 
         }

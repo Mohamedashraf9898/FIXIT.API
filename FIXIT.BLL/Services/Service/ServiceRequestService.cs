@@ -358,11 +358,19 @@ namespace FIXIT.BLL.Services.Service
 
             if (targetSlot.Status != SlotStatus.Available)
                 throw new ValidationException("Sorry, this time slot is already booked.");
-
+            var oldslot = await _timeSlotRepo.GetSlotByRequestIdAsync(id);
+            if (oldslot != null)
+            {
+                oldslot.Status = SlotStatus.Available;
+                _timeSlotRepo.Update(oldslot, oldslot.Id);
+            }
             targetSlot.Status = SlotStatus.Booked;
             targetSlot.ServiceRequestId = existing.ServicesRequestId; 
 
+          
             _timeSlotRepo.Update(targetSlot, targetSlot.Id);
+            
+            _timeSlotRepo.Save();
 
             _mapper.Map(dto, existing);
 

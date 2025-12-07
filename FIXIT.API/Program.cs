@@ -79,6 +79,18 @@ namespace FIXIT.API
             {
                 options.UseLazyLoadingProxies().UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnectionString"));
             });
+            builder.Services
+                    .AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
+                    {
+                        options.User.RequireUniqueEmail = true;
+                        options.SignIn.RequireConfirmedAccount = true;
+                        options.Lockout.MaxFailedAccessAttempts = 10;
+                        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
+                        options.Lockout.AllowedForNewUsers = true;
+                    })
+                    .AddEntityFrameworkStores<IdentityDbContext>()
+                    .AddDefaultTokenProviders();
+
             builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 
@@ -136,7 +148,8 @@ namespace FIXIT.API
             builder.Services.AddScoped<INotificationService, NotificationService>();
             builder.Services.AddScoped<INotificationSenderService, NotificationSenderService>();
             //email
-            builder.Services.AddScoped<IEmailService, EmailService>();
+            builder.Services.AddTransient<IEmailService, EmailService>();
+            
 
 
             //wallet
@@ -176,26 +189,8 @@ namespace FIXIT.API
             
             #endregion
 
-            builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
-            {
-                options.User.RequireUniqueEmail = true;
-                //options.User.AllowedUserNameCharacters = "";
-                //options.SignIn.RequireConfirmedEmail = true;
-                //options.SignIn.RequireConfirmedPhoneNumber = true;
-                //options.SignIn.RequireConfirmedAccount = true;
+           
 
-                //options.Password.RequiredLength = 6;
-                //options.Password.RequireNonAlphanumeric = true;
-                //options.Password.RequireLowercase = true;
-                //options.Password.RequireUppercase = true;
-                //options.Password.RequireDigit = true;
-                //options.Password.RequiredUniqueChars = 2;
-
-                options.Lockout.MaxFailedAccessAttempts = 10;
-                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
-                options.Lockout.AllowedForNewUsers = true;
-            })
-              .AddEntityFrameworkStores<IdentityDbContext>();
             builder.Services.AddScoped(typeof(IAuthService), typeof(AuthService));
             builder.Services.AddScoped(typeof(Func<IAuthService>), (serviceProvider) =>
             {

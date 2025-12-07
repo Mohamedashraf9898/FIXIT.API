@@ -10,11 +10,13 @@ using FIXIT.DAL.Models.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,6 +32,7 @@ namespace FIXIT.BLL.Services.Service.Auth
         private readonly IClientService _clientService;
         private readonly ICraftsManService _craftsManService;
         private readonly IEmailService _emailService;
+        private readonly ILogger<AuthService> _logger;
         private readonly IConfiguration _configuration;
 
         public AuthService(
@@ -38,26 +41,29 @@ namespace FIXIT.BLL.Services.Service.Auth
             IClientService clientService,
             ICraftsManService craftsManService,
             IConfiguration configuration,
-            IEmailService emailService) 
+            IEmailService emailService,
+            ILogger<AuthService> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _clientService = clientService;
             _craftsManService = craftsManService;
             _configuration = configuration;
-            _emailService = emailService; 
+            _emailService = emailService;
+            _logger = logger;
         }
+
 
         public async Task<UserDto> LoginAsync(LoginDto dto)
         {
-          
+
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
                 throw new UnAuthoraizedException("Invalid Login");
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, false);
             if (!result.Succeeded)
-             if (result.IsNotAllowed) throw new UnAuthoraizedException("Account not Confirmed yet");
+                if (result.IsNotAllowed) throw new UnAuthoraizedException("Account not Confirmed yet");
             if (result.IsLockedOut) throw new UnAuthoraizedException("Account is Locked");
             if (!result.Succeeded) throw new UnAuthoraizedException("Invalid Login");
 
@@ -65,7 +71,7 @@ namespace FIXIT.BLL.Services.Service.Auth
             var roles = await _userManager.GetRolesAsync(user);
             var role = roles.Count > 0 ? roles[0] : string.Empty;
 
-           
+
             return new UserDto
             {
                 Id = user.Id,
@@ -96,7 +102,7 @@ namespace FIXIT.BLL.Services.Service.Auth
 
             await _userManager.AddToRoleAsync(user, "Client");
 
-           
+
             await _clientService.CreateClientAsync(new CreateClientDTO
             {
                 FName = dto.FName,
@@ -105,11 +111,11 @@ namespace FIXIT.BLL.Services.Service.Auth
                 PhoneNumber = dto.PhoneNumber,
                 ProfileImage = $"Images\\default.png",
                 Gender = dto.Gender,
-                DateOfBirth=dto.DateOfBirth,
+                DateOfBirth = dto.DateOfBirth,
                 NormalizedEmail = user.NormalizedEmail!
-                
+
             });
-            
+
             return new UserDto
             {
                 Id = user.Id,
@@ -130,8 +136,8 @@ namespace FIXIT.BLL.Services.Service.Auth
                 FName = dto.FName,
                 LName = dto.LName,
                 PhoneNumber = dto.PhoneNumber
-             
-                
+
+
             };
 
             var result = await _userManager.CreateAsync(user, dto.Password);
@@ -142,7 +148,7 @@ namespace FIXIT.BLL.Services.Service.Auth
             }
             await _userManager.AddToRoleAsync(user, "CraftsMan");
 
-          
+
             await _craftsManService.CreateCraftsManAsync(new CreateCraftsManDto
             {
                 FName = dto.FName,
@@ -168,7 +174,7 @@ namespace FIXIT.BLL.Services.Service.Auth
                 LName = user.LName,
                 Email = user.Email,
                 Role = "CraftsMan",
-                Token =await GenerateJwtTokenAsync(user, "CraftsMan")
+                Token = await GenerateJwtTokenAsync(user, "CraftsMan")
             };
         }
 
@@ -213,29 +219,43 @@ namespace FIXIT.BLL.Services.Service.Auth
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public async Task<bool> ForgotPasswordRequestAsync(string email)
-        {
-            var user = await _userManager.FindByEmailAsync(email);
-            if (user == null) return true;
+      
 
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-            var resetLink = $"{_configuration["ApiUrl"]}/auth/reset-password?email={user.Email}&token={encodedToken}";
+        //public async Task<bool> ResetPasswordAsync(ResetPasswordDto dto)
+        //{
+        //    var user = await _userManager.FindByEmailAsync(dto.Email);
+        //    if (user == null) throw new NotFoundException("User", dto.Email);
 
-            await _emailService.SendEmailAsync(user.Email, "Reset Password", $"Click here: {resetLink}");
-            return true;
-        }
+        //    var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(dto.Token));
+        //    var result = await _userManager.ResetPasswordAsync(user, decodedToken, dto.NewPassword);
+
+        //    if (!result.Succeeded)
+        //    {
+        //        throw new ValidationException(string.Join(", ", result.Errors.Select(e => e.Description)));
+        //    }
+
+        //    return true;
+        //}
         public async Task<bool> ResetPasswordAsync(ResetPasswordDto dto)
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null) throw new NotFoundException("User", dto.Email);
 
-            var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(dto.Token));
-            var result = await _userManager.ResetPasswordAsync(user, decodedToken, dto.NewPassword);
+            // AuthService expects Base64Url-encoded token from the controller / email link
+            //var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(dto.Token));
+            var urlDecodedToken = WebUtility.UrlDecode(dto.Token);
+
+            var result = await _userManager.ResetPasswordAsync(user, urlDecodedToken, dto.NewPassword);
 
             if (!result.Succeeded)
             {
                 throw new ValidationException(string.Join(", ", result.Errors.Select(e => e.Description)));
+            }
+
+            if (!user.EmailConfirmed)
+            {
+                user.EmailConfirmed = true;
+                await _userManager.UpdateAsync(user);
             }
 
             return true;

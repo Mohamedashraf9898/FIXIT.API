@@ -9,6 +9,8 @@ namespace FIXIT.BLL.DTOs.Identity
 {
     public class ResetPasswordDto
     {
+        //email , token , newpass , confirmpass
+
         [Required]
         [EmailAddress]
         public string Email { get; set; } = null!;
@@ -21,6 +23,10 @@ namespace FIXIT.BLL.DTOs.Identity
             @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$",
             ErrorMessage = "Password must be at least 8 characters long, contain uppercase, lowercase, number, and special character.")]
         public string NewPassword { get; set; } = null!;
+
+        [Required]
+        [Compare("NewPassword", ErrorMessage = "Passwords do not match.")]
+        public string ConfirmPassword { get; set; } = null!;
     }
 
 }

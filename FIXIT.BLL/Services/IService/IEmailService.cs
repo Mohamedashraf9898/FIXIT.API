@@ -8,7 +8,9 @@ namespace FIXIT.BLL.Services.IService
 {
     public interface IEmailService
     {
-        Task SendEmailAsync(string toEmail, string subject, string body, bool isHtml = true);
+
+        Task SendEmailAsync(string from,string recipients, string subject, string body); 
+
     }
 
 }

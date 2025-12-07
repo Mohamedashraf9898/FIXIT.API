@@ -195,7 +195,8 @@ builder.Services.AddScoped<INotificationSenderService, NotificationSenderService
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
                 options.Lockout.AllowedForNewUsers = true;
             })
-              .AddEntityFrameworkStores<IdentityDbContext>();
+              .AddEntityFrameworkStores<IdentityDbContext>().AddDefaultTokenProviders();
+
             builder.Services.AddScoped(typeof(IAuthService), typeof(AuthService));
             builder.Services.AddScoped(typeof(Func<IAuthService>), (serviceProvider) =>
             {

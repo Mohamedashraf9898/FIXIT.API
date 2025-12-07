@@ -13,10 +13,12 @@ namespace FIXIT.API.Controllers
     {
 
         private readonly IAuthService _authService;
+        private readonly IConfiguration _config;
 
-        public AccountController(IAuthService authService)
+        public AccountController(IAuthService authService, IConfiguration config)
         {
             _authService = authService;
+            _config = config;
         }
 
         [HttpPost("login")]
@@ -45,6 +47,34 @@ namespace FIXIT.API.Controllers
            
             
         }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
+        {
+            var frontendUrl = _config["FrontendUrl"] ?? "https://myfrontend.com/";
+            await _authService.ForgotPasswordAsync(dto, frontendUrl);
+            return Ok(new { message = "If the email exists, a reset link has been sent." });
+        }
+
+        [HttpGet("reset-password/validate")]
+        public async Task<IActionResult> ValidateToken([FromQuery] ValidateTokenDto dto)
+        {
+            var isValid = await _authService.ValidateResetTokenAsync(dto);
+            if (!isValid)
+                return BadRequest(new { error = "Invalid or expired token." });
+            return Ok(new { message = "Token is valid." });
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+        {
+            var result = await _authService.ResetPasswordAsync(dto);
+            if (!result)
+                return BadRequest(new { error = "Invalid token or password." });
+            return Ok(new { message = "Password has been reset successfully." });
+        }
+    
+
 
         [Authorize]
         [HttpPost("logout")]

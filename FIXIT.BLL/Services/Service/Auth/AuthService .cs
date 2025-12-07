@@ -1,45 +1,57 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
-using FIXIT.BLL.DTOs.ClientDTOs;
+﻿using FIXIT.BLL.DTOs.ClientDTOs;
 using FIXIT.BLL.DTOs.CraftsmanDTOs;
 using FIXIT.BLL.DTOs.Identity;
 using FIXIT.BLL.Exceptions;
 using FIXIT.BLL.Services.Intrfaces;
+using FIXIT.BLL.Services.IService;
 using FIXIT.BLL.Services.IService.IAuth;
+using FIXIT.DAL.DbContexts.FixitIdentityDbContext;
 using FIXIT.DAL.Models.Identity;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace FIXIT.BLL.Services.Service.Auth
 {
     public class AuthService : IAuthService
     {
-        
-            private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IEmailService _emailService;
+        private readonly IdentityDbContext _identityDbContext;
+        private readonly UserManager<ApplicationUser> _userManager;
             private readonly SignInManager<ApplicationUser> _signInManager;
             private readonly IClientService _clientService;
             private readonly ICraftsManService _craftsManService;
             private readonly IConfiguration _configuration;
+            
+            
 
             public AuthService(
+                IEmailService emailService,
+                IdentityDbContext identityDbContext,
                 UserManager<ApplicationUser> userManager,
                 SignInManager<ApplicationUser> signInManager,
                 IClientService clientService,
                 ICraftsManService craftsManService,
                 IConfiguration configuration)
             {
+                _emailService = emailService;
+                _identityDbContext = identityDbContext;
                 _userManager = userManager;
                 _signInManager = signInManager;
                 _clientService = clientService;
                 _craftsManService = craftsManService;
                 _configuration = configuration;
+
             }
             public async Task<UserDto> LoginAsync(LoginDto dto)
         {
@@ -165,6 +177,7 @@ namespace FIXIT.BLL.Services.Service.Auth
             };
         }
 
+      
         private async Task<string> GenerateJwtTokenAsync(ApplicationUser user, string role)
         {
             var claims = new List<Claim>
@@ -205,6 +218,84 @@ namespace FIXIT.BLL.Services.Service.Auth
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+
+        public async Task ForgotPasswordAsync(ForgotPasswordDto dto, string frontendUrl)
+        {
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+            if (user == null)
+                return; // Do not reveal if user exists
+
+            // Generate secure token
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            //var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+            var expiry = DateTime.UtcNow.AddMinutes(15);
+
+            // Store token in DB
+            var resetToken = new PasswordResetToken
+            {
+                Email = dto.Email,
+                Token = token,
+                ExpiryDate = expiry,
+                IsUsed = false
+            };
+            _identityDbContext.PasswordResetTokens.Add(resetToken);
+            await _identityDbContext.SaveChangesAsync();
+
+            // Build reset link
+            var resetLink = $"{frontendUrl}/reset-password?email={Uri.EscapeDataString(dto.Email)}&token={Uri.EscapeDataString(token)}";
+
+            // Send email
+            var subject = "Password Reset Request";
+            var body = $@"
+                        Click the link to reset your password:<br>
+                        <a href=""{resetLink}"">{resetLink}</a>
+                        <br><br>
+                        This link expires in 15 minutes.";
+                    
+
+            await _emailService.SendEmailAsync(dto.Email, subject, body);
+        }
+        public async Task<bool> ResetPasswordAsync(ResetPasswordDto dto)
+        {
+            // 1️⃣ البحث عن المستخدم
+            var user = await _userManager.FindByEmailAsync(dto.Email);
+            if (user == null)
+                return false;
+
+            // 2️⃣ البحث عن الـ Token في DB
+            var resetTokenEntry = await _identityDbContext.PasswordResetTokens
+                .FirstOrDefaultAsync(t => t.Email == dto.Email && t.Token == dto.Token && !t.IsUsed);
+
+            if (resetTokenEntry == null || resetTokenEntry.ExpiryDate < DateTime.UtcNow)
+                return false;
+
+            // 3️⃣ استخدام Token المخزن مع UserManager
+            //    Token لازم يكون مولّد من GeneratePasswordResetTokenAsync
+            //    لو أنتِ بالفعل خزنتِه بعد GeneratePasswordResetTokenAsync فهذا سيعمل بشكل صحيح
+            var resetResult = await _userManager.ResetPasswordAsync(user, dto.Token, dto.NewPassword);
+            if (!resetResult.Succeeded)
+                return false;
+
+            // 4️⃣ تعليم الـ Token أنه مستخدم
+            resetTokenEntry.IsUsed = true;
+            await _identityDbContext.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<bool> ValidateResetTokenAsync(ValidateTokenDto dto)
+        {
+            var token = await _identityDbContext.PasswordResetTokens
+                .FirstOrDefaultAsync(t => t.Email == dto.Email && t.Token == dto.Token && !t.IsUsed);
+
+            if (token == null || token.ExpiryDate < DateTime.UtcNow)
+                return false;
+
+            return true;
+        }
+
     }
 
 }

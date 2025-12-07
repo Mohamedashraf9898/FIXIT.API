@@ -64,6 +64,20 @@ namespace FIXIT.BLL.Repositories.Repo
                 .OrderBy(ts => ts.StartTime)
                 .ToListAsync();
         }
+        public async Task<List<TimeSlot>> GetFutureAvailableSlotsAsync(int craftsmanId, DayOfWeek dayOfWeek)
+        {
 
+            var allFutureSlots = await _context.TimeSlots
+                .AsNoTracking()
+                .Where(ts => ts.CraftsManId == craftsmanId
+                          && ts.Date >= DateTime.Today
+                          && ts.Status == SlotStatus.Available)
+                .ToListAsync();
+
+
+            return allFutureSlots
+                .Where(ts => ts.Date.DayOfWeek == dayOfWeek)
+                .ToList();
+        }
     }
 }

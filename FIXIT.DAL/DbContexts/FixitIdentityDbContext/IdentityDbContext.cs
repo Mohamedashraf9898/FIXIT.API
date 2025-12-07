@@ -19,5 +19,8 @@ namespace FIXIT.DAL.DbContexts.FixitIdentityDbContext
             builder.ApplyConfiguration(new Configuration.Identity.ApplicationUserConfiguration());
            
         }
+
+        public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
+
     }
 }

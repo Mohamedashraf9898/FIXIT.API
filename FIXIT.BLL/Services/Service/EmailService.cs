@@ -1,4 +1,5 @@
 using FIXIT.BLL.DTOs;
+using FIXIT.BLL.DTOs.Identity;
 using FIXIT.BLL.Services.IService;
 using MailKit.Net.Smtp;
 using MailKit.Security;
@@ -50,5 +51,20 @@ namespace FIXIT.BLL.Services.Service
                 await smtp.DisconnectAsync(true);
             }
         }
+        public async Task SendEmailAsync(string toEmail, string subject, string htmlBody)
+        {
+            var email = new MimeMessage();
+            email.From.Add(MailboxAddress.Parse(_mailSettings.SenderEmail));
+            email.To.Add(MailboxAddress.Parse(toEmail));
+            email.Subject = subject;
+            email.Body = new TextPart(MimeKit.Text.TextFormat.Html) { Text = htmlBody };
+
+            using var smtp = new SmtpClient();
+            await smtp.ConnectAsync(_mailSettings.Host, _mailSettings.Port, SecureSocketOptions.StartTls);
+            await smtp.AuthenticateAsync(_mailSettings.SenderEmail, _mailSettings.SenderPassword);
+            await smtp.SendAsync(email);
+            await smtp.DisconnectAsync(true);
+        }
+
     }
 }

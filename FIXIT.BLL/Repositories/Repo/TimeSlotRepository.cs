@@ -55,5 +55,15 @@ namespace FIXIT.BLL.Repositories.Repo
             return await _context.TimeSlots
                 .FirstOrDefaultAsync(ts => ts.ServiceRequestId == serviceRequestId);
         }
+        public async Task<List<TimeSlot>> GetAllSlotsByDateAsync(int craftsmanId, DateTime date)
+        {
+            return await _context.TimeSlots
+                .AsNoTracking()
+                .Where(ts => ts.CraftsManId == craftsmanId
+                          && ts.Date.Date == date.Date)
+                .OrderBy(ts => ts.StartTime)
+                .ToListAsync();
+        }
+
     }
 }

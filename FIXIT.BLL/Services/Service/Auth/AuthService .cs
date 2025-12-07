@@ -227,7 +227,9 @@ namespace FIXIT.BLL.Services.Service.Auth
                 return; // Do not reveal if user exists
 
             // Generate secure token
-            var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            //var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
             var expiry = DateTime.UtcNow.AddMinutes(15);
 
             // Store token in DB
@@ -257,24 +259,32 @@ namespace FIXIT.BLL.Services.Service.Auth
         }
         public async Task<bool> ResetPasswordAsync(ResetPasswordDto dto)
         {
-            var token = await _identityDbContext.PasswordResetTokens
-                .FirstOrDefaultAsync(t => t.Email == dto.Email && t.Token == dto.Token && !t.IsUsed);
-
-            if (token == null || token.ExpiryDate < DateTime.UtcNow)
-                return false;
-
+            // 1️⃣ البحث عن المستخدم
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
                 return false;
 
-            var resetResult = await _userManager.ResetPasswordAsync(user,dto.Token, dto.NewPassword);
+            // 2️⃣ البحث عن الـ Token في DB
+            var resetTokenEntry = await _identityDbContext.PasswordResetTokens
+                .FirstOrDefaultAsync(t => t.Email == dto.Email && t.Token == dto.Token && !t.IsUsed);
+
+            if (resetTokenEntry == null || resetTokenEntry.ExpiryDate < DateTime.UtcNow)
+                return false;
+
+            // 3️⃣ استخدام Token المخزن مع UserManager
+            //    Token لازم يكون مولّد من GeneratePasswordResetTokenAsync
+            //    لو أنتِ بالفعل خزنتِه بعد GeneratePasswordResetTokenAsync فهذا سيعمل بشكل صحيح
+            var resetResult = await _userManager.ResetPasswordAsync(user, dto.Token, dto.NewPassword);
             if (!resetResult.Succeeded)
                 return false;
 
-            token.IsUsed = true;
+            // 4️⃣ تعليم الـ Token أنه مستخدم
+            resetTokenEntry.IsUsed = true;
             await _identityDbContext.SaveChangesAsync();
+
             return true;
         }
+
         public async Task<bool> ValidateResetTokenAsync(ValidateTokenDto dto)
         {
             var token = await _identityDbContext.PasswordResetTokens

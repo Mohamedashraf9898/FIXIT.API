@@ -48,8 +48,8 @@ namespace FIXIT.BLL.Services.Service
             if (wallet == null)
                 return false;
 
-            decimal commissionRate = 0.25m;
-            decimal? netAmount = dto.Amount * (1 - commissionRate);
+           // decimal commissionRate = 0.25m;
+            decimal? netAmount = dto.Amount ; // (1 - commissionRate);
             wallet.Balance += netAmount ?? 0;
 
             var transaction = _mapper.Map<WalletTransaction>(dto);

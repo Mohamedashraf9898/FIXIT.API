@@ -1,0 +1,30 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Reset Password</title>
+</head>
+
+<body style="
+    font-family: Arial;
+    text-align: center;
+    margin-top: 80px;
+">
+    <h2>Preparing your reset link...</h2>
+
+    <script>
+        // Read raw params
+        const urlParams = new URLSearchParams(window.location.search);
+
+        const rawEmail = urlParams.get("email");
+        const rawToken = urlParams.get("token");
+
+        // Re-encode properly
+        const safeEmail = encodeURIComponent(rawEmail);
+        const safeToken = encodeURIComponent(rawToken);
+
+        // Redirect
+        window.location.href = https://http://localhost:4200/reset-password?email=${safeEmail}&token=${safeToken};
+    </script>
+</body>
+</html>

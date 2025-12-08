@@ -7,6 +7,7 @@ using FIXIT.BLL.Services.IService;
 using FIXIT.BLL.Services.IService.IAuth;
 using FIXIT.DAL.DbContexts.FixitIdentityDbContext;
 using FIXIT.DAL.Models.Identity;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -25,9 +26,9 @@ namespace FIXIT.BLL.Services.Service.Auth
 {
     public class AuthService : IAuthService
     {
-        private readonly IEmailService _emailService;
-        private readonly IdentityDbContext _identityDbContext;
-        private readonly UserManager<ApplicationUser> _userManager;
+            private readonly IEmailService _emailService;
+            private readonly IdentityDbContext _identityDbContext;
+            private readonly UserManager<ApplicationUser> _userManager;
             private readonly SignInManager<ApplicationUser> _signInManager;
             private readonly IClientService _clientService;
             private readonly ICraftsManService _craftsManService;
@@ -53,7 +54,7 @@ namespace FIXIT.BLL.Services.Service.Auth
                 _configuration = configuration;
 
             }
-            public async Task<UserDto> LoginAsync(LoginDto dto)
+        public async Task<UserDto> LoginAsync(LoginDto dto)
         {
           
             var user = await _userManager.FindByEmailAsync(dto.Email);
@@ -125,7 +126,6 @@ namespace FIXIT.BLL.Services.Service.Auth
                 Token = await GenerateJwtTokenAsync(user, "Client")
             };
         }
-
         public async Task<UserDto> RegisterCraftsManAsync(CraftsManRegisterDto dto)
         {
             var user = new ApplicationUser
@@ -176,8 +176,6 @@ namespace FIXIT.BLL.Services.Service.Auth
                 Token = await GenerateJwtTokenAsync(user, "CraftsMan")
             };
         }
-
-      
         private async Task<string> GenerateJwtTokenAsync(ApplicationUser user, string role)
         {
             var claims = new List<Claim>
@@ -219,42 +217,152 @@ namespace FIXIT.BLL.Services.Service.Auth
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-
         public async Task ForgotPasswordAsync(ForgotPasswordDto dto, string frontendUrl)
         {
+            // 1) Check if user exists
             var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
             if (user == null)
-                return; // Do not reveal if user exists
+                return; // Security: don't reveal user existence
 
-            // Generate secure token
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            // 2) Generate secure token (RAW Identity token)
+            var rawToken = await _userManager.GeneratePasswordResetTokenAsync(user);
 
-            //var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+            // 3) Save token in DB (Optional, depending on your logic, but Identity handles it mostly)
+            // If you are using a custom table:
             var expiry = DateTime.UtcNow.AddMinutes(15);
-
-            // Store token in DB
             var resetToken = new PasswordResetToken
             {
                 Email = dto.Email,
-                Token = token,
+                Token = rawToken, // Store the raw token!
                 ExpiryDate = expiry,
                 IsUsed = false
             };
             _identityDbContext.PasswordResetTokens.Add(resetToken);
             await _identityDbContext.SaveChangesAsync();
 
-            // Build reset link
-            var resetLink = $"{frontendUrl}/reset-password?email={Uri.EscapeDataString(dto.Email)}&token={Uri.EscapeDataString(token)}";
+            // 4) Build link - CRITICAL: Use Uri.EscapeDataString to turn '+' into '%2B'
+            // This ensures the browser sends it correctly and Angular decodes it back to '+'
+            var encodedToken = Uri.EscapeDataString(rawToken);
+            var encodedEmail = Uri.EscapeDataString(dto.Email);
 
-            // Send email
-            var subject = "Password Reset Request";
+            // Ensure no double slashes in URL
+            var textUrl = frontendUrl.TrimEnd('/');
+            var resetUrl = $"http://localhost:4200/reset-password?email={Uri.EscapeDataString(dto.Email)}&token={Uri.EscapeDataString(rawToken)}";
+            #region  Build HTML email body
+            // 5) Build HTML email body - Premium Gold & Black Theme
+            var subject = "Reset Your Password - Fixit";
             var body = $@"
-                        Click the link to reset your password:<br>
-                        <a href=""{resetLink}"">{resetLink}</a>
-                        <br><br>
-                        This link expires in 15 minutes.";
-                    
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <title>Reset Your Password</title>
+    <style>
+        body {{
+            font-family: 'Cairo', Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }}
+        .container {{
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }}
+        .header {{
+            background-color: #1E1E1E;
+            text-align: center;
+            padding: 30px 0;
+        }}
+        .header h1 {{
+            color: #FFD700;
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }}
+        .content {{
+            padding: 40px 30px;
+            text-align: center;
+        }}
+        .content h2 {{
+            color: #1E1E1E;
+            font-size: 24px;
+            margin-top: 0;
+        }}
+        .content p {{
+            color: #6B7280;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }}
+        .btn {{
+            background-color: #FFD700;
+            color: #1E1E1E;
+            padding: 15px 35px;
+            text-decoration: none;
+            border-radius: 50px;
+            display: inline-block;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+            transition: background-color 0.3s ease;
+        }}
+        .btn:hover {{
+            background-color: #E5C100 !important;
+        }}
+        .footer {{
+            background-color: #f8f8f8;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #eeeeee;
+            font-size: 12px;
+            color: #888888;
+        }}
+        a.link {{
+            color: #FFD700;
+            text-decoration: underline;
+            word-break: break-all;
+        }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <!-- Header -->
+        <div class='header'>
+            <h1>Fixit</h1>
+        </div>
 
+        <!-- Content -->
+        <div class='content'>
+            <h2>Password Reset Request</h2>
+            <p>
+                Hello,<br>
+                We received a request to reset your password for your Fixit account. If you made this request, click the button below:
+            </p>
+
+            <a href='{resetUrl}' class='btn'>Reset Password</a>
+
+            <p style='margin-top: 30px; font-size: 14px; color: #999999;'>
+                Or copy and paste this link into your browser:<br>
+                <a href='{resetUrl}' class='link'>{resetUrl}</a>
+            </p>
+        </div>
+
+        <!-- Footer -->
+        <div class='footer'>
+            This link works for 15 minutes.<br>
+            If you didn't request this, you can safely ignore this email.
+        </div>
+    </div>
+</body>
+</html>";
+
+            #endregion
+            // 6) Send email
             await _emailService.SendEmailAsync(dto.Email, subject, body);
         }
         public async Task<bool> ResetPasswordAsync(ResetPasswordDto dto)

@@ -18,6 +18,8 @@ namespace FIXIT.BLL.DTOs.Identity
 
         [Required]
         [EmailAddress]
+        [RegularExpression(@"^[a-zA-Z0-9._%+-]+@gmail\.com$",
+        ErrorMessage = "Only Gmail accounts are allowed.")]
         public required string Email { get; set; }
         [Required]
         [RegularExpression(

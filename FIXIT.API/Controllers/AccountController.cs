@@ -73,8 +73,16 @@ namespace FIXIT.API.Controllers
                 return BadRequest(new { error = "Invalid token or password." });
             return Ok(new { message = "Password has been reset successfully." });
         }
-    
 
+        [HttpPost("verify-email")]
+        public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailDto dto)
+        {
+            var result = await _authService.ConfirmEmailAsync(dto.Email, dto.Token);
+            if (!result)
+                return BadRequest(new { error = "Invalid or expired token." });
+
+            return Ok(new { message = "Email has been successfully verified." });
+        }
 
         [Authorize]
         [HttpPost("logout")]

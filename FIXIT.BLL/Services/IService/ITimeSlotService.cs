@@ -11,5 +11,7 @@ namespace FIXIT.BLL.Services.IService
     {
         Task GenerateSlotsForCraftsmanAsync(int craftsmanId, int daysAhead = 30);
         Task<List<TimeSlot>> GetAvailableSlotsAsync(int craftsmanId, DateTime date);
+        Task<List<TimeSlot>> GetCraftsmanScheduleAsync(int craftsmanId, DateTime date);
+        Task<bool> ToggleSlotStatusAsync(int slotId, int craftsmanId);
     }
 }

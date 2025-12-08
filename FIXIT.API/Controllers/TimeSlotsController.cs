@@ -47,5 +47,28 @@ namespace FIXIT.API.Controllers
 
             return Ok(response);
         }
+        [HttpGet("schedule")]
+        public async Task<IActionResult> GetCraftsmanSchedule([FromQuery] int craftsmanId, [FromQuery] DateTime date)
+        {
+            var slots = await _timeSlotService.GetCraftsmanScheduleAsync(craftsmanId, date);
+
+            var response = slots.Select(s => new TimeSlotResponseDto
+            {
+                Id = s.Id,
+                Date = s.Date.ToString("yyyy-MM-dd"),
+                Time = DateTime.Today.Add(s.StartTime).ToString("hh:mm tt"),
+                Status = s.Status.ToString(),
+                PriceMultiplier = s.PriceMultiplier ?? 1.0m
+            });
+
+            return Ok(response);
+        }
+
+        [HttpPut("toggle/{slotId}")]
+        public async Task<IActionResult> ToggleSlot(int slotId, [FromQuery] int craftsmanId)
+        {
+            await _timeSlotService.ToggleSlotStatusAsync(slotId, craftsmanId);
+            return Ok(new { message = "Slot status updated successfully" });
+        }
     }
 }

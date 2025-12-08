@@ -72,6 +72,43 @@ namespace FIXIT.BLL.Services.Service
         {
             return await _timeSlotRepo.GetAvailableSlotsAsync(craftsmanId, date);
         }
+        public async Task<List<TimeSlot>> GetCraftsmanScheduleAsync(int craftsmanId, DateTime date)
+        {
+            return await _timeSlotRepo.GetAllSlotsByDateAsync(craftsmanId, date);
+        }
+
+        public async Task<bool> ToggleSlotStatusAsync(int slotId, int craftsmanId)
+        {
+            var slot = await _timeSlotRepo.GetAsync(slotId);
+
+            if (slot == null)
+                throw new KeyNotFoundException("Slot not found");
+
+            if (slot.CraftsManId != craftsmanId)
+                throw new UnauthorizedAccessException("Not authorized to modify this slot.");
+
+            switch (slot.Status)
+            {
+                case SlotStatus.Available:
+                    slot.Status = SlotStatus.Disabled;
+                    break;
+
+                case SlotStatus.Disabled:
+                    slot.Status = SlotStatus.Available;
+                    break;
+
+                case SlotStatus.Booked:
+                    throw new InvalidOperationException("Cannot disable a booked slot. Reject the request first.");
+
+                default:
+                    throw new InvalidOperationException("Cannot modify slot status.");
+            }
+
+            _timeSlotRepo.Update(slot, slot.Id);
+            _timeSlotRepo.Save();
+
+            return true;
+        }
     }
 }
 

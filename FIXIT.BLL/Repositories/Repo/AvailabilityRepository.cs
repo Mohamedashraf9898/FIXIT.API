@@ -59,5 +59,6 @@ namespace FIXIT.BLL.Repositories.Repo
 
             return time >= availability.StartTime && time <= availability.EndTime;
         }
+       
     }
 }

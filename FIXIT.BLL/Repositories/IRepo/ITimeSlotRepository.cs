@@ -17,5 +17,8 @@ namespace FIXIT.BLL.Repositories.IRepo
         Task AddRangeAsync(List<TimeSlot> slots);
         Task<TimeSlot> GetSlotByDateAndTimeAsync(int craftsmanId, DateTime serviceStartTime);
         Task<TimeSlot> GetSlotByRequestIdAsync(int serviceRequestId);
+        Task<List<TimeSlot>> GetAllSlotsByDateAsync(int craftsmanId, DateTime date);
+        Task<List<TimeSlot>> GetFutureAvailableSlotsAsync(int craftsmanId, DayOfWeek dayOfWeek);
+
     }
 }

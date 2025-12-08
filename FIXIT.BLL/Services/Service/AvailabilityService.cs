@@ -128,7 +128,7 @@ namespace FIXIT.BLL.Services.Service
 
             return slots.Select(s => new TimeSlotDto
             {
-                Id = s.Id, // „Â„ ⁄‘«‰ «·ÕÃ“
+                Id = s.Id, 
                 Time = DateTime.Today.Add(s.StartTime).ToString("hh:mm tt"),
                 IsAvailable = true,
                 StartTime = s.Date.Add(s.StartTime)
@@ -138,9 +138,24 @@ namespace FIXIT.BLL.Services.Service
         public async Task<bool> DeleteAvailabilityAsync(int id)
         {
             var availability = await _availabilityRepository.GetAsync(id);
-            if (availability == null) throw new NotFoundException(nameof(CraftsManAvailability), id);
+            if (availability == null)
+                throw new NotFoundException(nameof(CraftsManAvailability), id);
+
             _availabilityRepository.Delete(id);
             _availabilityRepository.Save();
+
+            var slotsToDelete = await _timeSlotRepository
+                .GetFutureAvailableSlotsAsync(availability.CraftsManId, availability.DayOfWeek);
+
+            if (slotsToDelete.Any())
+            {
+                foreach (var slot in slotsToDelete)
+                {
+                    _timeSlotRepository.Delete(slot.Id);
+                }
+                _timeSlotRepository.Save();
+            }
+
             return true;
         }
 

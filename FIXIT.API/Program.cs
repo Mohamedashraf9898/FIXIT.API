@@ -174,6 +174,9 @@ builder.Services.AddScoped<INotificationSenderService, NotificationSenderService
             // Email settings
             builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
             builder.Services.AddScoped<IEmailService, EmailService>();
+            
+            builder.Services.AddScoped<IComplaintsRepository, ComplaintsRepository>();
+builder.Services.AddScoped<IComplaintsService, ComplaintsService>();
             #endregion
 
             builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>

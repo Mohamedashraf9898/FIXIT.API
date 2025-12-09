@@ -54,24 +54,38 @@ namespace FIXIT.BLL.Services.Service.Auth
                 _configuration = configuration;
 
             }
+
         public async Task<UserDto> LoginAsync(LoginDto dto)
         {
-          
+            // 1️⃣ البحث عن المستخدم بالإيميل
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
-                throw new UnAuthoraizedException("Invalid Login");
+                throw new UnAuthoraizedException("Invalid Login"); // البريد أو الباسورد خطأ
 
+
+            if (!user.EmailConfirmed)
+                throw new UnAuthoraizedException("Please verify your email first");
+            // 2️⃣ التحقق من كلمة المرور
             var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, false);
+
+            // 3️⃣ التحقق من حالة الحساب
             if (!result.Succeeded)
-             if (result.IsNotAllowed) throw new UnAuthoraizedException("Account not Confirmed yet");
-            if (result.IsLockedOut) throw new UnAuthoraizedException("Account is Locked");
-            if (!result.Succeeded) throw new UnAuthoraizedException("Invalid Login");
+            {
+                if (result.IsNotAllowed)
+                    throw new UnAuthoraizedException("Account not confirmed yet"); // لم يتم تفعيل الإيميل
+                if (result.IsLockedOut)
+                    throw new UnAuthoraizedException("Account is locked"); // الحساب مقفل
+                throw new UnAuthoraizedException("Invalid Login"); // خطأ عام
+            }
 
-
+            // 4️⃣ الحصول على الرول (Client أو CraftsMan)
             var roles = await _userManager.GetRolesAsync(user);
             var role = roles.Count > 0 ? roles[0] : string.Empty;
 
-           
+            // 5️⃣ إنشاء JWT Token
+            var token = await GenerateJwtTokenAsync(user, role);
+
+            // 6️⃣ إرجاع معلومات المستخدم مع التوكن
             return new UserDto
             {
                 Id = user.Id,
@@ -79,9 +93,10 @@ namespace FIXIT.BLL.Services.Service.Auth
                 LName = user.LName,
                 Email = user.Email,
                 Role = role,
-                Token = await GenerateJwtTokenAsync(user, role)
+                Token = token
             };
         }
+
         public async Task<UserDto> RegisterClientAsync(ClientRegisterDto dto)
         {
             var user = new ApplicationUser
@@ -90,7 +105,8 @@ namespace FIXIT.BLL.Services.Service.Auth
                 Email = dto.Email,
                 FName = dto.FName,
                 LName = dto.LName,
-                PhoneNumber = dto.PhoneNumber
+                PhoneNumber = dto.PhoneNumber,
+                EmailConfirmed = false
             };
 
             var result = await _userManager.CreateAsync(user, dto.Password);
@@ -102,7 +118,6 @@ namespace FIXIT.BLL.Services.Service.Auth
 
             await _userManager.AddToRoleAsync(user, "Client");
 
-           
             await _clientService.CreateClientAsync(new CreateClientDTO
             {
                 FName = dto.FName,
@@ -111,11 +126,59 @@ namespace FIXIT.BLL.Services.Service.Auth
                 PhoneNumber = dto.PhoneNumber,
                 ProfileImage = $"Images\\default.png",
                 Gender = dto.Gender,
-                DateOfBirth=dto.DateOfBirth,
+                DateOfBirth = dto.DateOfBirth,
                 NormalizedEmail = dto.Email
-                
             });
-            
+
+            // Generate Email Confirmation Token
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var encodedToken = Uri.EscapeDataString(token);
+            var frontendUrl = _configuration["FrontendUrl"]?.TrimEnd('/') ?? "http://localhost:4200";
+            var confirmUrl = $"{frontendUrl}/verify-email?email={Uri.EscapeDataString(user.Email)}&token={encodedToken}";
+
+            // HTML Email Template
+            var subject = "Verify Your Email - Fixit";
+            var body = $@"
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='UTF-8'>
+<title>Verify Your Email</title>
+<style>
+body {{ font-family: 'Cairo', Arial, sans-serif; background-color: #f8f9fa; margin:0; padding:0; }}
+.container {{ max-width:600px; margin:40px auto; background-color:#fff; border-radius:16px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.1); }}
+.header {{ background-color:#1E1E1E; text-align:center; padding:30px 0; }}
+.header h1 {{ color:#FFD700; margin:0; font-size:28px; font-weight:700; }}
+.content {{ padding:40px 30px; text-align:center; }}
+.content h2 {{ color:#1E1E1E; font-size:24px; margin-top:0; }}
+.content p {{ color:#6B7280; font-size:16px; line-height:1.6; margin-bottom:30px; }}
+.btn {{ background-color:#FFD700; color:#1E1E1E; padding:15px 35px; text-decoration:none; border-radius:50px; display:inline-block; font-weight:bold; font-size:16px; box-shadow:0 4px 15px rgba(255,215,0,0.4); }}
+.btn:hover {{ background-color:#E5C100 !important; }}
+.footer {{ background-color:#f8f8f8; padding:20px; text-align:center; border-top:1px solid #eeeeee; font-size:12px; color:#888888; }}
+a.link {{ color:#FFD700; text-decoration:underline; word-break:break-all; }}
+</style>
+</head>
+<body>
+<div class='container'>
+  <div class='header'><h1>Fixit</h1></div>
+  <div class='content'>
+    <h2>Email Verification</h2>
+    <p>Hello,<br>Thank you for registering. Please click the button below to verify your email:</p>
+    <a href='{confirmUrl}' class='btn'>Verify Email</a>
+    <p style='margin-top:30px; font-size:14px; color:#999;'>Or copy and paste this link into your browser:<br>
+      <a href='{confirmUrl}' class='link'>{confirmUrl}</a>
+    </p>
+  </div>
+  <div class='footer'>
+    This link works for 15 minutes.<br>
+    If you didn't register, you can safely ignore this email.
+  </div>
+</div>
+</body>
+</html>";
+
+            await _emailService.SendEmailAsync(user.Email, subject, body);
+
             return new UserDto
             {
                 Id = user.Id,
@@ -134,20 +197,22 @@ namespace FIXIT.BLL.Services.Service.Auth
                 Email = dto.Email,
                 FName = dto.FName,
                 LName = dto.LName,
-                PhoneNumber = dto.PhoneNumber
-             
-                
+                PhoneNumber = dto.PhoneNumber,
+                EmailConfirmed = false // مهم: الحساب غير مفعل حتى التحقق من الإيميل
             };
 
+            // إنشاء المستخدم في Identity
             var result = await _userManager.CreateAsync(user, dto.Password);
             if (!result.Succeeded)
             {
                 var errors = string.Join(", ", result.Errors.Select(e => e.Description));
                 throw new ValidationException($"Registration failed: {errors}");
             }
+
+            // إضافة رول CraftsMan
             await _userManager.AddToRoleAsync(user, "CraftsMan");
 
-          
+            // إنشاء بيانات CraftsMan في جدول مخصص
             await _craftsManService.CreateCraftsManAsync(new CreateCraftsManDto
             {
                 FName = dto.FName,
@@ -163,9 +228,59 @@ namespace FIXIT.BLL.Services.Service.Auth
                 DateOfBirth = dto.DateOfBirth,
                 NormalizedEmail = dto.Email,
                 ServiceId = dto.ServiceId
-
             });
 
+            // توليد Token لتأكيد الإيميل
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var encodedToken = Uri.EscapeDataString(token);
+            var frontendUrl = _configuration["FrontendUrl"]?.TrimEnd('/') ?? "http://localhost:4200";
+            var confirmUrl = $"{frontendUrl}/verify-email?email={Uri.EscapeDataString(user.Email)}&token={encodedToken}";
+
+            // HTML Email Template جاهز
+            var subject = "Verify Your Email - Fixit";
+            var body = $@"
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='UTF-8'>
+<title>Verify Your Email</title>
+<style>
+body {{ font-family: 'Cairo', Arial, sans-serif; background-color: #f8f9fa; margin:0; padding:0; }}
+.container {{ max-width:600px; margin:40px auto; background-color:#fff; border-radius:16px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.1); }}
+.header {{ background-color:#1E1E1E; text-align:center; padding:30px 0; }}
+.header h1 {{ color:#FFD700; margin:0; font-size:28px; font-weight:700; }}
+.content {{ padding:40px 30px; text-align:center; }}
+.content h2 {{ color:#1E1E1E; font-size:24px; margin-top:0; }}
+.content p {{ color:#6B7280; font-size:16px; line-height:1.6; margin-bottom:30px; }}
+.btn {{ background-color:#FFD700; color:#1E1E1E; padding:15px 35px; text-decoration:none; border-radius:50px; display:inline-block; font-weight:bold; font-size:16px; box-shadow:0 4px 15px rgba(255,215,0,0.4); }}
+.btn:hover {{ background-color:#E5C100 !important; }}
+.footer {{ background-color:#f8f8f8; padding:20px; text-align:center; border-top:1px solid #eeeeee; font-size:12px; color:#888888; }}
+a.link {{ color:#FFD700; text-decoration:underline; word-break:break-all; }}
+</style>
+</head>
+<body>
+<div class='container'>
+  <div class='header'><h1>Fixit</h1></div>
+  <div class='content'>
+    <h2>Email Verification</h2>
+    <p>Hello,<br>Thank you for registering. Please click the button below to verify your email:</p>
+    <a href='{confirmUrl}' class='btn'>Verify Email</a>
+    <p style='margin-top:30px; font-size:14px; color:#999;'>Or copy and paste this link into your browser:<br>
+      <a href='{confirmUrl}' class='link'>{confirmUrl}</a>
+    </p>
+  </div>
+  <div class='footer'>
+    This link works for 15 minutes.<br>
+    If you didn't register, you can safely ignore this email.
+  </div>
+</div>
+</body>
+</html>";
+
+            // إرسال الإيميل
+            await _emailService.SendEmailAsync(user.Email, subject, body);
+
+            // إنشاء JWT Token
             return new UserDto
             {
                 Id = user.Id,
@@ -176,6 +291,18 @@ namespace FIXIT.BLL.Services.Service.Auth
                 Token = await GenerateJwtTokenAsync(user, "CraftsMan")
             };
         }
+        public async Task<bool> ConfirmEmailAsync(string email, string token)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+                return false;
+
+            var decodedToken = Uri.UnescapeDataString(token);
+
+            var result = await _userManager.ConfirmEmailAsync(user, decodedToken);
+            return result.Succeeded;
+        }
+  
         private async Task<string> GenerateJwtTokenAsync(ApplicationUser user, string role)
         {
             var claims = new List<Claim>
@@ -216,7 +343,6 @@ namespace FIXIT.BLL.Services.Service.Auth
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-
         public async Task ForgotPasswordAsync(ForgotPasswordDto dto, string frontendUrl)
         {
             // 1) Check if user exists

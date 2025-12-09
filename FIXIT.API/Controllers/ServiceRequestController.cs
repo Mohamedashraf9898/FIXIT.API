@@ -174,7 +174,34 @@ namespace FIXIT.API.Controllers
                 return StatusCode(500, new { message = "Internal server error", details = ex.Message });
             }
         }
+        [HttpPost("cancel/{requestId}")]
+        public async Task<IActionResult> CancelServiceRequest(int requestId, [FromBody] CancelServiceRequestDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
+            try
+            {
+                var result = await _serviceRequestService.CancelServiceRequestAsync(requestId, dto);
+
+                if (!result)
+                    return NotFound($"Service request with ID {requestId} not found.");
+
+                return Ok("Service request cancelled successfully. Notifications sent to craftsman and admin.");
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal server error", details = ex.Message });
+            }
+        }
         #region ForPaymentService
         [HttpPost("complete/{requestId}")]
         public async Task<IActionResult> CompleteServiceRequest(int requestId)

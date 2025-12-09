@@ -24,7 +24,10 @@ namespace FIXIT.DAL.Models
         PaymentRequested,
         WithdrawalRequested,     
         WithdrawalApproved,
+        ServiceCancelled,
+        CraftsmanNoShow,
         CraftsmanApologized
+
     }
     public class Notification
     {

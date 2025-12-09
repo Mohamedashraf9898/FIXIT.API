@@ -136,11 +136,47 @@ namespace FIXIT.BLL.Services.Service
             }
         }
 
-      
+        
         public async Task<List<ReadNotificationDto>> GetNotificationsForAdminAsync()
         {
             var notifications = await _repo.GetNotificationsForAdminAsync();
             return _mapper.Map<List<ReadNotificationDto>>(notifications);
+        }
+        public async Task SendCancellationNotificationsAsync(int serviceRequestId, int craftsManId, int clientId, string reasonType, string clientName, string serviceName)
+        {
+            // Notification for Craftsman
+            var craftsmanNotification = new CreateNotificationDto
+            {
+                ServiceRequestId = serviceRequestId,
+                CraftsManId = craftsManId,
+                ClientId = clientId,
+                Title = "Service Cancellation",
+                Message = reasonType == "craftsman_no_show"
+                    ? $"{clientName} has cancelled the {serviceName} service because you did not show up."
+                    : $"{clientName} has cancelled the {serviceName} service.",
+                SenderType = NotificationSenderType.Client,
+                Type = reasonType == "craftsman_no_show"
+                    ? NotificationType.CraftsmanNoShow
+                    : NotificationType.ServiceCancelled,
+                IsRead = false
+            };
+
+            await CreateFromClientAsync(craftsmanNotification);
+
+            // Notification for Admin
+            var adminNotification = new CreateNotificationDto
+            {
+                ServiceRequestId = serviceRequestId,
+                CraftsManId = craftsManId,
+                ClientId = clientId,
+                Title = "Refund Required",
+                Message = $"Client {clientName} has cancelled service request #{serviceRequestId} ({serviceName}). Reason: {(reasonType == "craftsman_no_show" ? "Craftsman no-show" : "Client request")}. Please process refund.",
+                SenderType = NotificationSenderType.Client,
+                Type = NotificationType.ServiceCancelled,
+                IsRead = false
+            };
+
+            await CreateForAdminAsync(adminNotification);
         }
     }
 }

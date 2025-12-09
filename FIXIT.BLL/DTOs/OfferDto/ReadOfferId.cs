@@ -13,5 +13,6 @@ namespace FIXIT.BLL.DTOs.OfferDto
         public int CraftsmanId { get; set; }
         public decimal Amount { get; set; }
 
+
     }
 }

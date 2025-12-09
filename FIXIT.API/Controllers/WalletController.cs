@@ -11,16 +11,16 @@ namespace FIXIT.API.Controllers
     public class WalletController : ControllerBase
     {
         private readonly IWalletService _walletService;
-        private readonly INotificationService _notificationService;  // ✅ ADD THIS
+        private readonly INotificationService _notificationService;  
 
-        // ✅ ADD INotificationService to constructor
+        
         public WalletController(IWalletService walletService, INotificationService notificationService)
         {
             _walletService = walletService;
-            _notificationService = notificationService;  // ✅ ADD THIS
+            _notificationService = notificationService;  
         }
 
-        // ✅ CHANGE: Add "craftsman/" to route
+        
         [HttpGet("craftsman/{craftsManId}")]
         public async Task<IActionResult> GetWallet(int craftsManId)
         {
@@ -60,17 +60,17 @@ namespace FIXIT.API.Controllers
         {
             var result = await _walletService.WithdrawFundsAsync(dto);
 
-            // Send notification to Admin with CraftsManId
+            
             var notificationDto = new CreateNotificationDto
             {
-                //ServiceRequestId = null,  // ✅ Withdrawal doesn't need service request
-                CraftsManId = dto.CraftsManId,  // ✅ Add craftsman ID
+            
+                CraftsManId = dto.CraftsManId, 
                 Title = "New Withdrawal Request",
                 Message = $"Craftsman requested withdrawal of {dto.Amount} EGP via {dto.Transactiontype}",
                 FinalAmount = dto.Amount,
                 Description = dto.TransationInfo,
                 Type = NotificationType.WithdrawalRequested
-                //RecipientType = "Admin"  // ✅ This is for admin
+                
             };
 
             await _notificationService.CreateForAdminAsync(notificationDto);
@@ -78,7 +78,7 @@ namespace FIXIT.API.Controllers
             return Ok(result);
         }
 
-        // ✅ CHANGE: Add "craftsman/" to route
+       
         [HttpGet("craftsman/{craftsManId}/transactions")]
         public async Task<IActionResult> GetTransactions(int craftsManId)
         {
@@ -93,7 +93,6 @@ namespace FIXIT.API.Controllers
             }
         }
 
-        // ✅ ADD: Proper HTTP endpoint with [HttpPut]
         [HttpPut("transaction")]
         public async Task<IActionResult> UpdateWalletTransaction([FromBody] UpdateWaletTransactionDto dto)
         {

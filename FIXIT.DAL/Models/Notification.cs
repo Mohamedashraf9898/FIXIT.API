@@ -23,7 +23,8 @@ namespace FIXIT.DAL.Models
         ClientRejectedOffer,
         PaymentRequested,
         WithdrawalRequested,     
-        WithdrawalApproved
+        WithdrawalApproved,
+        CraftsmanApologized
     }
     public class Notification
     {

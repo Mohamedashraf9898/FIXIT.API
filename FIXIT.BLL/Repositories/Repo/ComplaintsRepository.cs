@@ -37,5 +37,16 @@ namespace FIXIT.BLL.Repositories.Repo
                 .AsNoTracking()
                 .ToListAsync();
         }
+
+        public async Task<Complaint> GetByIdAsync(int id)
+        {
+            return await _dbContext.Complaints.FindAsync(id);
+        }
+
+        public async Task UpdateComplaintAsync(Complaint complaint)
+        {
+            _dbContext.Complaints.Update(complaint);
+            await _dbContext.SaveChangesAsync();
+        }
     }
 }

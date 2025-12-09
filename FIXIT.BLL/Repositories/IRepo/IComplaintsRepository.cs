@@ -9,5 +9,7 @@ namespace FIXIT.BLL.Repositories.IRepo
         Task AddComplaintAsync(Complaint complaint);
         Task<List<Complaint>> GetByServiceRequestIdAsync(int serviceRequestId);
         Task<List<Complaint>> GetAllAsync();
+        Task<Complaint> GetByIdAsync(int id);
+        Task UpdateComplaintAsync(Complaint complaint);
     }
 }

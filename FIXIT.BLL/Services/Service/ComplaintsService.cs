@@ -29,17 +29,27 @@ namespace FIXIT.BLL.Services.Service
         public async Task<ResponseComplaintDto> AddComplaintAsync(CreateComplaintDto dto)
         {
             var serviceRequest = await _dbContext.ServicesRequests.FindAsync(dto.ServiceRequestId);
-            var client = await _dbContext.Clients.FindAsync(dto.ClientId);
+            Client client = null;
+            CraftsMan craftsman = null;
+            if (dto.ClientId.HasValue)
+                client = await _dbContext.Clients.FindAsync(dto.ClientId.Value);
+            if (dto.CraftsManId.HasValue)
+                craftsman = await _dbContext.CraftsMan.FindAsync(dto.CraftsManId.Value);
 
             if (serviceRequest == null)
                 throw new ArgumentException("ServiceRequest not found.");
-            if (client == null)
+            if (dto.ClientId.HasValue && client == null)
                 throw new ArgumentException("Client not found.");
+            if (dto.CraftsManId.HasValue && craftsman == null)
+                throw new ArgumentException("Craftsman not found.");
+            if (!dto.ClientId.HasValue && !dto.CraftsManId.HasValue)
+                throw new ArgumentException("Either ClientId or CraftsManId must be provided.");
 
             var complaint = new Complaint
             {
                 ServiceRequestId = dto.ServiceRequestId,
                 ClientId = dto.ClientId,
+                CraftsManId = dto.CraftsManId,
                 Content = dto.Content,
                 Status = "Pending",
                 CreatedAt = DateTime.UtcNow
@@ -50,7 +60,8 @@ namespace FIXIT.BLL.Services.Service
             // Send email to support
             var subject = "New Complaint Submitted";
             var body = $@"
-                <b>Client Name:</b> {client.FName} {client.LName}<br/>
+                <b>Client Name:</b> {(client != null ? client.FName + " " + client.LName : "-")}<br/>
+                <b>Craftsman Name:</b> {(craftsman != null ? craftsman.FName + " " + craftsman.LName : "-")}<br/>
                 <b>ServiceRequestId:</b> {serviceRequest.ServicesRequestId}<br/>
                 <b>Complaint Content:</b> {complaint.Content}<br/>
                 <b>Created At:</b> {complaint.CreatedAt:yyyy-MM-dd HH:mm:ss}
@@ -62,6 +73,7 @@ namespace FIXIT.BLL.Services.Service
                 Id = complaint.Id,
                 ServiceRequestId = complaint.ServiceRequestId,
                 ClientId = complaint.ClientId,
+                CraftsManId = complaint.CraftsManId,
                 Content = complaint.Content,
                 Status = complaint.Status,
                 CreatedAt = complaint.CreatedAt
@@ -92,8 +104,34 @@ namespace FIXIT.BLL.Services.Service
                 ClientId = c.ClientId,
                 Content = c.Content,
                 Status = c.Status,
-                CreatedAt = c.CreatedAt
+                CreatedAt = c.CreatedAt,
+                AdminResponse = c.AdminResponse,
+                RespondedAt = c.RespondedAt
             }).ToList();
+        }
+
+        public async Task<ResponseComplaintDto> RespondToComplaintAsync(RespondToComplaintDto dto)
+        {
+            var complaint = await _complaintsRepo.GetByIdAsync(dto.ComplaintId);
+            if (complaint == null)
+                throw new ArgumentException("Complaint not found.");
+
+            complaint.AdminResponse = dto.AdminResponse;
+            complaint.RespondedAt = DateTime.UtcNow;
+            complaint.Status = dto.Status;
+            await _complaintsRepo.UpdateComplaintAsync(complaint);
+
+            return new ResponseComplaintDto
+            {
+                Id = complaint.Id,
+                ServiceRequestId = complaint.ServiceRequestId,
+                ClientId = complaint.ClientId,
+                Content = complaint.Content,
+                Status = complaint.Status,
+                CreatedAt = complaint.CreatedAt,
+                AdminResponse = complaint.AdminResponse,
+                RespondedAt = complaint.RespondedAt
+            };
         }
     }
 }

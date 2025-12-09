@@ -29,5 +29,19 @@ namespace FIXIT.API.Controllers
             var result = await _complaintsService.GetByServiceRequestIdAsync(id);
             return Ok(result);
         }
+
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAll()
+        {
+            var result = await _complaintsService.GetAllAsync();
+            return Ok(result);
+        }
+
+        [HttpPost("respond")]
+        public async Task<IActionResult> Respond([FromBody] RespondToComplaintDto dto)
+        {
+            var result = await _complaintsService.RespondToComplaintAsync(dto);
+            return Ok(result);
+        }
     }
 }

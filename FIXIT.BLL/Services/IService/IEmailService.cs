@@ -1,4 +1,4 @@
-using FIXIT.BLL.DTOs;
+using FIXIT.BLL.DTOs.Contact;
 using FIXIT.BLL.DTOs.Identity;
 using System.Threading.Tasks;
 

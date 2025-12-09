@@ -70,10 +70,11 @@ namespace FIXIT.BLL.Repositories.Repo
         }
         public async Task<IEnumerable<Notification>> GetNotificationsForAdminAsync()
         {
-           
             return await _dbContext.Notifications
-                .Where(n => n.SenderType == NotificationSenderType.Craftsman &&
-                            n.Type == NotificationType.WithdrawalRequested)
+                .Where(n =>
+                    (n.SenderType == NotificationSenderType.Craftsman && n.Type == NotificationType.WithdrawalRequested) ||
+                    n.Type == NotificationType.ServiceCancelled ||
+                    n.Type == NotificationType.CraftsmanNoShow)
                 .Include(n => n.ServiceRequest)
                 .Include(n => n.Offer)
                 .OrderByDescending(n => n.CreatedAt)

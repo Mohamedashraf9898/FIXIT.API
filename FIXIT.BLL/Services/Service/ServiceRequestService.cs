@@ -285,7 +285,7 @@ namespace FIXIT.BLL.Services.Service
      _serviceRequestRepository.Save();
 
      return true;
- }
+        }
 
 
         #endregion
@@ -365,11 +365,11 @@ namespace FIXIT.BLL.Services.Service
                 _timeSlotRepo.Update(oldslot, oldslot.Id);
             }
             targetSlot.Status = SlotStatus.Booked;
-            targetSlot.ServiceRequestId = existing.ServicesRequestId; 
+            targetSlot.ServiceRequestId = existing.ServicesRequestId;
 
-          
+
             _timeSlotRepo.Update(targetSlot, targetSlot.Id);
-            
+
             _timeSlotRepo.Save();
 
             _mapper.Map(dto, existing);
@@ -398,6 +398,74 @@ namespace FIXIT.BLL.Services.Service
             }
 
             return updated;
+        }
+        public async Task<bool> CancelServiceRequestAsync(int serviceRequestId, CancelServiceRequestDto dto)
+        {
+            var serviceRequest = await _serviceRequestRepository.GetAsync(serviceRequestId);
+            if (serviceRequest == null)
+                throw new KeyNotFoundException("Service request not found.");
+
+            // Only allow cancellation for InProgress requests
+            if (serviceRequest.Status != ServiceRequestStatus.InProgress)
+                throw new InvalidOperationException("Only in-progress service requests can be cancelled.");
+
+            // Update status to Cancelled
+            serviceRequest.Status = ServiceRequestStatus.Cancelled;
+            serviceRequest.IsCancelled = true;
+
+            _serviceRequestRepository.Update(serviceRequest, serviceRequestId);
+            _serviceRequestRepository.Save();
+
+            // Get service name
+            var serviceName = serviceRequest.Service?.ServiceName ?? "Service";
+
+            // Determine notification type
+            var notificationType = dto.ReasonType == "craftsman_no_show"
+                ? NotificationType.CraftsmanNoShow
+                : NotificationType.ServiceCancelled;
+
+            // Build notification message for craftsman
+            var messageForCraftsman = dto.ReasonType == "craftsman_no_show"
+                ? $"{dto.ClientName} has cancelled service request #{serviceRequestId} ({serviceName}) because you did not show up. Reason: {dto.Reason}"
+                : $"{dto.ClientName} has cancelled service request #{serviceRequestId} ({serviceName}). Reason: {dto.Reason}";
+
+            // Build notification message for admin
+            var messageForAdmin = $"Client {dto.ClientName} ({dto.ClientEmail}) has cancelled service request #{serviceRequestId} ({serviceName}). " +
+                $"Reason Type: {(dto.ReasonType == "craftsman_no_show" ? "Craftsman No-Show" : "Client Request")}. " +
+                $"Reason: {dto.Reason}. Please process refund.";
+
+            // Send notification to Craftsman
+            if (serviceRequest.CraftsManId.HasValue)
+            {
+                var craftsmanNotification = new CreateNotificationDto
+                {
+                    ServiceRequestId = serviceRequestId,
+                    CraftsManId = serviceRequest.CraftsManId,
+                    ClientId = serviceRequest.ClientId,
+                    Title = "Service Request Cancelled",
+                    Message = messageForCraftsman,
+                    SenderType = NotificationSenderType.Client,
+                    Type = notificationType,
+                    IsRead = false
+                };
+                await _notificationService.CreateFromClientAsync(craftsmanNotification);
+            }
+
+            // Send notification to Admin
+            var adminNotification = new CreateNotificationDto
+            {
+                ServiceRequestId = serviceRequestId,
+                CraftsManId = serviceRequest.CraftsManId,
+                ClientId = serviceRequest.ClientId,
+                Title = "Refund Required - Service Cancelled",
+                Message = messageForAdmin,
+                SenderType = NotificationSenderType.Client,
+                Type = notificationType,
+                IsRead = false
+            };
+            await _notificationService.CreateForAdminAsync(adminNotification);
+
+            return true;
         }
     }
 }

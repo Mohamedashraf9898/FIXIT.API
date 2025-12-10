@@ -1,6 +1,7 @@
 using FIXIT.BLL.DTOs.ComplaintDtos;
 using FIXIT.BLL.Services.IService;
 using FIXIT.BLL.Services.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
@@ -59,6 +60,7 @@ namespace FIXIT.API.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = "Client")]
         // NEW: get complaints for a client for a specific service request
         [HttpGet("client/{clientId}/service-request/{serviceRequestId}")]
         public async Task<IActionResult> GetForClient(int clientId, int serviceRequestId)
@@ -67,6 +69,7 @@ namespace FIXIT.API.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = "CraftsMan")]
         // NEW: get complaints for a craftsman for a specific service request
         [HttpGet("craftsman/{craftsManId}/service-request/{serviceRequestId}")]
         public async Task<IActionResult> GetForCraftsman(int craftsManId, int serviceRequestId)

@@ -102,8 +102,8 @@ namespace FIXIT.BLL.Mapping
                                ? src.Location
                                : src.Client != null
                                    ? src.Client.Location
-                                   : null ));
-
+                                   : null ))
+                .ForMember(dest => dest.ClientId, opt => opt.MapFrom(src => src.ClientId));
             // UpdateServiceRequestDto -> ServicesRequest
             CreateMap<UpdateServiceRequestDto, ServicesRequest>()
      .ForMember(dest => dest.ServiceRequestImage,

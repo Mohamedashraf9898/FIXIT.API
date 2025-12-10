@@ -11,5 +11,7 @@ namespace FIXIT.BLL.Repositories.IRepo
         Task<List<Complaint>> GetAllAsync();
         Task<Complaint> GetByIdAsync(int id);
         Task UpdateComplaintAsync(Complaint complaint);
+        Task<List<Complaint>> GetForClientAsync(int clientId, int serviceRequestId);
+        Task<List<Complaint>> GetForCraftsmanAsync(int craftsmanId, int serviceRequestId);
     }
 }

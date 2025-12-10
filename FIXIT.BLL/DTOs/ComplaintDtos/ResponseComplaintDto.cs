@@ -15,10 +15,5 @@ namespace FIXIT.BLL.DTOs.ComplaintDtos
         public DateTime? RespondedAt { get; set; }
     }
 
-    public class RespondToComplaintDto
-    {
-        public int ComplaintId { get; set; }
-        public string AdminResponse { get; set; }
-        public string Status { get; set; } // e.g. "Resolved", "Rejected"
-    }
+  
 }

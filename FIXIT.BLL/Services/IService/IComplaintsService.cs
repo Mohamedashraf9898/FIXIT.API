@@ -10,5 +10,7 @@ namespace FIXIT.BLL.Services.IService
         Task<List<ResponseComplaintDto>> GetByServiceRequestIdAsync(int serviceRequestId);
         Task<List<ResponseComplaintDto>> GetAllAsync();
         Task<ResponseComplaintDto> RespondToComplaintAsync(RespondToComplaintDto dto);
+        Task<List<ResponseComplaintDto>> GetForClientAsync(int clientId, int serviceRequestId);
+        Task<List<ResponseComplaintDto>> GetForCraftsmanAsync(int craftsmanId, int serviceRequestId);
     }
 }

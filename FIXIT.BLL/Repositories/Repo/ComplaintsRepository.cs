@@ -48,5 +48,21 @@ namespace FIXIT.BLL.Repositories.Repo
             _dbContext.Complaints.Update(complaint);
             await _dbContext.SaveChangesAsync();
         }
+
+        public async Task<List<Complaint>> GetForClientAsync(int clientId, int serviceRequestId)
+        {
+            return await _dbContext.Complaints
+                .AsNoTracking()
+                .Where(c => c.ServiceRequestId == serviceRequestId && c.ClientId == clientId)
+                .ToListAsync();
+        }
+
+        public async Task<List<Complaint>> GetForCraftsmanAsync(int craftsmanId, int serviceRequestId)
+        {
+            return await _dbContext.Complaints
+                .AsNoTracking()
+                .Where(c => c.ServiceRequestId == serviceRequestId && c.CraftsManId == craftsmanId)
+                .ToListAsync();
+        }
     }
 }

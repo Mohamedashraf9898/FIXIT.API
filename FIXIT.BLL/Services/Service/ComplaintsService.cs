@@ -88,9 +88,12 @@ namespace FIXIT.BLL.Services.Service
                 Id = c.Id,
                 ServiceRequestId = c.ServiceRequestId,
                 ClientId = c.ClientId,
+                CraftsManId = c.CraftsManId,
                 Content = c.Content,
                 Status = c.Status,
-                CreatedAt = c.CreatedAt
+                CreatedAt = c.CreatedAt,
+                AdminResponse = c.AdminResponse,
+                RespondedAt = c.RespondedAt
             }).ToList();
         }
 
@@ -132,6 +135,40 @@ namespace FIXIT.BLL.Services.Service
                 AdminResponse = complaint.AdminResponse,
                 RespondedAt = complaint.RespondedAt
             };
+        }
+
+        public async Task<List<ResponseComplaintDto>> GetForClientAsync(int clientId, int serviceRequestId)
+        {
+            var complaints = await _complaintsRepo.GetForClientAsync(clientId, serviceRequestId);
+            return complaints.Select(c => new ResponseComplaintDto
+            {
+                Id = c.Id,
+                ServiceRequestId = c.ServiceRequestId,
+                ClientId = c.ClientId,
+                CraftsManId = c.CraftsManId,
+                Content = c.Content,
+                Status = c.Status,
+                CreatedAt = c.CreatedAt,
+                AdminResponse = c.AdminResponse,
+                RespondedAt = c.RespondedAt
+            }).ToList();
+        }
+
+        public async Task<List<ResponseComplaintDto>> GetForCraftsmanAsync(int craftsmanId, int serviceRequestId)
+        {
+            var complaints = await _complaintsRepo.GetForCraftsmanAsync(craftsmanId, serviceRequestId);
+            return complaints.Select(c => new ResponseComplaintDto
+            {
+                Id = c.Id,
+                ServiceRequestId = c.ServiceRequestId,
+                ClientId = c.ClientId,
+                CraftsManId = c.CraftsManId,
+                Content = c.Content,
+                Status = c.Status,
+                CreatedAt = c.CreatedAt,
+                AdminResponse = c.AdminResponse,
+                RespondedAt = c.RespondedAt
+            }).ToList();
         }
     }
 }

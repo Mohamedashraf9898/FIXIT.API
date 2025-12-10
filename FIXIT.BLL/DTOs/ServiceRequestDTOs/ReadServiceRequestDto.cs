@@ -24,6 +24,8 @@ namespace FIXIT.BLL.DTOs.ServiceRequestDTOs
         public DateTime? WaitingForClientPaymentAt { get; set; }
         public bool? IsCancelled { get; set; }
 
+        public int ClientId { get; set; } 
+
         public int? ReviewRatingValue { get; set; } // Optional, if review exists
         public string? ReviewComment { get; set; }  // Optional, if review exists
 

@@ -32,25 +32,24 @@ namespace FIXIT.BLL.Repositories.Repo
 
 			return await query.OrderByDescending(c => c.Rating).ToListAsync();
 		}
-		public async Task<List<CraftsMan>> GetCraftsMenByLocationandServiceAsync(string location, string servicename)
-		{
-			IQueryable<CraftsMan> query = _dbContext.CraftsMan;
-			if (!string.IsNullOrWhiteSpace(location))
-			{
-				
-				query = query.Where(c => EF.Functions.Like(c.Location, $"%{location}%"));
+        public async Task<List<CraftsMan>> GetCraftsMenByLocationandServiceAsync(string location, string servicename)
+        {
+            IQueryable<CraftsMan> query = _dbContext.CraftsMan.Where(c => c.IsVerified);
 
-			}
-			if (!string.IsNullOrWhiteSpace(location))
-			{
+            if (!string.IsNullOrWhiteSpace(location))
+            {
+                var keywords = location.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                query = query.Where(c => keywords.Any(k => c.Location.Contains(k)));
+            }
 
-				query = query.Where(c => EF.Functions.Like(c.Service.ServiceName, $"%{servicename}%"));
+            if (!string.IsNullOrWhiteSpace(servicename))
+            {
+                query = query.Where(c => EF.Functions.Like(c.Service.ServiceName, $"%{servicename}%"));
+            }
 
-			}
-
-			return await query.OrderByDescending(c => c.Rating).ToListAsync();
-		}
-		public async Task<CraftsMan> GetCraftsManByEmailAsync(string normalizedEmail)
+            return await query.OrderByDescending(c => c.Rating).ToListAsync();
+        }
+        public async Task<CraftsMan> GetCraftsManByEmailAsync(string normalizedEmail)
 		{
 			//var query = await _dbContext.FindAsync<string>(normalizedEmail);
 			return await _dbContext.CraftsMan.FirstOrDefaultAsync(c=> c.NormalizedEmail== normalizedEmail);

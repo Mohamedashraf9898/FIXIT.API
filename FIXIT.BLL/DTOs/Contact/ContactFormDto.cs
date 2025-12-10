@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace FIXIT.BLL.DTOs
+namespace FIXIT.BLL.DTOs.Contact
 {
     public class ContactFormDto
     {

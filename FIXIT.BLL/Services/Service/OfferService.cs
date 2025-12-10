@@ -371,5 +371,59 @@ namespace FIXIT.BLL.Services.Service
                 _timeSlotRepo.Save();
             }
         }
+
+        public async Task<bool> CraftsmanApologizeAsync(CraftsmanApologizeDto dto)
+        {
+            // 1. Get the service request
+            var serviceRequest = await _serviceRequestRepository.GetAsync(dto.ServiceRequestId);
+            if (serviceRequest == null)
+                throw new KeyNotFoundException($"Service request with ID {dto.ServiceRequestId} not found.");
+            // 2. Validate status is InProgress
+            if (serviceRequest.Status != ServiceRequestStatus.InProgress)
+                throw new InvalidOperationException("Can only apologize for service requests that are In Progress.");
+            // 3. Update status to CancelledByCraftsman
+            serviceRequest.Status = ServiceRequestStatus.CancelledByCraftsman;
+            // 4. Free up the time slot if exists
+            var timeSlot = await _timeSlotRepo.GetSlotByRequestIdAsync(serviceRequest.ServicesRequestId);
+            if (timeSlot != null)
+            {
+                timeSlot.Status = SlotStatus.Available;
+                timeSlot.ServiceRequestId = null;
+                _timeSlotRepo.Update(timeSlot, timeSlot.Id);
+                _timeSlotRepo.Save();
+            }
+            // 5. Save service request changes
+            _serviceRequestRepository.Update(serviceRequest, serviceRequest.ServicesRequestId);
+            _serviceRequestRepository.Save();
+            // 6. Notify the Client (using existing method)
+            var clientNotification = new CreateNotificationDto
+            {
+                ServiceRequestId = serviceRequest.ServicesRequestId,
+                CraftsManId = serviceRequest.CraftsManId,
+                ClientId = serviceRequest.ClientId,
+                Title = "Craftsman Cancelled Service",
+                Message = string.IsNullOrEmpty(dto.Reason)
+                    ? "The craftsman has apologized and cancelled. Please choose: Get Refund or Select New Craftsman."
+                    : $"The craftsman apologized: \"{dto.Reason}\". Please choose: Get Refund or Select New Craftsman.",
+                SenderType = NotificationSenderType.Craftsman,
+                Type = NotificationType.CraftsmanApologized,
+                IsRead = false
+            };
+            await _notificationService.CreateFromCraftsmanAsync(clientNotification);
+            // 7. Notify Admin (using existing method)
+            var adminNotification = new CreateNotificationDto
+            {
+                ServiceRequestId = serviceRequest.ServicesRequestId,
+                CraftsManId = null,
+                ClientId = serviceRequest.ClientId,
+                Title = "Craftsman Apology Alert",
+                Message = $"Craftsman (ID: {serviceRequest.CraftsManId}) apologized for Service Request #{serviceRequest.ServicesRequestId}. Client needs to decide: Refund or New Craftsman.",
+                SenderType = NotificationSenderType.Craftsman,
+                Type = NotificationType.CraftsmanApologized,
+                IsRead = false
+            };
+            await _notificationService.CreateForAdminAsync(adminNotification);
+            return true;
+        }   
     }
 }

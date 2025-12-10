@@ -17,7 +17,8 @@ namespace FIXIT.DAL.Models
         Completed,
         Approved,
         Cancelled,
-        CancelledDueToNonPayment
+        CancelledDueToNonPayment,
+        CancelledByCraftsman
     }
    
 public class ServicesRequest

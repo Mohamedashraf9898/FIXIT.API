@@ -6,13 +6,9 @@ using System.Threading.Tasks;
 
 namespace FIXIT.BLL.DTOs.OfferDto
 {
-    public class ReadOfferId
+    public class CraftsmanApologizeDto
     {
-        public int Id { get; set; }
         public int ServiceRequestId { get; set; }
-        public int CraftsmanId { get; set; }
-        public decimal Amount { get; set; }
-
-
+        public string? Reason { get; set; }
     }
 }

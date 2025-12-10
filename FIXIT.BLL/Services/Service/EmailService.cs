@@ -1,4 +1,4 @@
-using FIXIT.BLL.DTOs;
+using FIXIT.BLL.DTOs.Contact;
 using FIXIT.BLL.DTOs.Identity;
 using FIXIT.BLL.Services.IService;
 using MailKit.Net.Smtp;

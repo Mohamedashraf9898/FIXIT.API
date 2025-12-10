@@ -63,5 +63,31 @@ namespace FIXIT.API.Controllers
             var offer = await _offerService.GetOfferById(id);
             return Ok(offer);
         }
+
+        [HttpPost("craftsman-apologize")]
+        public async Task<ActionResult> CraftsmanApologize([FromBody] CraftsmanApologizeDto dto)
+        {
+            try
+            {
+                var result = await _offerService.CraftsmanApologizeAsync(dto);
+                return Ok(new
+                {
+                    success = result,
+                    message = "Apology processed. Client has been notified to choose Refund or New Craftsman."
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal server error", details = ex.Message });
+            }
+        }
     }
 }

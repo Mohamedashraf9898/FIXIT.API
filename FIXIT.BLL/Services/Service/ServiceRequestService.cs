@@ -467,6 +467,17 @@ namespace FIXIT.BLL.Services.Service
 
             return true;
         }
+
+        public async Task<IEnumerable<ReadServiceRequestDto>> GetRequestsByStatusAsync(ServiceRequestStatus status)
+        {
+            var allRequests = await _serviceRequestRepository.GetAllAsync();
+
+            var filtered = allRequests.Where(r => r.Status == status);
+
+            return _mapper.Map<IEnumerable<ReadServiceRequestDto>>(filtered);
+
+        }
+            
     }
 }
   

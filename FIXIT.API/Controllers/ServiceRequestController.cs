@@ -2,6 +2,7 @@
 using FIXIT.BLL.DTOs.ServiceRequestDTOs;
 using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.BLL.Services.IService;
+using FIXIT.DAL.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -201,6 +202,18 @@ namespace FIXIT.API.Controllers
             {
                 return StatusCode(500, new { message = "Internal server error", details = ex.Message });
             }
+        }
+        [HttpGet("statuses")]
+        public IActionResult GetStatuses()
+        {
+            var statuses = Enum.GetNames(typeof(ServiceRequestStatus));
+            return Ok(statuses);
+        }
+        [HttpGet("by-status/{status}")]
+        public async Task<IActionResult> GetByStatus(ServiceRequestStatus status)
+        {
+            var result = await _serviceRequestService.GetRequestsByStatusAsync(status);
+            return Ok(result);
         }
         #region ForPaymentService
         [HttpPost("complete/{requestId}")]

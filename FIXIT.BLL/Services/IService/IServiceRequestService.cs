@@ -23,12 +23,14 @@ namespace FIXIT.BLL.Services.IService
         Task<IEnumerable<ReadServiceRequestDto>> GetAllServiceRequestsForClientById(int clientId);
 
         Task<bool> CancelServiceRequestAsync(int serviceRequestId, CancelServiceRequestDto dto);
+        Task<IEnumerable<ReadServiceRequestDto>> GetRequestsByStatusAsync(ServiceRequestStatus status);
+        
 
 
 
-        #region ForPaymentService
-        //osama
-        Task<bool> CompleteServiceRequestAsync(int serviceRequestId);
+            #region ForPaymentService
+            //osama
+            Task<bool> CompleteServiceRequestAsync(int serviceRequestId);
 
         //end osama 
         #endregion

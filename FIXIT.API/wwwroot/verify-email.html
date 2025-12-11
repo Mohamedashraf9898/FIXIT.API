@@ -1,0 +1,20 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Verify Email</title>
+</head>
+<body style="font-family: Arial; text-align: center; margin-top: 80px;">
+    <h2>Verifying your email...</h2>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const rawEmail = urlParams.get("email");
+        const rawToken = urlParams.get("token");
+
+        const safeEmail = encodeURIComponent(rawEmail);
+        const safeToken = encodeURIComponent(rawToken);
+
+        window.location.href = `http://localhost:4200/verify-email?email=${safeEmail}&token=${safeToken}`;
+    </script>
+</body>
+</html>

@@ -1,4 +1,5 @@
-﻿using FIXIT.BLL.DTOs.ClientDTOs;
+﻿using FIXIT.API.Erorrs.Exceptions;
+using FIXIT.BLL.DTOs.ClientDTOs;
 using FIXIT.BLL.DTOs.CraftsmanDTOs;
 using FIXIT.BLL.DTOs.Identity;
 using FIXIT.BLL.Exceptions;
@@ -26,34 +27,34 @@ namespace FIXIT.BLL.Services.Service.Auth
 {
     public class AuthService : IAuthService
     {
-            private readonly IEmailService _emailService;
-            private readonly IdentityDbContext _identityDbContext;
-            private readonly UserManager<ApplicationUser> _userManager;
-            private readonly SignInManager<ApplicationUser> _signInManager;
-            private readonly IClientService _clientService;
-            private readonly ICraftsManService _craftsManService;
-            private readonly IConfiguration _configuration;
-            
-            
+        private readonly IEmailService _emailService;
+        private readonly IdentityDbContext _identityDbContext;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IClientService _clientService;
+        private readonly ICraftsManService _craftsManService;
+        private readonly IConfiguration _configuration;
 
-            public AuthService(
-                IEmailService emailService,
-                IdentityDbContext identityDbContext,
-                UserManager<ApplicationUser> userManager,
-                SignInManager<ApplicationUser> signInManager,
-                IClientService clientService,
-                ICraftsManService craftsManService,
-                IConfiguration configuration)
-            {
-                _emailService = emailService;
-                _identityDbContext = identityDbContext;
-                _userManager = userManager;
-                _signInManager = signInManager;
-                _clientService = clientService;
-                _craftsManService = craftsManService;
-                _configuration = configuration;
 
-            }
+
+        public AuthService(
+            IEmailService emailService,
+            IdentityDbContext identityDbContext,
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
+            IClientService clientService,
+            ICraftsManService craftsManService,
+            IConfiguration configuration)
+        {
+            _emailService = emailService;
+            _identityDbContext = identityDbContext;
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _clientService = clientService;
+            _craftsManService = craftsManService;
+            _configuration = configuration;
+
+        }
 
         public async Task<UserDto> LoginAsync(LoginDto dto)
         {
@@ -99,6 +100,33 @@ namespace FIXIT.BLL.Services.Service.Auth
 
         public async Task<UserDto> RegisterClientAsync(ClientRegisterDto dto)
         {
+            var existingUser = await _userManager.FindByEmailAsync(dto.Email);
+            if (existingUser != null)
+            {
+                if (existingUser.EmailConfirmed)
+                {
+                    throw new ValidationException($"Registration failed: Email '{dto.Email}' is already taken.");
+                }
+                else
+                {
+                    // 1. Delete Identity User
+                    var deleteResult = await _userManager.DeleteAsync(existingUser);
+                    if (!deleteResult.Succeeded)
+                    {
+                        throw new ValidationException("Failed to reset existing unverified account. Please contact support.");
+                    }
+
+                    // 2. Delete Orphan Client Profile (if exists)
+                    try
+                    {
+                        var existingClient = await _clientService.GetClientByEmail(dto.Email);
+                        if (existingClient != null)
+                            _clientService.DeleteClient(existingClient.Id);
+                    }
+                    catch (NotFoundException) { /* No profile found, safe to proceed */ }
+                }
+            }
+
             var user = new ApplicationUser
             {
                 UserName = dto.Email,
@@ -106,6 +134,9 @@ namespace FIXIT.BLL.Services.Service.Auth
                 FName = dto.FName,
                 LName = dto.LName,
                 PhoneNumber = dto.PhoneNumber,
+                Location = dto.Location,
+                Gender = dto.Gender,
+                DateOfBirth = dto.DateOfBirth,
                 EmailConfirmed = false
             };
 
@@ -191,6 +222,33 @@ a.link {{ color:#FFD700; text-decoration:underline; word-break:break-all; }}
         }
         public async Task<UserDto> RegisterCraftsManAsync(CraftsManRegisterDto dto)
         {
+            var existingUser = await _userManager.FindByEmailAsync(dto.Email);
+            if (existingUser != null)
+            {
+                if (existingUser.EmailConfirmed)
+                {
+                    throw new ValidationException($"Registration failed: Email '{dto.Email}' is already taken.");
+                }
+                else
+                {
+                    // 1. Delete Identity User
+                    var deleteResult = await _userManager.DeleteAsync(existingUser);
+                    if (!deleteResult.Succeeded)
+                    {
+                        throw new ValidationException("Failed to reset existing unverified account. Please contact support.");
+                    }
+
+                    // 2. Delete Orphan CraftsMan Profile (if exists)
+                    try
+                    {
+                        var existingCraftsman = await _craftsManService.GetCraftsManByEmailAsync(dto.Email);
+                        if (existingCraftsman != null && existingCraftsman.CraftsMan != null)
+                            _craftsManService.DeleteCraftsMan(existingCraftsman.CraftsMan.Id);
+                    }
+                    catch (NotFoundException) { /* No profile found, safe to proceed */ }
+                }
+            }
+
             var user = new ApplicationUser
             {
                 UserName = dto.Email,
@@ -198,7 +256,13 @@ a.link {{ color:#FFD700; text-decoration:underline; word-break:break-all; }}
                 FName = dto.FName,
                 LName = dto.LName,
                 PhoneNumber = dto.PhoneNumber,
+                Location = dto.Location,
+                Gender = dto.Gender,
+                DateOfBirth = dto.DateOfBirth,
+                NationalId = dto.NationalId,
                 EmailConfirmed = false // مهم: الحساب غير مفعل حتى التحقق من الإيميل
+
+
             };
 
             // إنشاء المستخدم في Identity
@@ -302,7 +366,7 @@ a.link {{ color:#FFD700; text-decoration:underline; word-break:break-all; }}
             var result = await _userManager.ConfirmEmailAsync(user, decodedToken);
             return result.Succeeded;
         }
-  
+
         private async Task<string> GenerateJwtTokenAsync(ApplicationUser user, string role)
         {
             var claims = new List<Claim>
@@ -533,3 +597,5 @@ a.link {{ color:#FFD700; text-decoration:underline; word-break:break-all; }}
     }
 
 }
+
+

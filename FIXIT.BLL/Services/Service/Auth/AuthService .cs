@@ -109,21 +109,26 @@ namespace FIXIT.BLL.Services.Service.Auth
                 }
                 else
                 {
-                    // 1. Delete Identity User
-                    var deleteResult = await _userManager.DeleteAsync(existingUser);
-                    if (!deleteResult.Succeeded)
-                    {
-                        throw new ValidationException("Failed to reset existing unverified account. Please contact support.");
-                    }
-
-                    // 2. Delete Orphan Client Profile (if exists)
+                    // 1. Delete Orphan Client Profile (if exists) FIRST
                     try
                     {
                         var existingClient = await _clientService.GetClientByEmail(dto.Email);
                         if (existingClient != null)
                             _clientService.DeleteClient(existingClient.Id);
                     }
-                    catch (NotFoundException) { /* No profile found, safe to proceed */ }
+                    catch (NotFoundException) { /* No profile found, ok */ }
+                    catch (Exception ex)
+                    {
+                        // 2. CRITICAL: Catch other errors (FK violation, etc) and report them!
+                        throw new ValidationException($"Failed to cleanup old client profile: {ex.Message} - {ex.InnerException?.Message}");
+                    }
+
+                    // 3. Delete Identity User
+                    var deleteResult = await _userManager.DeleteAsync(existingUser);
+                    if (!deleteResult.Succeeded)
+                    {
+                        throw new ValidationException("Failed to reset existing unverified account: " + string.Join(", ", deleteResult.Errors.Select(e => e.Description)));
+                    }
                 }
             }
 
@@ -164,10 +169,12 @@ namespace FIXIT.BLL.Services.Service.Auth
             // Generate Email Confirmation Token
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var encodedToken = Uri.EscapeDataString(token);
-            var frontendUrl = _configuration["FrontendUrl"]?.TrimEnd('/') ?? "http://localhost:4200";
-            var confirmUrl = $"{frontendUrl}/verify-email?email={Uri.EscapeDataString(user.Email)}&token={encodedToken}";
+            var encodedEmail = Uri.EscapeDataString(user.Email);
+            var backendUrl = _configuration["BackendUrl"]?.TrimEnd('/') ?? "https://localhost:7083";
+            //var confirmUrl = $"{backendUrl}/verify-email.html?email={encodedEmail}&token={encodedToken}";
+            var verificationUrl = $"http://localhost:4200/login?email={Uri.EscapeDataString(email)}&token={Uri.EscapeDataString(token)}&action=verify";
 
-            // HTML Email Template
+            #region HTML Email Template
             var subject = "Verify Your Email - Fixit";
             var body = $@"
 <!DOCTYPE html>
@@ -208,6 +215,7 @@ a.link {{ color:#FFD700; text-decoration:underline; word-break:break-all; }}
 </body>
 </html>";
 
+#endregion
             await _emailService.SendEmailAsync(user.Email, subject, body);
 
             return new UserDto
@@ -231,21 +239,21 @@ a.link {{ color:#FFD700; text-decoration:underline; word-break:break-all; }}
                 }
                 else
                 {
-                    // 1. Delete Identity User
-                    var deleteResult = await _userManager.DeleteAsync(existingUser);
-                    if (!deleteResult.Succeeded)
-                    {
-                        throw new ValidationException("Failed to reset existing unverified account. Please contact support.");
-                    }
-
-                    // 2. Delete Orphan CraftsMan Profile (if exists)
+                    // 1. Delete Orphan CraftsMan Profile (if exists) FIRST
                     try
                     {
                         var existingCraftsman = await _craftsManService.GetCraftsManByEmailAsync(dto.Email);
                         if (existingCraftsman != null && existingCraftsman.CraftsMan != null)
                             _craftsManService.DeleteCraftsMan(existingCraftsman.CraftsMan.Id);
                     }
-                    catch (NotFoundException) { /* No profile found, safe to proceed */ }
+                    catch (NotFoundException) { /* No profile found, ok */ }
+
+                    // 2. Delete Identity User
+                    var deleteResult = await _userManager.DeleteAsync(existingUser);
+                    if (!deleteResult.Succeeded)
+                    {
+                        throw new ValidationException("Failed to reset existing unverified account. Please contact support.");
+                    }
                 }
             }
 
@@ -261,8 +269,6 @@ a.link {{ color:#FFD700; text-decoration:underline; word-break:break-all; }}
                 DateOfBirth = dto.DateOfBirth,
                 NationalId = dto.NationalId,
                 EmailConfirmed = false // مهم: الحساب غير مفعل حتى التحقق من الإيميل
-
-
             };
 
             // إنشاء المستخدم في Identity
@@ -297,10 +303,11 @@ a.link {{ color:#FFD700; text-decoration:underline; word-break:break-all; }}
             // توليد Token لتأكيد الإيميل
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var encodedToken = Uri.EscapeDataString(token);
-            var frontendUrl = _configuration["FrontendUrl"]?.TrimEnd('/') ?? "http://localhost:4200";
-            var confirmUrl = $"{frontendUrl}/verify-email?email={Uri.EscapeDataString(user.Email)}&token={encodedToken}";
+            var encodedEmail = Uri.EscapeDataString(user.Email);
+            var backendUrl = _configuration["BackendUrl"]?.TrimEnd('/') ?? "https://localhost:7083";
+            var verificationUrl = $"http://localhost:4200/login?email={Uri.EscapeDataString(email)}&token={Uri.EscapeDataString(token)}&action=verify";
 
-            // HTML Email Template جاهز
+            #region HTML Email Template جاهز
             var subject = "Verify Your Email - Fixit";
             var body = $@"
 <!DOCTYPE html>
@@ -341,6 +348,7 @@ a.link {{ color:#FFD700; text-decoration:underline; word-break:break-all; }}
 </body>
 </html>";
 
+            #endregion
             // إرسال الإيميل
             await _emailService.SendEmailAsync(user.Email, subject, body);
 
@@ -597,5 +605,3 @@ a.link {{ color:#FFD700; text-decoration:underline; word-break:break-all; }}
     }
 
 }
-
-

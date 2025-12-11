@@ -96,6 +96,19 @@ namespace FIXIT.API
                     });
             });
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("FixItPolicy",
+                    policyBuilder =>
+                    {
+                        policyBuilder.AllowAnyOrigin() // allow remote or local access for dev
+                            .AllowAnyMethod()
+                            .AllowAnyHeader();
+                        // .AllowCredentials(); // Careful: AllowCredentials() cannot be used with AllowAnyOrigin()
+                    });
+            });
+
+
             #region injection
             // Register HttpClient for OpenAI
             builder.Services.AddHttpClient("OpenAI");
@@ -291,6 +304,7 @@ builder.Services.AddScoped<IComplaintsService, ComplaintsService>();
             {
                 app.UseHttpsRedirection();
             }
+            app.UseCors("AllowAngularApp");
             app.UseAuthentication();
             app.UseAuthorization();
             
@@ -298,7 +312,7 @@ builder.Services.AddScoped<IComplaintsService, ComplaintsService>();
 
             app.MapControllers();
             app.MapHub<NotificationHub>("/notificationHub");
-
+            
             app.Run();
         }
     }

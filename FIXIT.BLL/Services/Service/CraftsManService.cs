@@ -89,14 +89,23 @@ namespace FIXIT.BLL.Services.Service
 		}
 		public async Task<CraftsManDetailsDto> GetCraftsManByEmailAsync(string Email)
 		{
-			var normalizedEmail = Email.ToUpper();
-			var craftsMan = await craftsManRepo.GetCraftsManByEmailAsync(normalizedEmail);
+            var normalizedEmail = Email.ToUpper();
+            var craftsMan = await craftsManRepo.GetCraftsManByEmailAsync(normalizedEmail);
+
+            if (craftsMan == null)
+                throw new NotFoundException(nameof(CraftsMan), "No CraftsMan was Found");
+
             var reviews = await reviewRepository.GetReviewsForCraftsmanAsync(craftsMan.Id);
             if (reviews == null)
+                // This might be acceptable (empty list) rather than exception, but sticking to existing pattern if preferred.
+                // However, user just wants to fix the NRE.
                 throw new NotFoundException(nameof(reviews), "No reviews was Found");
 
-            if (craftsMan == null )
-                throw new NotFoundException(nameof(craftsMan), "No CraftsMan were  Found");
+            return new CraftsManDetailsDto
+            {
+                CraftsMan = mapper.Map<CraftsManDto>(craftsMan),
+                Reviews = mapper.Map<IEnumerable<GetAllReviewsDTO>>(reviews)
+            };
             return new CraftsManDetailsDto
             {
                 CraftsMan = mapper.Map<CraftsManDto>(craftsMan),

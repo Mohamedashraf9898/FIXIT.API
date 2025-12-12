@@ -196,6 +196,7 @@ namespace FIXIT.BLL.Services.Service
                 throw new ArgumentException("Client ID must be greater than zero.", nameof(clientId));
 
             var serviceRequests = await _serviceRequestRepository.GetAllAsync();
+           
 
             var existed = serviceRequests
                 .Where(sr => sr.ClientId == clientId).OrderByDescending(sr => sr.RequestAt)

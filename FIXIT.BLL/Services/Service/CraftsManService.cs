@@ -8,14 +8,15 @@ using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.BLL.Repositories.Repo;
 using FIXIT.BLL.Services.Intrfaces;
 using FIXIT.DAL.Models;
-using MyReview = FIXIT.DAL.Models.Review;
-
+using FIXIT.DAL.Models.Identity;
+using Microsoft.AspNetCore.Identity;
 using Stripe;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MyReview = FIXIT.DAL.Models.Review;
 
 namespace FIXIT.BLL.Services.Service
 {
@@ -27,9 +28,10 @@ namespace FIXIT.BLL.Services.Service
         private readonly IMapper mapper;
         private readonly UploadHandler uploadHandler;
 		public readonly IReviewRepository reviewRepository;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         public CraftsManService(ICraftsManRepo craftsManRepo,IGenericRepository<CraftsManService> generic,
-			IGenericRepository<Wallet> wallet, IMapper mapper, UploadHandler uploadHandler,IReviewRepository reviewRepository) 
+			IGenericRepository<Wallet> wallet, IMapper mapper, UploadHandler uploadHandler,IReviewRepository reviewRepository , UserManager<ApplicationUser> userManager) 
 		{
 			this.craftsManRepo = craftsManRepo;
 			this.generic = generic;
@@ -37,6 +39,7 @@ namespace FIXIT.BLL.Services.Service
             this.mapper = mapper;
             this.uploadHandler = uploadHandler;
 			this.reviewRepository = reviewRepository;
+            _userManager = userManager;
         }
 		public async Task<List<CraftsManDto>> GetAllCraftsMenAsync()
 		{
@@ -150,7 +153,7 @@ namespace FIXIT.BLL.Services.Service
 
             return false;
         }
-        public async Task<bool>  UpdateCraftsManAsync(int id, UpdateCraftsManDto craftsManDto)
+        public async Task<bool> UpdateCraftsManAsync(int id, UpdateCraftsManDto craftsManDto)
         {
             // 1️⃣ Get the existing craftsman from DB
             var existingCraftsMan = await craftsManRepo.GetAsync(id);
@@ -196,6 +199,61 @@ namespace FIXIT.BLL.Services.Service
 
             return false;
         }
+        //public async Task<bool> UpdateCraftsManAsync(int id, UpdateCraftsManDto craftsManDto)
+        //{
+        //    // 1️⃣ Get CraftsMan
+        //    var existingCraftsMan = await craftsManRepo.GetAsync(id);
+        //    if (existingCraftsMan == null)
+        //        return false;
+
+        //    // 2️⃣ Update CraftsMan table
+        //    mapper.Map(craftsManDto, existingCraftsMan);
+
+        //    // 3️⃣ Profile image
+        //    if (craftsManDto.ProfileImage != null)
+        //    {
+        //        if (!string.IsNullOrEmpty(existingCraftsMan.ProfileImage))
+        //        {
+        //            var oldPath = Path.Combine("wwwroot", existingCraftsMan.ProfileImage);
+        //            if (System.IO.File.Exists(oldPath))
+        //                System.IO.File.Delete(oldPath);
+        //        }
+
+        //        existingCraftsMan.ProfileImage = uploadHandler.Upload(craftsManDto.ProfileImage);
+        //    }
+
+        //    // 4️⃣ National ID pic
+        //    if (craftsManDto.NationalIdPic != null)
+        //    {
+        //        if (!string.IsNullOrEmpty(existingCraftsMan.NationalIdPic))
+        //        {
+        //            var oldPath = Path.Combine("wwwroot", existingCraftsMan.NationalIdPic);
+        //            if (System.IO.File.Exists(oldPath))
+        //                System.IO.File.Delete(oldPath);
+        //        }
+
+        //        existingCraftsMan.NationalIdPic =
+        //            uploadHandler.Upload(craftsManDto.NationalIdPic, "NationalIdPics");
+        //    }
+
+        //    craftsManRepo.Update(existingCraftsMan, id);
+        //    craftsManRepo.Save();
+
+        //    // 5️⃣ Update AspNetUsers (Identity)
+        //    var user = await _userManager.FindByEmailAsync(existingCraftsMan.NormalizedEmail);
+        //    if (user != null)
+        //    {
+        //        user.FName = craftsManDto.FName;
+        //        user.LName = craftsManDto.LName;
+        //        user.PhoneNumber = craftsManDto.PhoneNumber;
+
+
+        //        await _userManager.UpdateAsync(user);
+        //    }
+
+        //    return true;
+        //}
+
 
         public async void CreateCraftService(CreateCraftsManServiceDto serviceDto)
 		{

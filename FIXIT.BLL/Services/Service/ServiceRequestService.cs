@@ -477,7 +477,23 @@ namespace FIXIT.BLL.Services.Service
             return _mapper.Map<IEnumerable<ReadServiceRequestDto>>(filtered);
 
         }
-            
+        public async Task<IEnumerable<ReadServiceRequestDto>> GetRequestsByClientAndStatusAsync(int clientId, ServiceRequestStatus status)
+        {
+            var allRequests = await _serviceRequestRepository.GetAllAsync();
+
+            var filtered = allRequests
+                            .Where(r => r.ClientId == clientId && r.Status == status);
+
+            return _mapper.Map<IEnumerable<ReadServiceRequestDto>>(filtered);
+        }
+
+        public async Task<IEnumerable<ReadServiceRequestDto>> GetRequestsByCraftsmanAndStatusAsync(int craftsManId, ServiceRequestStatus status)
+        {
+          var allRequests = await _serviceRequestRepository.GetAllAsync();
+            var filtered = allRequests
+                            .Where(r => r.CraftsManId == craftsManId && r.Status == status);
+            return _mapper.Map<IEnumerable<ReadServiceRequestDto>>(filtered);
+        }
     }
 }
   

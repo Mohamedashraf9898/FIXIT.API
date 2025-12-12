@@ -3,6 +3,7 @@ using FIXIT.BLL.DTOs.ServiceRequestDTOs;
 using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.BLL.Services.IService;
 using FIXIT.DAL.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -209,10 +210,25 @@ namespace FIXIT.API.Controllers
             var statuses = Enum.GetNames(typeof(ServiceRequestStatus));
             return Ok(statuses);
         }
+        [Authorize(Roles ="Admin")] 
         [HttpGet("by-status/{status}")]
         public async Task<IActionResult> GetByStatus(ServiceRequestStatus status)
         {
             var result = await _serviceRequestService.GetRequestsByStatusAsync(status);
+            return Ok(result);
+        }
+        [Authorize(Roles = "Admin,Client")]
+        [HttpGet("by-client-status")]
+        public async Task<IActionResult> GetByClientAndStatus(int clientId, ServiceRequestStatus status)
+        {
+            var result = await _serviceRequestService.GetRequestsByClientAndStatusAsync(clientId, status);
+            return Ok(result);
+        }
+        [Authorize(Roles = "Admin,CraftsMan")]
+        [HttpGet("by-craftsMan-status")]
+        public async Task<IActionResult> GetByCraftsManAndStatus(int craftsManId, ServiceRequestStatus status)
+        {
+            var result = await _serviceRequestService.GetRequestsByCraftsmanAndStatusAsync(craftsManId, status);
             return Ok(result);
         }
         #region ForPaymentService

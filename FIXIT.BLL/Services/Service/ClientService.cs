@@ -2,12 +2,14 @@ using AutoMapper;
 using FIXIT.API.Erorrs.Exceptions;
 using FIXIT.API.Erorrs.Exceptions;
 using FIXIT.BLL.DTOs.ClientDTOs;
-using FIXIT.BLL.Helper.UploadHandler;
 using FIXIT.BLL.Exceptions;
+using FIXIT.BLL.Helper.UploadHandler;
 using FIXIT.BLL.Repositories.IRepo;
 using FIXIT.BLL.Repositories.Repo;
 using FIXIT.BLL.Services.Intrfaces;
 using FIXIT.DAL.Models;
+using FIXIT.DAL.Models.Identity;
+using Microsoft.AspNetCore.Identity;
 
 namespace FIXIT.BLL.Services.Service
 {
@@ -16,12 +18,14 @@ namespace FIXIT.BLL.Services.Service
         private readonly IClientRepo repo;
         private readonly IMapper mapper;
         private readonly UploadHandler uploadHandler;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public ClientService(IClientRepo repo,IMapper mapper, UploadHandler uploadHandler)
+        public ClientService(IClientRepo repo,IMapper mapper, UploadHandler uploadHandler,  UserManager<ApplicationUser> userManager)
         {
             this.repo = repo;
             this.mapper = mapper;
             this.uploadHandler = uploadHandler;
+            _userManager = userManager;
         }
 
         public async Task CreateClientAsync(CreateClientDTO client)
@@ -84,39 +88,79 @@ namespace FIXIT.BLL.Services.Service
          
         }
 
+        //public async Task<bool> UpdateClientAsync(int id, UpdateClientDTO clientDto)
+        //{
+        //    // 🔹 Step 1: Get the existing client asynchronously
+        //    var existingClient = await repo.GetAsync(id);
+        //    if (existingClient == null)
+        //        return false;
+
+        //    // 🔹 Step 2: Map updated fields from DTO to entity
+        //    mapper.Map(clientDto, existingClient);
+
+        //    // 🔹 Step 3: Handle image upload
+        //    if (clientDto.ProfileImage != null)
+        //    {
+        //        // Optionally delete the old image file
+        //        if (!string.IsNullOrEmpty(existingClient.ProfileImage))
+        //        {
+        //            var oldPath = Path.Combine("wwwroot", existingClient.ProfileImage);
+        //            if (File.Exists(oldPath))
+        //                File.Delete(oldPath);
+        //        }
+
+        //        // Upload new image
+        //        existingClient.ProfileImage = uploadHandler.Upload(clientDto.ProfileImage);
+        //    }
+
+        //    // 🔹 Step 4: Update the record (sync)
+        //    repo.Update(existingClient, id);
+
+        //    // 🔹 Step 5: Save changes (sync)
+        //    repo.Save();
+
+        //    return true;
+        //}
         public async Task<bool> UpdateClientAsync(int id, UpdateClientDTO clientDto)
         {
-            // 🔹 Step 1: Get the existing client asynchronously
+            // 1) Get client
             var existingClient = await repo.GetAsync(id);
             if (existingClient == null)
                 return false;
 
-            // 🔹 Step 2: Map updated fields from DTO to entity
+            // 2) Update Client table
             mapper.Map(clientDto, existingClient);
 
-            // 🔹 Step 3: Handle image upload
+            // 3) Update image if sent
             if (clientDto.ProfileImage != null)
             {
-                // Optionally delete the old image file
                 if (!string.IsNullOrEmpty(existingClient.ProfileImage))
                 {
                     var oldPath = Path.Combine("wwwroot", existingClient.ProfileImage);
-                    if (File.Exists(oldPath))
-                        File.Delete(oldPath);
+                    if (File.Exists(oldPath)) File.Delete(oldPath);
                 }
 
-                // Upload new image
                 existingClient.ProfileImage = uploadHandler.Upload(clientDto.ProfileImage);
             }
 
-            // 🔹 Step 4: Update the record (sync)
             repo.Update(existingClient, id);
-
-            // 🔹 Step 5: Save changes (sync)
             repo.Save();
+
+            // 4) Update AspNetUsers (Identity)
+            var user = await _userManager.FindByEmailAsync(existingClient.NormalizedEmail);
+            if (user != null)
+            {
+                user.FName = clientDto.FName;
+                user.LName = clientDto.LName;
+                user.PhoneNumber = clientDto.PhoneNumber;
+                user.Location = clientDto.Location;
+
+                await _userManager.UpdateAsync(user);
+            }
 
             return true;
         }
+
 
 
 

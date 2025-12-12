@@ -58,35 +58,30 @@ namespace FIXIT.BLL.Services.Service.Auth
 
         public async Task<UserDto> LoginAsync(LoginDto dto)
         {
-            // 1️⃣ البحث عن المستخدم بالإيميل
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
-                throw new UnAuthoraizedException("Invalid Login"); // البريد أو الباسورد خطأ
+                throw new UnAuthoraizedException("Invalid Login"); 
 
 
             if (!user.EmailConfirmed)
                 throw new UnAuthoraizedException("Please verify your email first");
-            // 2️⃣ التحقق من كلمة المرور
+            
             var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, false);
 
-            // 3️⃣ التحقق من حالة الحساب
             if (!result.Succeeded)
             {
                 if (result.IsNotAllowed)
-                    throw new UnAuthoraizedException("Account not confirmed yet"); // لم يتم تفعيل الإيميل
+                    throw new UnAuthoraizedException("Account not confirmed yet"); 
                 if (result.IsLockedOut)
-                    throw new UnAuthoraizedException("Account is locked"); // الحساب مقفل
-                throw new UnAuthoraizedException("Invalid Login"); // خطأ عام
+                    throw new UnAuthoraizedException("Account is locked"); 
+                throw new UnAuthoraizedException("Invalid Login"); 
             }
 
-            // 4️⃣ الحصول على الرول (Client أو CraftsMan)
             var roles = await _userManager.GetRolesAsync(user);
             var role = roles.Count > 0 ? roles[0] : string.Empty;
 
-            // 5️⃣ إنشاء JWT Token
             var token = await GenerateJwtTokenAsync(user, role);
 
-            // 6️⃣ إرجاع معلومات المستخدم مع التوكن
             return new UserDto
             {
                 Id = user.Id,
@@ -172,7 +167,7 @@ namespace FIXIT.BLL.Services.Service.Auth
             var encodedEmail = Uri.EscapeDataString(user.Email);
             var backendUrl = _configuration["BackendUrl"]?.TrimEnd('/') ?? "https://localhost:7083";
             //var confirmUrl = $"{backendUrl}/verify-email.html?email={encodedEmail}&token={encodedToken}";
-            var verificationUrl = $"http://localhost:4200/login?email={Uri.EscapeDataString(email)}&token={Uri.EscapeDataString(token)}&action=verify";
+            var confirmUrl = $"http://localhost:4200/login?email={Uri.EscapeDataString(user.Email)}&token={Uri.EscapeDataString(token)}&action=verify";
 
             #region HTML Email Template
             var subject = "Verify Your Email - Fixit";
@@ -268,10 +263,9 @@ a.link {{ color:#FFD700; text-decoration:underline; word-break:break-all; }}
                 Gender = dto.Gender,
                 DateOfBirth = dto.DateOfBirth,
                 NationalId = dto.NationalId,
-                EmailConfirmed = false // مهم: الحساب غير مفعل حتى التحقق من الإيميل
+                EmailConfirmed = false 
             };
 
-            // إنشاء المستخدم في Identity
             var result = await _userManager.CreateAsync(user, dto.Password);
             if (!result.Succeeded)
             {
@@ -279,10 +273,8 @@ a.link {{ color:#FFD700; text-decoration:underline; word-break:break-all; }}
                 throw new ValidationException($"Registration failed: {errors}");
             }
 
-            // إضافة رول CraftsMan
             await _userManager.AddToRoleAsync(user, "CraftsMan");
 
-            // إنشاء بيانات CraftsMan في جدول مخصص
             await _craftsManService.CreateCraftsManAsync(new CreateCraftsManDto
             {
                 FName = dto.FName,
@@ -300,14 +292,13 @@ a.link {{ color:#FFD700; text-decoration:underline; word-break:break-all; }}
                 ServiceId = dto.ServiceId
             });
 
-            // توليد Token لتأكيد الإيميل
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var encodedToken = Uri.EscapeDataString(token);
             var encodedEmail = Uri.EscapeDataString(user.Email);
             var backendUrl = _configuration["BackendUrl"]?.TrimEnd('/') ?? "https://localhost:7083";
-            var verificationUrl = $"http://localhost:4200/login?email={Uri.EscapeDataString(email)}&token={Uri.EscapeDataString(token)}&action=verify";
+            var confirmUrl = $"http://localhost:4200/login?email={Uri.EscapeDataString(user.Email)}&token={Uri.EscapeDataString(token)}&action=verify";
 
-            #region HTML Email Template جاهز
+            #region HTML Email Template 
             var subject = "Verify Your Email - Fixit";
             var body = $@"
 <!DOCTYPE html>
@@ -349,10 +340,8 @@ a.link {{ color:#FFD700; text-decoration:underline; word-break:break-all; }}
 </html>";
 
             #endregion
-            // إرسال الإيميل
             await _emailService.SendEmailAsync(user.Email, subject, body);
 
-            // إنشاء JWT Token
             return new UserDto
             {
                 Id = user.Id,
@@ -565,26 +554,22 @@ a.link {{ color:#FFD700; text-decoration:underline; word-break:break-all; }}
         }
         public async Task<bool> ResetPasswordAsync(ResetPasswordDto dto)
         {
-            // 1️⃣ البحث عن المستخدم
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
                 return false;
 
-            // 2️⃣ البحث عن الـ Token في DB
             var resetTokenEntry = await _identityDbContext.PasswordResetTokens
                 .FirstOrDefaultAsync(t => t.Email == dto.Email && t.Token == dto.Token && !t.IsUsed);
 
             if (resetTokenEntry == null || resetTokenEntry.ExpiryDate < DateTime.UtcNow)
                 return false;
 
-            // 3️⃣ استخدام Token المخزن مع UserManager
             //    Token لازم يكون مولّد من GeneratePasswordResetTokenAsync
             //    لو أنتِ بالفعل خزنتِه بعد GeneratePasswordResetTokenAsync فهذا سيعمل بشكل صحيح
             var resetResult = await _userManager.ResetPasswordAsync(user, dto.Token, dto.NewPassword);
             if (!resetResult.Succeeded)
                 return false;
 
-            // 4️⃣ تعليم الـ Token أنه مستخدم
             resetTokenEntry.IsUsed = true;
             await _identityDbContext.SaveChangesAsync();
 

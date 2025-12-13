@@ -153,65 +153,20 @@ namespace FIXIT.BLL.Services.Service
 
             return false;
         }
-        public async Task<bool> UpdateCraftsManAsync(int id, UpdateCraftsManDto craftsManDto)
-        {
-            // 1️⃣ Get the existing craftsman from DB
-            var existingCraftsMan = await craftsManRepo.GetAsync(id);
-            if (existingCraftsMan == null)
-                return false;
-
-            // 2️⃣ Map updated data from DTO → existing entity
-            mapper.Map(craftsManDto, existingCraftsMan);
-
-            // 3️⃣ Handle picture upload
-            if (craftsManDto.ProfileImage != null)
-            {
-                // (Optional) Delete old picture file if it exists
-                if (!string.IsNullOrEmpty(existingCraftsMan.ProfileImage))
-                {
-                    var oldPath = Path.Combine("wwwroot", existingCraftsMan.ProfileImage);
-                    if (System.IO.File.Exists(oldPath))
-                        System.IO.File.Delete(oldPath);
-                }
-
-                // Upload new image using your file service
-                existingCraftsMan.ProfileImage = uploadHandler.Upload(craftsManDto.ProfileImage);
-            }
-            // Handle NationalIdPic upload
-            if (craftsManDto.NationalIdPic != null)
-            {
-                if (!string.IsNullOrEmpty(existingCraftsMan.NationalIdPic))
-                {
-                    var oldPath = Path.Combine("wwwroot", existingCraftsMan.NationalIdPic);
-                    if (System.IO.File.Exists(oldPath))
-                        System.IO.File.Delete(oldPath);
-                }
-                existingCraftsMan.NationalIdPic = uploadHandler.Upload(craftsManDto.NationalIdPic, "NationalIdPics");
-            }
-
-            // 4️⃣ Update in repository
-            var updated = craftsManRepo.Update(existingCraftsMan, id);
-            if (updated)
-            {
-                craftsManRepo.Save();
-                return true;
-            }
-
-            return false;
-        }
         //public async Task<bool> UpdateCraftsManAsync(int id, UpdateCraftsManDto craftsManDto)
         //{
-        //    // 1️⃣ Get CraftsMan
+        //    // 1️⃣ Get the existing craftsman from DB
         //    var existingCraftsMan = await craftsManRepo.GetAsync(id);
         //    if (existingCraftsMan == null)
         //        return false;
 
-        //    // 2️⃣ Update CraftsMan table
+        //    // 2️⃣ Map updated data from DTO → existing entity
         //    mapper.Map(craftsManDto, existingCraftsMan);
 
-        //    // 3️⃣ Profile image
+        //    // 3️⃣ Handle picture upload
         //    if (craftsManDto.ProfileImage != null)
         //    {
+        //        // (Optional) Delete old picture file if it exists
         //        if (!string.IsNullOrEmpty(existingCraftsMan.ProfileImage))
         //        {
         //            var oldPath = Path.Combine("wwwroot", existingCraftsMan.ProfileImage);
@@ -219,10 +174,10 @@ namespace FIXIT.BLL.Services.Service
         //                System.IO.File.Delete(oldPath);
         //        }
 
+        //        // Upload new image using your file service
         //        existingCraftsMan.ProfileImage = uploadHandler.Upload(craftsManDto.ProfileImage);
         //    }
-
-        //    // 4️⃣ National ID pic
+        //    // Handle NationalIdPic upload
         //    if (craftsManDto.NationalIdPic != null)
         //    {
         //        if (!string.IsNullOrEmpty(existingCraftsMan.NationalIdPic))
@@ -231,28 +186,73 @@ namespace FIXIT.BLL.Services.Service
         //            if (System.IO.File.Exists(oldPath))
         //                System.IO.File.Delete(oldPath);
         //        }
-
-        //        existingCraftsMan.NationalIdPic =
-        //            uploadHandler.Upload(craftsManDto.NationalIdPic, "NationalIdPics");
+        //        existingCraftsMan.NationalIdPic = uploadHandler.Upload(craftsManDto.NationalIdPic, "NationalIdPics");
         //    }
 
-        //    craftsManRepo.Update(existingCraftsMan, id);
-        //    craftsManRepo.Save();
-
-        //    // 5️⃣ Update AspNetUsers (Identity)
-        //    var user = await _userManager.FindByEmailAsync(existingCraftsMan.NormalizedEmail);
-        //    if (user != null)
+        //    // 4️⃣ Update in repository
+        //    var updated = craftsManRepo.Update(existingCraftsMan, id);
+        //    if (updated)
         //    {
-        //        user.FName = craftsManDto.FName;
-        //        user.LName = craftsManDto.LName;
-        //        user.PhoneNumber = craftsManDto.PhoneNumber;
-
-
-        //        await _userManager.UpdateAsync(user);
+        //        craftsManRepo.Save();
+        //        return true;
         //    }
 
-        //    return true;
+        //    return false;
         //}
+        public async Task<bool> UpdateCraftsManAsync(int id, UpdateCraftsManDto craftsManDto)
+        {
+            // 1️⃣ Get CraftsMan
+            var existingCraftsMan = await craftsManRepo.GetAsync(id);
+            if (existingCraftsMan == null)
+                return false;
+
+            // 2️⃣ Update CraftsMan table
+            mapper.Map(craftsManDto, existingCraftsMan);
+
+            // 3️⃣ Profile image
+            if (craftsManDto.ProfileImage != null)
+            {
+                if (!string.IsNullOrEmpty(existingCraftsMan.ProfileImage))
+                {
+                    var oldPath = Path.Combine("wwwroot", existingCraftsMan.ProfileImage);
+                    if (System.IO.File.Exists(oldPath))
+                        System.IO.File.Delete(oldPath);
+                }
+
+                existingCraftsMan.ProfileImage = uploadHandler.Upload(craftsManDto.ProfileImage);
+            }
+
+            // 4️⃣ National ID pic
+            if (craftsManDto.NationalIdPic != null)
+            {
+                if (!string.IsNullOrEmpty(existingCraftsMan.NationalIdPic))
+                {
+                    var oldPath = Path.Combine("wwwroot", existingCraftsMan.NationalIdPic);
+                    if (System.IO.File.Exists(oldPath))
+                        System.IO.File.Delete(oldPath);
+                }
+
+                existingCraftsMan.NationalIdPic =
+                    uploadHandler.Upload(craftsManDto.NationalIdPic, "NationalIdPics");
+            }
+
+            craftsManRepo.Update(existingCraftsMan, id);
+            craftsManRepo.Save();
+
+            // 5️⃣ Update AspNetUsers (Identity)
+            var user = await _userManager.FindByEmailAsync(existingCraftsMan.NormalizedEmail);
+            if (user != null)
+            {
+                user.FName = craftsManDto.FName;
+                user.LName = craftsManDto.LName;
+                user.PhoneNumber = craftsManDto.PhoneNumber;
+
+
+                await _userManager.UpdateAsync(user);
+            }
+
+            return true;
+        }
 
 
         public async void CreateCraftService(CreateCraftsManServiceDto serviceDto)

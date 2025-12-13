@@ -12,5 +12,6 @@ namespace FIXIT.BLL.Services.IService
         Task<ResponseComplaintDto> RespondToComplaintAsync(RespondToComplaintDto dto);
         Task<List<ResponseComplaintDto>> GetForClientAsync(int clientId, int serviceRequestId);
         Task<List<ResponseComplaintDto>> GetForCraftsmanAsync(int craftsmanId, int serviceRequestId);
+        Task<ResponseComplaintDto> UpdateComplaintStatusAsync(UpdateComplaintStatusDto dto);
     }
 }

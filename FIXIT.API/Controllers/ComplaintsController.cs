@@ -91,5 +91,12 @@ namespace FIXIT.API.Controllers
             var result = await _complaintsService.RespondToComplaintAsync(dto);
             return Ok(result);
         }
+
+        [HttpPost("admin/update-status")]
+        public async Task<IActionResult> UpdateComplaintStatus([FromBody] UpdateComplaintStatusDto dto)
+        {
+            var result = await _complaintsService.UpdateComplaintStatusAsync(dto);
+            return Ok(result);
+        }
     }
 }

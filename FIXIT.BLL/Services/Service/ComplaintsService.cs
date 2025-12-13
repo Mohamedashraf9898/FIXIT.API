@@ -109,7 +109,8 @@ namespace FIXIT.BLL.Services.Service
                 Status = c.Status,
                 CreatedAt = c.CreatedAt,
                 AdminResponse = c.AdminResponse,
-                RespondedAt = c.RespondedAt
+                RespondedAt = c.RespondedAt,
+                CraftsManId= c.CraftsManId
             }).ToList();
         }
 
@@ -133,7 +134,8 @@ namespace FIXIT.BLL.Services.Service
                 Status = complaint.Status,
                 CreatedAt = complaint.CreatedAt,
                 AdminResponse = complaint.AdminResponse,
-                RespondedAt = complaint.RespondedAt
+                RespondedAt = complaint.RespondedAt,
+                CraftsManId= complaint.CraftsManId
             };
         }
 
@@ -169,6 +171,29 @@ namespace FIXIT.BLL.Services.Service
                 AdminResponse = c.AdminResponse,
                 RespondedAt = c.RespondedAt
             }).ToList();
+        }
+
+        public async Task<ResponseComplaintDto> UpdateComplaintStatusAsync(UpdateComplaintStatusDto dto)
+        {
+            var complaint = await _complaintsRepo.GetByIdAsync(dto.ComplaintId);
+            if (complaint == null)
+                throw new ArgumentException("Complaint not found.");
+
+            complaint.Status = dto.Status;
+            await _complaintsRepo.UpdateComplaintAsync(complaint);
+
+            return new ResponseComplaintDto
+            {
+                Id = complaint.Id,
+                ServiceRequestId = complaint.ServiceRequestId,
+                ClientId = complaint.ClientId,
+                CraftsManId = complaint.CraftsManId,
+                Content = complaint.Content,
+                Status = complaint.Status,
+                CreatedAt = complaint.CreatedAt,
+                AdminResponse = complaint.AdminResponse,
+                RespondedAt = complaint.RespondedAt
+            };
         }
     }
 }

@@ -127,9 +127,6 @@ namespace FIXIT.API.Controllers
             {
                 var result = await _serviceRequestService.GetAllServiceRequestsForCraftsManById(craftsManId);
 
-                if (!result.Any())
-                    return NotFound($"No service requests found for craftsman ID {craftsManId}.");
-
                 return Ok(result);
             }
             catch (ArgumentException ex)
@@ -144,9 +141,6 @@ namespace FIXIT.API.Controllers
             try
             {
                 var result = await _serviceRequestService.GetAllServiceRequestsForClientById(clientId);
-
-                if (!result.Any())
-                    return NotFound($"No service requests found for client ID {clientId}.");
 
                 return Ok(result);
             }

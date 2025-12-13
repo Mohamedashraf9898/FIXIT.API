@@ -8,8 +8,16 @@ namespace FIXIT.BLL.Exceptions
 {
     public class UnAuthoraizedException : ApplicationException
     {
-        public UnAuthoraizedException(string Massage) : base(Massage)
+        public string ErrorCode { get; }
+
+        public UnAuthoraizedException(
+            string message,
+            string errorCode = "UNAUTHORIZED"
+        ) : base(message)
         {
+            ErrorCode = errorCode;
         }
     }
+
 }
+

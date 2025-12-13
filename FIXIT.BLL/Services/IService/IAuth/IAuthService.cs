@@ -17,6 +17,7 @@ namespace FIXIT.BLL.Services.IService.IAuth
         Task<bool> ValidateResetTokenAsync(ValidateTokenDto dto);
         Task<bool> ResetPasswordAsync(ResetPasswordDto dto);
         Task<bool> ConfirmEmailAsync(string email, string token);
+        Task<bool> ResendVerificationEmailAsync(string email);
 
     }
 }

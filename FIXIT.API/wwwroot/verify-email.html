@@ -1,20 +1,224 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
-    <title>Verify Email</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Email - Fixit</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 450px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #1E1E1E;
+            margin-bottom: 20px;
+        }
+
+        .status-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #FFD700;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error {
+            color: #e74c3c;
+        }
+
+        .success {
+            color: #27ae60;
+        }
+
+        .btn {
+            background-color: #FFD700;
+            color: #1E1E1E;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 20px;
+            display: inline-block;
+            text-decoration: none;
+        }
+
+            .btn:hover {
+                background-color: #e6c200;
+            }
+
+        .hidden {
+            display: none;
+        }
+
+        p {
+            line-height: 1.6;
+            color: #666;
+        }
+    </style>
 </head>
-<body style="font-family: Arial; text-align: center; margin-top: 80px;">
-    <h2>Verifying your email...</h2>
+
+<body>
+
+    <div class="container">
+        <div id="loading">
+            <div class="spinner"></div>
+            <h2>Verifying your email...</h2>
+            <p>Please wait while we check your verification token.</p>
+        </div>
+
+        <div id="success" class="hidden">
+            <span class="status-icon success">✓</span>
+            <h1>Verified!</h1>
+            <p>Your email has been successfully verified.</p>
+            <p>Redirecting you to login in <span id="countdown">5</span> seconds...</p>
+            <a href="http://localhost:4200/login" class="btn">Go to Login Now</a>
+        </div>
+
+        <div id="error" class="hidden">
+            <span class="status-icon error">⚠</span>
+            <h1>Verification Failed</h1>
+            <p id="error-message">The verification link is invalid or has expired.</p>
+
+            <div id="resend-section">
+                <!-- Ensure user is not stuck: Provide Resend Button HERE -->
+                <p>Don't worry, you can request a new one:</p>
+                <button id="resend-btn" class="btn">Resend Verification Link</button>
+                <p id="resend-status" style="margin-top: 15px; font-size: 0.9em; min-height: 20px;"></p>
+            </div>
+        </div>
+    </div>
+
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const rawEmail = urlParams.get("email");
-        const rawToken = urlParams.get("token");
+        document.addEventListener("DOMContentLoaded", async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const email = urlParams.get("email");
+            const token = urlParams.get("token");
 
-        const safeEmail = encodeURIComponent(rawEmail);
-        const safeToken = encodeURIComponent(rawToken);
+            const loadingDiv = document.getElementById("loading");
+            const successDiv = document.getElementById("success");
+            const errorDiv = document.getElementById("error");
+            const errorMsg = document.getElementById("error-message");
+            const resendBtn = document.getElementById("resend-btn");
+            const resendStatus = document.getElementById("resend-status");
 
-        window.location.href = `http://localhost:4200/verify-email?email=${safeEmail}&token=${safeToken}`;
+            if (!email || !token) {
+                showError("Invalid link parameters. Please try registering again.");
+                document.getElementById("resend-section").style.display = "none";
+                return;
+            }
+
+            // Call Verification API
+            try {
+                const verifyResponse = await fetch('/api/Account/verify-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, token: token })
+                });
+
+                if (verifyResponse.ok) {
+                    showSuccess();
+                } else {
+                    const data = await verifyResponse.json();
+                    showError(data.error || "Verification failed. Your token may have expired.");
+                    // Show Logic to Resend is implicitly visible in errorDiv
+                }
+            } catch (err) {
+                console.error(err);
+                showError("An error occurred while connecting to the server.");
+            }
+
+            // Resend Button Logic
+            resendBtn.addEventListener("click", async () => {
+                resendBtn.disabled = true;
+                resendBtn.textContent = "Sending...";
+                resendStatus.textContent = "";
+
+                try {
+                    const resendResponse = await fetch(`/api/Account/resend-verification-email?email=${encodeURIComponent(email)}`, {
+                        method: 'POST'
+                    });
+
+                    if (resendResponse.ok) {
+                        resendStatus.textContent = "A new verification link has been sent to your email!";
+                        resendStatus.style.color = "green";
+                        resendBtn.textContent = "Sent!";
+                    } else {
+                        const data = await resendResponse.json();
+                        resendStatus.textContent = data.error || "Failed to resend email.";
+                        resendStatus.style.color = "red";
+                        resendBtn.disabled = false;
+                        resendBtn.textContent = "Resend Verification Link";
+                    }
+                } catch (err) {
+                    resendStatus.textContent = "Network error. Please try again.";
+                    resendStatus.style.color = "red";
+                    resendBtn.disabled = false;
+                    resendBtn.textContent = "Resend Verification Link";
+                }
+            });
+
+            function showSuccess() {
+                loadingDiv.classList.add("hidden");
+                successDiv.classList.remove("hidden");
+
+                let count = 5;
+                const countdownEl = document.getElementById("countdown");
+                const interval = setInterval(() => {
+                    count--;
+                    countdownEl.textContent = count;
+                    if (count <= 0) {
+                        clearInterval(interval);
+                        window.location.href = "http://localhost:4200/login";
+                    }
+                }, 1000);
+            }
+
+            function showError(msg) {
+                loadingDiv.classList.add("hidden");
+                errorDiv.classList.remove("hidden");
+                errorMsg.textContent = msg;
+            }
+        });
     </script>
 </body>
+
 </html>

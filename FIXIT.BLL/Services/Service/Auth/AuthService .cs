@@ -60,21 +60,21 @@ namespace FIXIT.BLL.Services.Service.Auth
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
-                throw new UnAuthoraizedException("Invalid Login"); 
+                throw new UnAuthoraizedException("Invalid Login");
 
 
             if (!user.EmailConfirmed)
-                throw new UnAuthoraizedException("Please verify your email first");
-            
+                throw new UnAuthoraizedException("Please verify your email first", "EMAIL_NOT_VERIFIED");
+
             var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, false);
 
             if (!result.Succeeded)
             {
                 if (result.IsNotAllowed)
-                    throw new UnAuthoraizedException("Account not confirmed yet"); 
+                    throw new UnAuthoraizedException("Account not confirmed yet", "EMAIL_NOT_VERIFIED");
                 if (result.IsLockedOut)
-                    throw new UnAuthoraizedException("Account is locked"); 
-                throw new UnAuthoraizedException("Invalid Login"); 
+                    throw new UnAuthoraizedException("Account is locked");
+                throw new UnAuthoraizedException("Invalid Login");
             }
 
             var roles = await _userManager.GetRolesAsync(user);
@@ -167,7 +167,8 @@ namespace FIXIT.BLL.Services.Service.Auth
             var encodedEmail = Uri.EscapeDataString(user.Email);
             var backendUrl = _configuration["BackendUrl"]?.TrimEnd('/') ?? "https://localhost:7083";
             //var confirmUrl = $"{backendUrl}/verify-email.html?email={encodedEmail}&token={encodedToken}";
-            var confirmUrl = $"http://localhost:4200/login?email={Uri.EscapeDataString(user.Email)}&token={Uri.EscapeDataString(token)}&action=verify";
+            //var confirmUrl = $"http://localhost:4200/login?email={Uri.EscapeDataString(user.Email)}&token={Uri.EscapeDataString(token)}&action=verify";
+            var confirmUrl =$"http://localhost:4200/verify-email?email={Uri.EscapeDataString(user.Email)}&token={Uri.EscapeDataString(token)}";
 
             #region HTML Email Template
             var subject = "Verify Your Email - Fixit";
@@ -296,7 +297,7 @@ a.link {{ color:#FFD700; text-decoration:underline; word-break:break-all; }}
             var encodedToken = Uri.EscapeDataString(token);
             var encodedEmail = Uri.EscapeDataString(user.Email);
             var backendUrl = _configuration["BackendUrl"]?.TrimEnd('/') ?? "https://localhost:7083";
-            var confirmUrl = $"http://localhost:4200/login?email={Uri.EscapeDataString(user.Email)}&token={Uri.EscapeDataString(token)}&action=verify";
+            var confirmUrl = $"http://localhost:4200/verify-email?email={Uri.EscapeDataString(user.Email)}&token={Uri.EscapeDataString(token)}";
 
             #region HTML Email Template 
             var subject = "Verify Your Email - Fixit";
@@ -403,6 +404,73 @@ a.link {{ color:#FFD700; text-decoration:underline; word-break:break-all; }}
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+        public async Task<bool> ResendVerificationEmailAsync(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                // Return true to avoid enumerating users, or false if you prefer specific error handling
+                // For security, usually better to return true or generic message, but here we might want to let the user know
+                return false;
+            }
+
+            if (user.EmailConfirmed)
+            {
+                // Already confirmed
+                return true;
+            }
+
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var encodedToken = Uri.EscapeDataString(token);
+            var encodedEmail = Uri.EscapeDataString(user.Email);
+            var backendUrl = _configuration["BackendUrl"]?.TrimEnd('/') ?? "https://localhost:7083";
+            var confirmUrl = $"http://localhost:4200/verify-email?email={Uri.EscapeDataString(user.Email)}&token={Uri.EscapeDataString(token)}";
+
+            #region HTML Email Template
+            var subject = "Verify Your Email - Fixit";
+            var body = $@"
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='UTF-8'>
+<title>Verify Your Email</title>
+<style>
+body {{ font-family: 'Cairo', Arial, sans-serif; background-color: #f8f9fa; margin:0; padding:0; }}
+.container {{ max-width:600px; margin:40px auto; background-color:#fff; border-radius:16px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.1); }}
+.header {{ background-color:#1E1E1E; text-align:center; padding:30px 0; }}
+.header h1 {{ color:#FFD700; margin:0; font-size:28px; font-weight:700; }}
+.content {{ padding:40px 30px; text-align:center; }}
+.content h2 {{ color:#1E1E1E; font-size:24px; margin-top:0; }}
+.content p {{ color:#6B7280; font-size:16px; line-height:1.6; margin-bottom:30px; }}
+.btn {{ background-color:#FFD700; color:#1E1E1E; padding:15px 35px; text-decoration:none; border-radius:50px; display:inline-block; font-weight:bold; font-size:16px; box-shadow:0 4px 15px rgba(255,215,0,0.4); }}
+.btn:hover {{ background-color:#E5C100 !important; }}
+.footer {{ background-color:#f8f8f8; padding:20px; text-align:center; border-top:1px solid #eeeeee; font-size:12px; color:#888888; }}
+a.link {{ color:#FFD700; text-decoration:underline; word-break:break-all; }}
+</style>
+</head>
+<body>
+<div class='container'>
+  <div class='header'><h1>Fixit</h1></div>
+  <div class='content'>
+    <h2>Email Verification</h2>
+    <p>Hello,<br>You requested a new verification link. Please click the button below to verify your email:</p>
+    <a href='{confirmUrl}' class='btn'>Verify Email</a>
+    <p style='margin-top:30px; font-size:14px; color:#999;'>Or copy and paste this link into your browser:<br>
+      <a href='{confirmUrl}' class='link'>{confirmUrl}</a>
+    </p>
+  </div>
+  <div class='footer'>
+    This link works for 15 minutes.<br>
+    If you didn't request this, you can safely ignore this email.
+  </div>
+</div>
+</body>
+</html>";
+            #endregion
+
+            await _emailService.SendEmailAsync(user.Email, subject, body);
+            return true;
         }
         public async Task ForgotPasswordAsync(ForgotPasswordDto dto, string frontendUrl)
         {

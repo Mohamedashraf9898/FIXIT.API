@@ -8,6 +8,7 @@ using FIXIT.API.Midelwaers;
 using FIXIT.BLL;
 using FIXIT.BLL.DTOs.ClientDTOs;
 using FIXIT.BLL.DTOs.CraftsmanDTOs;
+using FIXIT.BLL.Exceptions;
 using FIXIT.BLL.Helper.PictureUrlResolver;
 using FIXIT.BLL.Helper.UploadHandler;
 using FIXIT.BLL.Mapping;
@@ -281,6 +282,28 @@ builder.Services.AddScoped<IComplaintsService, ComplaintsService>();
             //{
             //    options.MultipartBodyLengthLimit = 50_000_000; // 50 MB
             //});
+
+            #region Global Exception Handler 
+            app.UseExceptionHandler(appError =>
+            {
+                appError.Run(async context =>
+                {
+                    var exception = context.Features
+                        .Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>()?.Error;
+
+                    if (exception is UnAuthoraizedException ex)
+                    {
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+
+                        await context.Response.WriteAsJsonAsync(new
+                        {
+                            message = ex.Message,
+                            errorCode = ex.ErrorCode
+                        });
+                    }
+                });
+            });
+            #endregion
 
             app.Use(async (context, next) =>
             {

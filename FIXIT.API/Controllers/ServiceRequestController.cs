@@ -225,6 +225,29 @@ namespace FIXIT.API.Controllers
             var result = await _serviceRequestService.GetRequestsByCraftsmanAndStatusAsync(craftsManId, status);
             return Ok(result);
         }
+        [HttpPost("report-issue/{requestId}")]
+        public async Task<IActionResult> ReportIssue(int requestId, [FromBody] ReportIssueDto dto)
+        {
+             if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                var result = await _serviceRequestService.ReportIssueAsync(requestId, dto);
+                if (!result)
+                    return NotFound("Service request not found or failed to report issue.");
+                
+                return Ok(new { message = "Issue reported successfully to admin." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal server error", details = ex.Message });
+            }
+        }
         #region ForPaymentService
         [HttpPost("complete/{requestId}")]
         public async Task<IActionResult> CompleteServiceRequest(int requestId)

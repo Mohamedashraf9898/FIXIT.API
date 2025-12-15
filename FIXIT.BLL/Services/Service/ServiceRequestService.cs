@@ -469,6 +469,39 @@ namespace FIXIT.BLL.Services.Service
             return true;
         }
 
+        public async Task<bool> ReportIssueAsync(int requestId, ReportIssueDto dto)
+        {
+            var serviceRequest = await _serviceRequestRepository.GetAsync(requestId);
+            if (serviceRequest == null)
+                throw new KeyNotFoundException("Service request not found.");
+
+            // Get Craftsman Name
+            var craftsman = await _craftsmanRepository.GetAsync(serviceRequest.CraftsManId ?? 0);
+            var craftsmanName = craftsman != null ? craftsman.FName + " " + craftsman.LName : "Unknown Craftsman";
+             // Get service name
+            var serviceName = serviceRequest.Service?.ServiceName ?? "Service";
+
+            // Build notification message for Admin
+            var messageForAdmin = $"Craftsman {craftsmanName} has reported an issue with client for service request #{requestId} ({serviceName}). Reason: {dto.Reason}. Please investigate.";
+
+            // Send notification to Admin
+            var adminNotification = new CreateNotificationDto
+            {
+                ServiceRequestId = requestId,
+                CraftsManId = serviceRequest.CraftsManId,
+                ClientId = serviceRequest.ClientId,
+                Title = "Issue Reported by Craftsman",
+                Message = messageForAdmin,
+                SenderType = NotificationSenderType.Craftsman,
+                Type = NotificationType.ServiceCancelled, // Using Cancelled type for now to indicate "Problem", or could add new type
+                IsRead = false
+            };
+
+            await _notificationService.CreateForAdminAsync(adminNotification);
+
+            return true;
+        }
+
         public async Task<IEnumerable<ReadServiceRequestDto>> GetRequestsByStatusAsync(ServiceRequestStatus status)
         {
             var allRequests = await _serviceRequestRepository.GetAllAsync();

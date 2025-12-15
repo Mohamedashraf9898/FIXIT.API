@@ -27,6 +27,8 @@ public class Offer
     [Column(TypeName = "decimal(10,2)")]
     public decimal Amount { get; set; }
 
+    public string Description { get; set; }
+
     public OfferStatus Status { get; set; } = OfferStatus.Pending;
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

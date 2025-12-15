@@ -28,8 +28,8 @@ namespace FIXIT.BLL.Helper.UploadHandler
             if (!validExtensions.Contains(extension))
                 throw new InvalidOperationException($"Invalid extension ({string.Join(", ", validExtensions)})");
 
-            if (file.Length > 5 * 1024 * 1024)
-                throw new InvalidOperationException("Maximum size can be 5 MB.");
+            if (file.Length > 15 * 1024 * 1024)
+                throw new InvalidOperationException("Maximum size can be 15 MB.");
 
             string fileName = $"{Guid.NewGuid()}{extension}";
             string uploadPath = Path.Combine(_webRootPath, "images", folder);
